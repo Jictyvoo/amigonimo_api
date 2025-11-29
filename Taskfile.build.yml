@@ -1,0 +1,59 @@
+version: "3"
+
+vars:
+  APP_NAME: anonymigo_api
+
+tasks:
+  build:
+    desc: Build image
+    cmds:
+      - go build -o {{.EXEC_GO}} -ldflags='-w -s -linkmode external -extldflags "-static"' -tags="{{.BUILD_TAGS}}" ./cmd/api
+    vars:
+      BUILD_TAGS: "{{.BUILD_TAGS}}"
+      EXEC_GO: "build/bin/{{.APP_NAME}}"
+
+  test:execution:
+    desc: Execute test based on a given variable checking for coverage or not
+    internal: true
+    cmds:
+      - cmd: "{{.COMMAND}}"
+    vars:
+      COVERAGE_FILENAME: "{{ .COVERAGE_FILENAME }}"
+      TEST_CMD: "go test ./..."
+      TEST_COVERAGE_CMD: "go test -p 1 -count=1 -coverpkg=./... ./... -coverprofile={{.COVERAGE_FILENAME}}"
+      COMMAND:
+        sh: '[[ -z "{{.COVERAGE_FILENAME}}" ]] && echo {{.TEST_CMD}} || echo {{.TEST_COVERAGE_CMD}}'
+
+  test:
+    desc: Execute tests
+    cmds:
+      - task: test:execution
+        vars: { COVERAGE_FILENAME: "build/coverages/coverage.out" }
+
+  run:
+    cmds:
+      - "{{.EXEC_GO}}"
+
+  install:formatters:
+    desc: Install all formatters dependencies
+    cmds:
+      - go install github.com/segmentio/golines@latest
+      - go install mvdan.cc/gofumpt@latest
+
+  install:deps:
+    desc: Install all needed dependencies to run project
+    cmds:
+      - task: install:formatters
+      - go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+      - go install go.uber.org/mock/mockgen@latest
+
+  run:formatters:
+    desc: Run linters on entire project
+    cmds:
+      - golines --base-formatter=gofumpt -w .
+
+  gen:code:
+    desc: Generate all needed code for the project to run
+    cmds:
+      - go generate ./...
+      - sqlc generate

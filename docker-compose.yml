@@ -1,0 +1,22 @@
+services:
+  mysql:
+    image: mysql:8
+    env_file:
+      - path: build/local.mysql.env
+        required: true
+    environment:
+      MYSQL_ROOT_HOST: "%"
+    ports:
+      - "3306:3306"
+    deploy:
+      resources:
+        limits:
+          memory: 500M   # Max memory
+        reservations:
+          memory: 250M   # Guaranteed minimum
+    healthcheck:
+      test: [ "CMD-SHELL", "mysqladmin ping -h localhost -u$MYSQL_USER -p$MYSQL_PASSWORD" ]
+      interval: 20s
+      timeout: 5s
+      retries: 8
+      start_period: 35s

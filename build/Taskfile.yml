@@ -1,0 +1,48 @@
+version: "3"
+
+vars:
+  MIGRATIONS_DIRECTORY: "./migrations"
+  SCHEMA_DIRECTORY: "./entschema"
+
+dotenv:
+  - ./local.mysql.env
+
+tasks:
+  install:deps:
+    desc: Install all Go dependencies used for the project
+    cmds:
+      - go install entgo.io/ent/cmd/ent@latest # Used to generate the schema migration
+      - brew install ariga/tap/atlas
+
+  migration:hash:
+    desc: Run atlas migration hash to fix migration hash
+    cmds:
+      - atlas migrate hash --dir file://{{.MIGRATIONS_DIRECTORY}}
+
+  migration:diff:
+    desc: Run atlas diff to generate a migration
+    internal: true
+    cmds:
+      - atlas migrate diff {{.DIFF_NAME}} --dir "file://../{{.MIGRATIONS_DIRECTORY}}" --to ent://./ --dev-url "{{.DEV_URL}}"
+    vars:
+      MYSQL_PASSWORD_URLENCODED: "{{ .MYSQL_PASSWORD | replace `@` `%40` }}"
+      TEMP_DATABASE_NAME: "atlas_temp"
+      DEV_URL: "mysql://{{.MYSQL_USER}}:{{.MYSQL_PASSWORD_URLENCODED}}@localhost:3306/{{.TEMP_DATABASE_NAME}}"
+    requires:
+      vars: [ DIFF_NAME ]
+    dir: "{{.SCHEMA_DIRECTORY}}" # Atlas(with Ent) requires to be run from a module root
+
+  migration:gen:
+    desc: Run atlas migration apply to generate versioned SQL files
+    cmds:
+      - task: migration:diff
+    vars:
+      DIFF_NAME: "{{.DIFF_NAME}}"
+
+  migration:apply:
+    desc: Apply versioned migrations to the database
+    cmds:
+      - atlas migrate apply --dir file://{{.MIGRATIONS_DIRECTORY}} --url "{{.DB_URL}}"
+    vars:
+      MYSQL_PASSWORD_URLENCODED: "{{ .MYSQL_PASSWORD | replace `@` `%40` }}"
+      DB_URL: "mysql://{{.MYSQL_USER}}:{{.MYSQL_PASSWORD_URLENCODED}}@localhost:3306/{{.MYSQL_DATABASE}}"
