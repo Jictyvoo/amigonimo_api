@@ -16,7 +16,7 @@ import (
 
 	"github.com/jictyvoo/amigonimo_api/api"
 	"github.com/jictyvoo/amigonimo_api/pkg/config"
-	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/middlewares/jwtware"
+	"github.com/jictyvoo/amigonimo_api/pkg/web/middlewares/jwtware"
 )
 
 type ServerOption func(*Server)
