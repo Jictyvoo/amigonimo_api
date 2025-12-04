@@ -14,7 +14,7 @@ func NewRouter() *Router {
 	return &Router{middlewares: []web.HttpMiddleware{}}
 }
 
-func (r *Router) V1(server *fuego.Server) error {
+func (r *Router) RegisterRoutes(server *fuego.Server) error {
 	authHandlers := NewAuthHandlers(nil)
 	fuego.Post(server, "/login", authHandlers.Login)
 	fuego.Post(server, "/register", authHandlers.Register)
