@@ -2,6 +2,8 @@ package entschema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 
@@ -29,7 +31,14 @@ func (User) Indexes() []ent.Index {
 
 // Edges of the User.
 func (User) Edges() []ent.Edge {
-	return []ent.Edge{}
+	return []ent.Edge{
+		edge.To("secret_friends", SecretFriend.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)),
+		edge.To("participants", Participant.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)),
+		edge.To("denied_entries", Denylist.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)),
+	}
 }
 
 // Mixin of the User.
