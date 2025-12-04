@@ -13,18 +13,29 @@ const (
 	StatusClosed SecretFriendStatus = "closed"
 )
 
+type (
+	DrawResultItem struct {
+		Giver    Participant
+		Receiver Participant
+		Timestamp
+	}
+	DrawResult struct {
+		GiverReceivers []DrawResultItem
+	}
+)
+
 type SecretFriend struct {
-	ID                HexID
-	Name              string
-	Datetime          *time.Time
-	Location          string
-	OwnerID           HexID
-	InviteCode        string
-	InviteLink        string
-	Status            SecretFriendStatus
-	CreatedAt         time.Time
-	UpdatedAt         time.Time
-	ParticipantsCount int
+	ID           HexID
+	Name         string
+	Datetime     *time.Time
+	Location     string
+	OwnerID      HexID
+	InviteCode   string
+	InviteLink   string
+	Status       SecretFriendStatus
+	Participants []Participant
+	DrawResult   *DrawResult
+	Timestamp
 }
 
 func (sf *SecretFriend) Normalize() {
