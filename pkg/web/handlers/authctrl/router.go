@@ -18,7 +18,6 @@ func (r *Router) V1(server *fuego.Server) error {
 	authHandlers := NewAuthHandlers(nil)
 	fuego.Post(server, "/login", authHandlers.Login)
 	fuego.Post(server, "/register", authHandlers.Register)
-	// fuego.Post(server, "/auth/enter-by-code", authHandlers.EnterByCode)
 
 	return nil
 }

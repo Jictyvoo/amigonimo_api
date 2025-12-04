@@ -72,7 +72,7 @@ func (uc *AuthService) Register(req entities.RegisterRequest) (*entities.Registe
 	// Create new user
 	user := entities.User{
 		ID:       entities.NewHexID(),
-		FullName: req.Fullname,
+		FullName: req.FullName,
 		Email:    req.Email,
 	}
 
