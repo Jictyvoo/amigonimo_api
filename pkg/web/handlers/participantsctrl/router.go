@@ -17,18 +17,14 @@ func NewRouter() *Router {
 func (r *Router) RegisterRoutes(server *fuego.Server) error {
 	handlers := NewParticipantsHandlers()
 
-	fuego.Post(server, "/{id}/participants", handlers.ConfirmParticipation)
-	fuego.Get(server, "/{id}/participants", handlers.ListParticipants)
+	fuego.Post(server, "/", handlers.ConfirmParticipation)
+	fuego.Get(server, "/", handlers.ListParticipants)
 
 	return nil
 }
 
 func (r *Router) GroupName() string {
-	return "/secret-friends"
-}
-
-func (r *Router) AddMiddleware(middleware web.HttpMiddleware) {
-	r.middlewares = append(r.middlewares, middleware)
+	return "/{id}/participants"
 }
 
 func (r *Router) Middlewares() []web.HttpMiddleware {

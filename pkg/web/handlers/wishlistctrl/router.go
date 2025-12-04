@@ -17,19 +17,15 @@ func NewRouter() *Router {
 func (r *Router) RegisterRoutes(server *fuego.Server) error {
 	handlers := NewWishlistHandlers()
 
-	fuego.Get(server, "/{id}/wishlist", handlers.GetWishlist)
-	fuego.Post(server, "/{id}/wishlist", handlers.CreateWishlistItem)
-	fuego.Delete(server, "/{id}/wishlist/{itemId}", handlers.DeleteWishlistItem)
+	fuego.Get(server, "/", handlers.GetWishlist)
+	fuego.Post(server, "/", handlers.CreateWishlistItem)
+	fuego.Delete(server, "/{itemId}", handlers.DeleteWishlistItem)
 
 	return nil
 }
 
 func (r *Router) GroupName() string {
-	return "/secret-friends"
-}
-
-func (r *Router) AddMiddleware(middleware web.HttpMiddleware) {
-	r.middlewares = append(r.middlewares, middleware)
+	return "/{id}/wishlist"
 }
 
 func (r *Router) Middlewares() []web.HttpMiddleware {

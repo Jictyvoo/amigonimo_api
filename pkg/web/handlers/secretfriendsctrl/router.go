@@ -4,6 +4,9 @@ import (
 	"github.com/go-fuego/fuego"
 
 	"github.com/jictyvoo/amigonimo_api/pkg/web"
+	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/denylistctrl"
+	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/participantsctrl"
+	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/wishlistctrl"
 )
 
 type Router struct {
@@ -21,6 +24,7 @@ func (r *Router) RegisterRoutes(server *fuego.Server) error {
 	fuego.Get(server, "/{id}", handlers.GetSecretFriend)
 	fuego.Patch(server, "/{id}", handlers.UpdateSecretFriend)
 	fuego.Post(server, "/{id}/draw", handlers.DrawSecretFriend)
+	fuego.Get(server, "/{id}/draw-result", handlers.GetDrawResult)
 
 	return nil
 }
@@ -35,4 +39,12 @@ func (r *Router) AddMiddleware(middleware web.HttpMiddleware) {
 
 func (r *Router) Middlewares() []web.HttpMiddleware {
 	return r.middlewares
+}
+
+func (r *Router) SubRouters() []web.RouterContract {
+	return []web.RouterContract{
+		wishlistctrl.NewRouter(),
+		denylistctrl.NewRouter(),
+		participantsctrl.NewRouter(),
+	}
 }

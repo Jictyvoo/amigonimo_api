@@ -10,12 +10,8 @@ import (
 	"github.com/jictyvoo/amigonimo_api/pkg/web"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/authctrl"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/dashboardctrl"
-	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/denylistctrl"
-	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/drawresultctrl"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/invitesctrl"
-	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/participantsctrl"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/secretfriendsctrl"
-	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/wishlistctrl"
 )
 
 func main() {
@@ -32,12 +28,8 @@ func main() {
 		conf, web.WithPublicRouters(authctrl.NewRouter()),
 		web.WithPrivateRouters(
 			dashboardctrl.NewRouter(),
-			denylistctrl.NewRouter(),
-			drawresultctrl.NewRouter(),
 			invitesctrl.NewRouter(),
-			participantsctrl.NewRouter(),
 			secretfriendsctrl.NewRouter(),
-			wishlistctrl.NewRouter(),
 		),
 	)
 

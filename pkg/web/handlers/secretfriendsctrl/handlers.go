@@ -58,3 +58,12 @@ func (h *SecretFriendsHandlers) DrawSecretFriend(
 	// TODO: Implement service call
 	return nil, nil
 }
+
+// GetDrawResult handles GET /secret-friends/{id}/draw-result
+func (h *SecretFriendsHandlers) GetDrawResult(
+	c fuego.ContextNoBody,
+) (*DrawResultResponse, error) {
+	// TODO: Extract secretFriendId from path
+	// TODO: Implement service call
+	return nil, nil
+}
