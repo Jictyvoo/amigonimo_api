@@ -95,7 +95,9 @@ func (s *Server) setupRoutes() error {
 
 	// Add the authMiddleware on protected routers
 	for _, router := range s.protectedRouters {
-		router.AddMiddleware(s.authMiddleware)
+		if withExtender, ok := router.(RouterMiddlewareExtender); ok {
+			withExtender.AddMiddleware(s.authMiddleware)
+		}
 	}
 
 	err := SetupRoutes(s.Server, s.protectedRouters...)

@@ -9,12 +9,19 @@ import (
 
 type HttpMiddleware = func(http.Handler) http.Handler
 
-type RouterContract interface {
-	V1(server *fuego.Server) error
-	GroupName() string
-	Middlewares() []HttpMiddleware
-	AddMiddleware(middleware HttpMiddleware)
-}
+type (
+	RouterWithSubRouter interface {
+		SubRouters() []RouterContract
+	}
+	RouterMiddlewareExtender interface {
+		AddMiddleware(middleware HttpMiddleware)
+	}
+	RouterContract interface {
+		RegisterRoutes(server *fuego.Server) error
+		GroupName() string
+		Middlewares() []HttpMiddleware
+	}
+)
 
 func SetupRoutes(server *fuego.Server, routerList ...RouterContract) error {
 	for _, router := range routerList {
@@ -25,8 +32,14 @@ func SetupRoutes(server *fuego.Server, routerList ...RouterContract) error {
 		)
 
 		// Setup versioned route
-		if err := router.V1(groupRouter); err != nil {
+		if err := router.RegisterRoutes(groupRouter); err != nil {
 			return fmt.Errorf("failed to setup routes: %w", err)
+		}
+
+		if withSubRouter, ok := router.(RouterWithSubRouter); ok {
+			if err := SetupRoutes(groupRouter, withSubRouter.SubRouters()...); err != nil {
+				return err
+			}
 		}
 	}
 
