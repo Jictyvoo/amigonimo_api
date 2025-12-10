@@ -8,74 +8,222 @@ package dbgen
 import (
 	"context"
 	"database/sql"
-	"time"
 )
 
 const CreateUser = `-- name: CreateUser :execresult
-INSERT INTO users (id, fullname, email, created_at, updated_at)
-VALUES (?, ?, ?, NOW(), NOW())
+INSERT INTO users (id, fullname, email, username, password, verification_code, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
 `
 
 type CreateUserParams struct {
-	ID       []byte `db:"id"`
-	Fullname string `db:"fullname"`
-	Email    string `db:"email"`
+	ID               []byte         `db:"id"`
+	Fullname         string         `db:"fullname"`
+	Email            string         `db:"email"`
+	Username         string         `db:"username"`
+	Password         string         `db:"password"`
+	VerificationCode sql.NullString `db:"verification_code"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (sql.Result, error) {
-	return q.db.ExecContext(ctx, CreateUser, arg.ID, arg.Fullname, arg.Email)
+	return q.db.ExecContext(ctx, CreateUser,
+		arg.ID,
+		arg.Fullname,
+		arg.Email,
+		arg.Username,
+		arg.Password,
+		arg.VerificationCode,
+	)
 }
 
 const GetUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, fullname, email, created_at, updated_at
+SELECT id, created_at, updated_at, fullname, email, username, password, verified_at, remember_token, verification_code, recovery_code, recovery_code_expires_at
 FROM users
 WHERE email = ?
 `
 
-type GetUserByEmailRow struct {
-	ID        []byte    `db:"id"`
-	Fullname  string    `db:"fullname"`
-	Email     string    `db:"email"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
-}
-
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
 	row := q.db.QueryRowContext(ctx, GetUserByEmail, email)
-	var i GetUserByEmailRow
+	var i User
 	err := row.Scan(
 		&i.ID,
-		&i.Fullname,
-		&i.Email,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Fullname,
+		&i.Email,
+		&i.Username,
+		&i.Password,
+		&i.VerifiedAt,
+		&i.RememberToken,
+		&i.VerificationCode,
+		&i.RecoveryCode,
+		&i.RecoveryCodeExpiresAt,
 	)
 	return i, err
 }
 
-const GetUserByID = `-- name: GetUserByID :one
-SELECT id, fullname, email, created_at, updated_at
+const GetUserByEmailOrUsername = `-- name: GetUserByEmailOrUsername :one
+SELECT id, created_at, updated_at, fullname, email, username, password, verified_at, remember_token, verification_code, recovery_code, recovery_code_expires_at
 FROM users
+WHERE email = ?
+   OR username = ?
+LIMIT 1
+`
+
+type GetUserByEmailOrUsernameParams struct {
+	Email    string `db:"email"`
+	Username string `db:"username"`
+}
+
+func (q *Queries) GetUserByEmailOrUsername(ctx context.Context, arg GetUserByEmailOrUsernameParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, GetUserByEmailOrUsername, arg.Email, arg.Username)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Fullname,
+		&i.Email,
+		&i.Username,
+		&i.Password,
+		&i.VerifiedAt,
+		&i.RememberToken,
+		&i.VerificationCode,
+		&i.RecoveryCode,
+		&i.RecoveryCodeExpiresAt,
+	)
+	return i, err
+}
+
+const GetUserByRecovery = `-- name: GetUserByRecovery :one
+SELECT id, created_at, updated_at, fullname, email, username, password, verified_at, remember_token, verification_code, recovery_code, recovery_code_expires_at
+FROM users
+WHERE email = ?
+  AND recovery_code = ?
+  AND recovery_code_expires_at >= ?
+`
+
+type GetUserByRecoveryParams struct {
+	Email                 string         `db:"email"`
+	RecoveryCode          sql.NullString `db:"recovery_code"`
+	RecoveryCodeExpiresAt sql.NullTime   `db:"recovery_code_expires_at"`
+}
+
+func (q *Queries) GetUserByRecovery(ctx context.Context, arg GetUserByRecoveryParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, GetUserByRecovery, arg.Email, arg.RecoveryCode, arg.RecoveryCodeExpiresAt)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Fullname,
+		&i.Email,
+		&i.Username,
+		&i.Password,
+		&i.VerifiedAt,
+		&i.RememberToken,
+		&i.VerificationCode,
+		&i.RecoveryCode,
+		&i.RecoveryCodeExpiresAt,
+	)
+	return i, err
+}
+
+const GetUserByUsername = `-- name: GetUserByUsername :one
+SELECT id, created_at, updated_at, fullname, email, username, password, verified_at, remember_token, verification_code, recovery_code, recovery_code_expires_at
+FROM users
+WHERE username = ?
+`
+
+func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
+	row := q.db.QueryRowContext(ctx, GetUserByUsername, username)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Fullname,
+		&i.Email,
+		&i.Username,
+		&i.Password,
+		&i.VerifiedAt,
+		&i.RememberToken,
+		&i.VerificationCode,
+		&i.RecoveryCode,
+		&i.RecoveryCodeExpiresAt,
+	)
+	return i, err
+}
+
+const GetUserByVerificationCode = `-- name: GetUserByVerificationCode :one
+SELECT id, created_at, updated_at, fullname, email, username, password, verified_at, remember_token, verification_code, recovery_code, recovery_code_expires_at
+FROM users
+WHERE verification_code = ?
+`
+
+func (q *Queries) GetUserByVerificationCode(ctx context.Context, verificationCode sql.NullString) (User, error) {
+	row := q.db.QueryRowContext(ctx, GetUserByVerificationCode, verificationCode)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Fullname,
+		&i.Email,
+		&i.Username,
+		&i.Password,
+		&i.VerifiedAt,
+		&i.RememberToken,
+		&i.VerificationCode,
+		&i.RecoveryCode,
+		&i.RecoveryCodeExpiresAt,
+	)
+	return i, err
+}
+
+const SetRecoveryCode = `-- name: SetRecoveryCode :exec
+UPDATE users
+SET recovery_code            = ?,
+    recovery_code_expires_at = ?,
+    updated_at               = NOW()
 WHERE id = ?
 `
 
-type GetUserByIDRow struct {
-	ID        []byte    `db:"id"`
-	Fullname  string    `db:"fullname"`
-	Email     string    `db:"email"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+type SetRecoveryCodeParams struct {
+	RecoveryCode          sql.NullString `db:"recovery_code"`
+	RecoveryCodeExpiresAt sql.NullTime   `db:"recovery_code_expires_at"`
+	ID                    []byte         `db:"id"`
 }
 
-func (q *Queries) GetUserByID(ctx context.Context, id []byte) (GetUserByIDRow, error) {
-	row := q.db.QueryRowContext(ctx, GetUserByID, id)
-	var i GetUserByIDRow
-	err := row.Scan(
-		&i.ID,
-		&i.Fullname,
-		&i.Email,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return i, err
+func (q *Queries) SetRecoveryCode(ctx context.Context, arg SetRecoveryCodeParams) error {
+	_, err := q.db.ExecContext(ctx, SetRecoveryCode, arg.RecoveryCode, arg.RecoveryCodeExpiresAt, arg.ID)
+	return err
+}
+
+const SetUserVerified = `-- name: SetUserVerified :exec
+UPDATE users
+SET verified_at = NOW(),
+    updated_at  = NOW()
+WHERE id = ?
+`
+
+func (q *Queries) SetUserVerified(ctx context.Context, id []byte) error {
+	_, err := q.db.ExecContext(ctx, SetUserVerified, id)
+	return err
+}
+
+const UpdatePassword = `-- name: UpdatePassword :exec
+UPDATE users
+SET password   = ?,
+    updated_at = NOW()
+WHERE id = ?
+`
+
+type UpdatePasswordParams struct {
+	Password string `db:"password"`
+	ID       []byte `db:"id"`
+}
+
+func (q *Queries) UpdatePassword(ctx context.Context, arg UpdatePasswordParams) error {
+	_, err := q.db.ExecContext(ctx, UpdatePassword, arg.Password, arg.ID)
+	return err
 }

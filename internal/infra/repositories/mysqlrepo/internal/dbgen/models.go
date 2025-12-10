@@ -5,13 +5,78 @@
 package dbgen
 
 import (
+	"database/sql"
 	"time"
 )
 
+type AuthToken struct {
+	ID           []byte         `db:"id"`
+	CreatedAt    time.Time      `db:"created_at"`
+	UpdatedAt    time.Time      `db:"updated_at"`
+	Token        string         `db:"token"`
+	RefreshToken sql.NullString `db:"refresh_token"`
+	ExpiresAt    time.Time      `db:"expires_at"`
+	UserID       []byte         `db:"user_id"`
+}
+
+type Denylist struct {
+	ID            []byte    `db:"id"`
+	CreatedAt     time.Time `db:"created_at"`
+	UpdatedAt     time.Time `db:"updated_at"`
+	ParticipantID []byte    `db:"participant_id"`
+	DeniedUserID  []byte    `db:"denied_user_id"`
+}
+
+type DrawResult struct {
+	ID                    []byte    `db:"id"`
+	CreatedAt             time.Time `db:"created_at"`
+	UpdatedAt             time.Time `db:"updated_at"`
+	GiverParticipantID    []byte    `db:"giver_participant_id"`
+	ReceiverParticipantID []byte    `db:"receiver_participant_id"`
+	SecretFriendID        []byte    `db:"secret_friend_id"`
+}
+
+type Participant struct {
+	ID             []byte    `db:"id"`
+	CreatedAt      time.Time `db:"created_at"`
+	UpdatedAt      time.Time `db:"updated_at"`
+	JoinedAt       time.Time `db:"joined_at"`
+	SecretFriendID []byte    `db:"secret_friend_id"`
+	UserID         []byte    `db:"user_id"`
+}
+
+type SecretFriend struct {
+	ID         []byte         `db:"id"`
+	CreatedAt  time.Time      `db:"created_at"`
+	UpdatedAt  time.Time      `db:"updated_at"`
+	Name       string         `db:"name"`
+	Datetime   time.Time      `db:"datetime"`
+	Location   sql.NullString `db:"location"`
+	InviteCode string         `db:"invite_code"`
+	InviteLink sql.NullString `db:"invite_link"`
+	Status     string         `db:"status"`
+	OwnerID    []byte         `db:"owner_id"`
+}
+
 type User struct {
-	ID        []byte    `db:"id"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
-	Fullname  string    `db:"fullname"`
-	Email     string    `db:"email"`
+	ID                    []byte         `db:"id"`
+	CreatedAt             time.Time      `db:"created_at"`
+	UpdatedAt             time.Time      `db:"updated_at"`
+	Fullname              string         `db:"fullname"`
+	Email                 string         `db:"email"`
+	Username              string         `db:"username"`
+	Password              string         `db:"password"`
+	VerifiedAt            sql.NullTime   `db:"verified_at"`
+	RememberToken         sql.NullString `db:"remember_token"`
+	VerificationCode      sql.NullString `db:"verification_code"`
+	RecoveryCode          sql.NullString `db:"recovery_code"`
+	RecoveryCodeExpiresAt sql.NullTime   `db:"recovery_code_expires_at"`
+}
+
+type WishlistItem struct {
+	ID            []byte    `db:"id"`
+	CreatedAt     time.Time `db:"created_at"`
+	UpdatedAt     time.Time `db:"updated_at"`
+	Label         string    `db:"label"`
+	ParticipantID []byte    `db:"participant_id"`
 }
