@@ -15,7 +15,7 @@ services:
         reservations:
           memory: 250M   # Guaranteed minimum
     healthcheck:
-      test: [ "CMD-SHELL", "mysqladmin ping -h localhost -u$MYSQL_USER -p$MYSQL_PASSWORD" ]
+      test: [ "CMD-SHELL", "mysql -h localhost -u$$MYSQL_USER -p$$MYSQL_PASSWORD -e 'SELECT 1;'" ]
       interval: 20s
       timeout: 5s
       retries: 8

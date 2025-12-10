@@ -16,9 +16,12 @@ tasks:
     desc: Run the default commands
     cmds:
       - task: dev-env:up
+      - "cd build/ && task migration:apply"
 
   dev-env:up:
     desc: Up all development required environment
     cmds:
       - task: docker:stop
       - task: docker:run
+        vars:
+          OPTIONS: "--wait"
