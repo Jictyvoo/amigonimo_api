@@ -20,3 +20,11 @@ func NewRepoMySQL(db *sql.DB) RepoMySQL {
 func (r RepoMySQL) Ctx() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), 30*time.Second)
 }
+
+func (r RepoMySQL) Connection() *sql.DB {
+	return r.conn
+}
+
+func (r RepoMySQL) Queries() *dbgen.Queries {
+	return r.queries
+}
