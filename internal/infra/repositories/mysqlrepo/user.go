@@ -46,9 +46,9 @@ func (r RepoMySQL) GetUserByID(id entities.HexID) (*entities.User, error) {
 	}
 
 	return &entities.User{
-		ID:       entities.HexID(row.ID),
-		FullName: row.Fullname,
-		Email:    row.Email,
+		ID:        entities.HexID(row.ID),
+		FullName:  row.Fullname,
+		UserBasic: entities.UserBasic{Email: row.Email},
 	}, nil
 }
 
@@ -65,8 +65,8 @@ func (r RepoMySQL) GetUserByEmail(email string) (*entities.User, error) {
 	}
 
 	return &entities.User{
-		ID:       entities.HexID(row.ID),
-		FullName: row.Fullname,
-		Email:    row.Email,
+		ID:        entities.HexID(row.ID),
+		FullName:  row.Fullname,
+		UserBasic: entities.UserBasic{Email: row.Email},
 	}, nil
 }
