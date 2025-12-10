@@ -1,6 +1,10 @@
 package authctrl
 
-import "time"
+import (
+	"time"
+
+	"github.com/wrapped-owls/goremy-di/remy"
+)
 
 type DefinedRoute uint16
 
@@ -24,6 +28,7 @@ type (
 	Config struct {
 		ActiveRoutes DefinedRoute
 		SecretKey    []byte
+		Injector     remy.Injector
 	}
 )
 

@@ -24,12 +24,13 @@ func main() {
 	bootstrap.DoInjections(inj, conf)
 
 	// Create web server
-	server := web.NewServer(
+	server, err := web.NewServer(
 		conf, web.WithPublicRouters(
 			authctrl.NewAuthRouter(
 				authctrl.Config{
 					ActiveRoutes: authctrl.RouteLogin | authctrl.RouteSignUp | authctrl.RouteRegenerateToken | authctrl.RouteResetPassword,
 					SecretKey:    []byte(conf.Runtime.AuthSecretKey),
+					Injector:     inj,
 				},
 			),
 		),
@@ -39,8 +40,11 @@ func main() {
 			secretfriendsctrl.NewRouter(),
 		),
 	)
+	if err != nil {
+		panic(err)
+	}
 
-	if err := server.Run(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	if err = server.Run(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		panic(err)
 	}
 }

@@ -12,11 +12,10 @@ type AuthenticationController struct {
 }
 
 func NewAuthController(
-	secretKey []byte, mailerService authserv.MailerService,
-	userRepository authserv.UserAuthRepository, tokenRepository authserv.TokenRepository,
+	secretKey []byte, authServ authserv.AuthService,
 ) AuthenticationController {
 	return AuthenticationController{
-		authServ:  authserv.NewAuthService(userRepository, tokenRepository, mailerService),
+		authServ:  authServ,
 		secretKey: secretKey,
 	}
 }

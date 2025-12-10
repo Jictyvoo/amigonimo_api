@@ -33,7 +33,7 @@ func SetupRoutes(server *fuego.Server, routerList ...RouterContract) error {
 
 		// Setup versioned route
 		if err := router.RegisterRoutes(groupRouter); err != nil {
-			return fmt.Errorf("failed to setup routes: %w", err)
+			return fmt.Errorf("failed to register `%s` routes: %w", groupName, err)
 		}
 
 		if withSubRouter, ok := router.(RouterWithSubRouter); ok {

@@ -1,9 +1,12 @@
 package authctrl
 
 import (
+	"fmt"
+
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/option"
 	"github.com/go-fuego/fuego/param"
+	"github.com/wrapped-owls/goremy-di/remy"
 
 	"github.com/jictyvoo/amigonimo_api/pkg/web"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/authctrl/controllers"
@@ -15,11 +18,23 @@ type RouterAuth struct {
 }
 
 func NewAuthRouter(config Config) *RouterAuth {
+	remy.RegisterConstructorArgs2(
+		config.Injector,
+		remy.LazySingleton[controllers.AuthenticationController],
+		controllers.NewAuthController,
+	)
 	return &RouterAuth{middlewares: []web.HttpMiddleware{}, config: config}
 }
 
 func (r *RouterAuth) RegisterRoutes(server *fuego.Server) error {
-	authHandlers := controllers.NewAuthController(r.config.SecretKey, nil, nil, nil)
+	authHandlers, err := remy.GetWithPairs[controllers.AuthenticationController](
+		r.config.Injector, []remy.InstancePairAny{
+			{Key: remy.NewBindKey(r.config.SecretKey), Value: r.config.SecretKey},
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("register auth handler: %w", err)
+	}
 	groupTag := option.Tags("Authentication")
 	if r.config.ActiveRoutes.is(RouteSignUp) {
 		fuego.Post(

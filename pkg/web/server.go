@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -40,7 +41,7 @@ type Server struct {
 	publicRouters    []RouterContract
 }
 
-func NewServer(conf config.Config, serverOptions ...ServerOption) *Server {
+func NewServer(conf config.Config, serverOptions ...ServerOption) (*Server, error) {
 	options := [4]func(*fuego.Server){
 		fuego.WithEngineOptions(
 			fuego.WithRequestContentType("application/json"),
@@ -83,8 +84,10 @@ func NewServer(conf config.Config, serverOptions ...ServerOption) *Server {
 		opt(server)
 	}
 
-	_ = server.setupRoutes()
-	return server
+	if err := server.setupRoutes(); err != nil {
+		return nil, fmt.Errorf("failed to setup routes: %w", err)
+	}
+	return server, nil
 }
 
 func (s *Server) setupRoutes() error {
