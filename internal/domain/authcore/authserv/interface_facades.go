@@ -6,6 +6,8 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
+//go:generate mockgen -destination=../../mocks/auth_mailer_mock.go -package=mocks github.com/jictyvoo/amigonimo_api/internal/domain/authcore/authserv MailerService
+
 type MailerService interface {
 	SendActivationEmail(email string, verificationToken string)
 	SendPasswordRecoveryEmail(email string, recoveryCode string)
