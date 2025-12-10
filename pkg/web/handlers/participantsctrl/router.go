@@ -18,6 +18,7 @@ func (r *Router) RegisterRoutes(server *fuego.Server) error {
 	handlers := NewParticipantsHandlers()
 
 	fuego.Post(server, "/", handlers.ConfirmParticipation)
+	fuego.Post(server, "/confirm", handlers.ConfirmParticipation)
 	fuego.Get(server, "/", handlers.ListParticipants)
 
 	return nil

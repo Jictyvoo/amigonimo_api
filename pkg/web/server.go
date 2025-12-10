@@ -127,7 +127,7 @@ func (s *Server) gracefulShutdown(sigint chan os.Signal, notifyComplete func()) 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	if err := s.Server.Shutdown(ctx); err != nil {
+	if err := s.Shutdown(ctx); err != nil {
 		slog.Error("Server shutdown error", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
