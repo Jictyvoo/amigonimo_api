@@ -98,7 +98,8 @@ func (serv AuthService) UserLogIn(formUser entities.UserBasic) (authTokens [2]st
 // RegenerateLogin get the refresh-token and returns a new one
 func (serv AuthService) RegenerateLogin(refreshToken string) ([2]string, error) {
 	authentication, err := serv.tokenRepository.CheckAuthenticationByRefreshToken(refreshToken)
-	if err != nil || authentication.UserID <= 0 || time.Now().After(authentication.ExpiresAt) {
+	if err != nil || authentication.User.ID.IsEmpty() ||
+		time.Now().After(authentication.ExpiresAt) {
 		return [2]string{}, autherrs.ErrInvalidAuthToken
 	}
 	if err = authentication.Regenerate(refreshTokenDuration); err != nil {

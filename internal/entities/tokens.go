@@ -14,16 +14,14 @@ type BasicAuthToken struct {
 }
 
 type AuthenticationToken struct {
-	ID     uint64
-	UserID uint64
-	User   User
+	ID   HexID
+	User User
 	BasicAuthToken
 }
 
 type VerifyToken struct {
-	User   User
-	UserID uint64
-	Token  string
+	User  User
+	Token string
 }
 
 func (bat *BasicAuthToken) Regenerate(tokenDuration time.Duration) error {
