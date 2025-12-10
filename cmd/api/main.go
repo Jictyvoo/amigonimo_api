@@ -25,7 +25,14 @@ func main() {
 
 	// Create web server
 	server := web.NewServer(
-		conf, web.WithPublicRouters(authctrl.NewRouter()),
+		conf, web.WithPublicRouters(
+			authctrl.NewAuthRouter(
+				authctrl.Config{
+					ActiveRoutes: authctrl.RouteLogin | authctrl.RouteSignUp | authctrl.RouteRegenerateToken | authctrl.RouteResetPassword,
+					SecretKey:    []byte(conf.Runtime.AuthSecretKey),
+				},
+			),
+		),
 		web.WithPrivateRouters(
 			dashboardctrl.NewRouter(),
 			invitesctrl.NewRouter(),

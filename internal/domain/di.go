@@ -3,11 +3,11 @@ package domain
 import (
 	"github.com/wrapped-owls/goremy-di/remy"
 
-	"github.com/jictyvoo/amigonimo_api/internal/domain/services"
+	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/authserv"
 )
 
 func RegisterServices(inj remy.Injector) {
-	remy.RegisterConstructorArgs1(
-		inj, remy.Factory[*services.AuthService], services.NewAuthService,
+	remy.RegisterConstructorArgs3(
+		inj, remy.Factory[authserv.AuthService], authserv.NewAuthService,
 	)
 }
