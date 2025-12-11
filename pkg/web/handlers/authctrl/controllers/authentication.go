@@ -26,7 +26,7 @@ func (h *AuthenticationController) SignUp(
 		Password: req.Password,
 	}
 
-	if err = h.authServ.UserSignUp(userDTO); err != nil {
+	if _, err = h.authServ.UserSignUp(userDTO); err != nil {
 		if errors.Is(err, autherrs.ErrEmailUsed) {
 			return nil, NewHTTPError(http.StatusPreconditionFailed, err.Error())
 		}

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore"
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/autherrs"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
@@ -34,16 +36,17 @@ func NewAuthService(
 	}
 }
 
-func (serv AuthService) UserSignUp(inputUser entities.UserBasic) error {
+func (serv AuthService) UserSignUp(inputUser entities.UserBasic) (entities.User, error) {
 	if user, err := serv.userRepository.GetUserByEmailOrUsername(inputUser.Email, inputUser.Username); err == nil &&
 		!user.ID.IsEmpty() {
-		return errors.New("user already with provided email/username already exists")
+		return entities.User{}, autherrs.ErrEmailOrUsernameUsed
 	}
 	encryptedPassword, err := inputUser.EncryptPassword()
 	if err != nil {
-		return autherrs.ErrPasswordEncryption
+		return entities.User{}, autherrs.ErrPasswordEncryption
 	}
 	newUser := entities.User{
+		ID: entities.HexID(uuid.New()),
 		UserBasic: entities.UserBasic{
 			Username: inputUser.Username,
 			Email:    inputUser.Email,
@@ -54,10 +57,10 @@ func (serv AuthService) UserSignUp(inputUser entities.UserBasic) error {
 	// Here the activation email will be generated
 	verificationToken := authcore.GenerateActivationToken(newUser.Username + ":" + newUser.Email)
 	if err = serv.userRepository.CreateUser(newUser, verificationToken); err != nil {
-		return autherrs.ErrUserCreation
+		return entities.User{}, autherrs.ErrUserCreation
 	}
 	serv.mailerService.SendActivationEmail(newUser.Email, verificationToken)
-	return nil
+	return newUser, nil
 }
 
 func (serv AuthService) UserLogIn(formUser entities.UserBasic) (authTokens [2]string, err error) {

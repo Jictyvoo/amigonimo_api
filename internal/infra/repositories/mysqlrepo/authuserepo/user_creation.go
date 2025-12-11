@@ -2,8 +2,7 @@ package authuserepo
 
 import (
 	"database/sql"
-
-	"github.com/google/uuid"
+	"errors"
 
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo"
@@ -15,7 +14,7 @@ func (r RepoMySQL) CreateUser(user entities.User, token string) error {
 	defer cancel()
 
 	if user.ID.IsEmpty() {
-		user.ID = entities.HexID(uuid.New())
+		return errors.New("user ID is required")
 	}
 
 	_, err := r.Queries().CreateUser(
