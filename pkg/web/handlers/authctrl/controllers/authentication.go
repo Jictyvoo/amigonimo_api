@@ -50,7 +50,7 @@ func (h *AuthenticationController) LogIn(
 		Password: req.Password,
 	}
 
-	userToken, err := h.authServ.UserLogIn(userDTO)
+	authToken, err := h.authServ.UserLogIn(userDTO)
 	if err != nil {
 		if errors.Is(err, autherrs.ErrUserEmailNotFound) ||
 			errors.Is(err, autherrs.ErrWrongPassword) {
@@ -62,12 +62,16 @@ func (h *AuthenticationController) LogIn(
 		return nil, err
 	}
 
-	// Set Authorization header with token
-	c.Response().Header().Set("Authorization", userToken[0])
+	// Generate JWT from AuthenticationToken
+	jwtToken, err := h.generateJWT(authToken)
+	if err != nil {
+		return nil, err
+	}
 
-	return &LoginResponse{
-		Token: userToken[0],
-	}, nil
+	// Set Authorization header with token
+	c.Response().Header().Set("Authorization", jwtToken)
+
+	return &LoginResponse{Token: jwtToken}, nil
 }
 
 func (h *AuthenticationController) RegenerateAuthToken(
@@ -76,7 +80,7 @@ func (h *AuthenticationController) RegenerateAuthToken(
 	authHeader := c.Request().Header.Get("Authorization")
 	refreshToken := strings.TrimPrefix(authHeader, "Bearer ")
 
-	userToken, err := h.authServ.RegenerateLogin(refreshToken)
+	authToken, err := h.authServ.RegenerateLogin(refreshToken)
 	if err != nil {
 		if errors.Is(err, autherrs.ErrInvalidAuthToken) {
 			return nil, NewHTTPError(http.StatusPreconditionFailed, err.Error())
@@ -84,12 +88,16 @@ func (h *AuthenticationController) RegenerateAuthToken(
 		return nil, err
 	}
 
-	// Set Authorization header with new token
-	c.Response().Header().Set("Authorization", userToken[0])
+	// Generate JWT from AuthenticationToken
+	jwtToken, err := h.generateJWT(authToken)
+	if err != nil {
+		return nil, err
+	}
 
-	return &LoginResponse{
-		Token: userToken[0],
-	}, nil
+	// Set Authorization header with new token
+	c.Response().Header().Set("Authorization", jwtToken)
+
+	return &LoginResponse{Token: jwtToken}, nil
 }
 
 func (h *AuthenticationController) VerifyUser(
