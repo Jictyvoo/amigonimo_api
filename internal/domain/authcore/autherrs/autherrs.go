@@ -2,30 +2,66 @@ package autherrs
 
 import (
 	"errors"
+	"net/http"
 )
 
+type (
+	errorInterface[T any] interface {
+		*T
+		error
+	}
+	baseErrorWrapper[Self interface{ reason() string }, SelfPtr errorInterface[Self]] struct {
+		Err error
+	}
+)
+
+func (e baseErrorWrapper[Self, SelfPtr]) Is(target error) bool {
+	var asPointer SelfPtr
+	if errors.As(target, &asPointer) {
+		return true
+	}
+
+	_, ok := target.(Self) // Check the raw value directly
+	return ok
+}
+
+func (e baseErrorWrapper[Self, SelfPtr]) Unwrap() error {
+	return e.Err
+}
+
+func (e baseErrorWrapper[Self, SelfPtr]) StatusCode() int {
+	return http.StatusInternalServerError
+}
+
+func (e baseErrorWrapper[Self, SelfPtr]) Error() string {
+	var tempErr Self
+	reason := tempErr.reason()
+	if e.Err != nil {
+		reason += ": " + e.Err.Error()
+	}
+
+	return reason
+}
+
+func (e baseErrorWrapper[Self, SelfPtr]) DetailMsg() string {
+	var tempErr Self
+	return tempErr.reason()
+}
+
+// Exported error instances for backward compatibility
 var (
-	ErrEmailUsed = errors.New(
-		"email already in use, if don't remember the password, access password recovery",
-	)
-	ErrUsernameUsed = errors.New(
-		"username already in use, if don't remember the password, access password recovery",
-	)
-	ErrPasswordEncryption = errors.New("password encryption error")
-	ErrUpdatePassword     = errors.New("internal error: cannot update the password")
-	ErrUpdateUsername     = errors.New("internal error: cannot update the username")
-	ErrUserCreation       = errors.New("user can't be created")
-	ErrWrongPassword      = errors.New(
-		"provided password don't match with password for this user",
-	)
-	ErrVerificationCode = errors.New("cannot find any user with given code")
-	ErrGenRecoveryCode  = errors.New(
-		"internal error: cannot generate and save the recovery code",
-	)
-	ErrUserEmailNotFound = errors.New(
-		"not found user with given email/username and password combination",
-	)
-	ErrUserRecoveryNotFound = errors.New("cannot find user with given email and recovery code")
-	ErrInvalidAuthToken     = errors.New("error token provided is invalid")
-	ErrUpdateAuthToken      = errors.New("was not possible to update the user authentication token")
+	ErrEmailOrUsernameUsed  = &errEmailOrUsernameUsed{}
+	ErrEmailUsed            = &errEmailUsed{}
+	ErrUsernameUsed         = &errUsernameUsed{}
+	ErrPasswordEncryption   = &errPasswordEncryption{}
+	ErrUpdatePassword       = &errUpdatePassword{}
+	ErrUpdateUsername       = &errUpdateUsername{}
+	ErrUserCreation         = &errUserCreation{}
+	ErrWrongPassword        = &errWrongPassword{}
+	ErrVerificationCode     = &errVerificationCode{}
+	ErrGenRecoveryCode      = &errGenRecoveryCode{}
+	ErrUserEmailNotFound    = &errUserEmailNotFound{}
+	ErrUserRecoveryNotFound = &errUserRecoveryNotFound{}
+	ErrInvalidAuthToken     = &errInvalidAuthToken{}
+	ErrUpdateAuthToken      = &errUpdateAuthToken{}
 )
