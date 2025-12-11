@@ -34,6 +34,9 @@ func configGenCMD() (err error) {
 
 	// check if error occurred and then write default config file
 	if err == nil {
+		if configData.Runtime.AuthSecretKey == "" {
+			configData.Runtime.AuthSecretKey = generateAuthKey()
+		}
 		marshaledData, _ := toml.Marshal(&configData)
 		marshaledData = bytes.TrimSpace(marshaledData)
 		_, err = file.Write(marshaledData)
