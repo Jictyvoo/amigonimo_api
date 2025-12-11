@@ -85,16 +85,16 @@ func (mr *MockTokenRepositoryMockRecorder) GetUserByAuthToken(token any) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByAuthToken", reflect.TypeOf((*MockTokenRepository)(nil).GetUserByAuthToken), token)
 }
 
-// UpdateUserAuthToken mocks base method.
-func (m *MockTokenRepository) UpdateUserAuthToken(authentication *entities.AuthenticationToken) error {
+// UpsertAuthToken mocks base method.
+func (m *MockTokenRepository) UpsertAuthToken(authentication *entities.AuthenticationToken) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateUserAuthToken", authentication)
+	ret := m.ctrl.Call(m, "UpsertAuthToken", authentication)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateUserAuthToken indicates an expected call of UpdateUserAuthToken.
-func (mr *MockTokenRepositoryMockRecorder) UpdateUserAuthToken(authentication any) *gomock.Call {
+// UpsertAuthToken indicates an expected call of UpsertAuthToken.
+func (mr *MockTokenRepositoryMockRecorder) UpsertAuthToken(authentication any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserAuthToken", reflect.TypeOf((*MockTokenRepository)(nil).UpdateUserAuthToken), authentication)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertAuthToken", reflect.TypeOf((*MockTokenRepository)(nil).UpsertAuthToken), authentication)
 }

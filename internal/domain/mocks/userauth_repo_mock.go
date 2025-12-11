@@ -131,17 +131,17 @@ func (mr *MockUserAuthRepositoryMockRecorder) GetUserByVerificationCode(code any
 }
 
 // SetRecoveryCode mocks base method.
-func (m *MockUserAuthRepository) SetRecoveryCode(userID entities.HexID, code string) error {
+func (m *MockUserAuthRepository) SetRecoveryCode(userID entities.HexID, code string, expiresAt time.Time) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetRecoveryCode", userID, code)
+	ret := m.ctrl.Call(m, "SetRecoveryCode", userID, code, expiresAt)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SetRecoveryCode indicates an expected call of SetRecoveryCode.
-func (mr *MockUserAuthRepositoryMockRecorder) SetRecoveryCode(userID, code any) *gomock.Call {
+func (mr *MockUserAuthRepositoryMockRecorder) SetRecoveryCode(userID, code, expiresAt any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetRecoveryCode", reflect.TypeOf((*MockUserAuthRepository)(nil).SetRecoveryCode), userID, code)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetRecoveryCode", reflect.TypeOf((*MockUserAuthRepository)(nil).SetRecoveryCode), userID, code, expiresAt)
 }
 
 // SetUserVerified mocks base method.

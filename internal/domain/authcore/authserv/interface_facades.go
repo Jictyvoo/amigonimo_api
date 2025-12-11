@@ -22,7 +22,7 @@ type (
 	TokenRepository interface {
 		UserRetriever
 		GetAuthenticationToken(userID entities.HexID) (entities.AuthenticationToken, error)
-		UpdateUserAuthToken(authentication *entities.AuthenticationToken) error
+		UpsertAuthToken(authentication *entities.AuthenticationToken) error
 		CheckAuthenticationByRefreshToken(authToken string) (*entities.AuthenticationToken, error)
 	}
 )
@@ -36,7 +36,7 @@ type UserAuthRepository interface {
 	GetUserByRecovery(userEmail string, code string, expiredAt time.Time) (entities.User, error)
 	CreateUser(user entities.User, token string) error
 	SetUserVerified(userID entities.HexID) error
-	SetRecoveryCode(userID entities.HexID, code string) error
+	SetRecoveryCode(userID entities.HexID, code string, expiresAt time.Time) error
 	UpdatePassword(userID entities.HexID, newPassword string) error
 	GetUserByEmailOrUsername(email, username string) (entities.User, error)
 }

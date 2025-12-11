@@ -1,6 +1,10 @@
 package mailfacade
 
-import "github.com/jictyvoo/amigonimo_api/internal/domain/authcore/authserv"
+import (
+	"fmt"
+
+	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/authserv"
+)
 
 var _ authserv.MailerService = (*MailerImpl)(nil)
 
@@ -11,11 +15,9 @@ func NewMailerImpl() *MailerImpl {
 }
 
 func (m MailerImpl) SendActivationEmail(email string, verificationToken string) {
-	// TODO implement me
-	panic("implement me")
+	fmt.Println(email, verificationToken)
 }
 
 func (m MailerImpl) SendPasswordRecoveryEmail(email string, recoveryCode string) {
-	// TODO implement me
-	panic("implement me")
+	fmt.Println(email, recoveryCode)
 }

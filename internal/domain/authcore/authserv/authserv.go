@@ -52,9 +52,7 @@ func (serv AuthService) UserSignUp(inputUser entities.UserBasic) error {
 		RememberToken: "",
 	}
 	// Here the activation email will be generated
-	verificationToken := authcore.GenerateActivationToken(
-		newUser.Username + ":" + newUser.Email,
-	)
+	verificationToken := authcore.GenerateActivationToken(newUser.Username + ":" + newUser.Email)
 	if err = serv.userRepository.CreateUser(newUser, verificationToken); err != nil {
 		return autherrs.ErrUserCreation
 	}
@@ -81,18 +79,20 @@ func (serv AuthService) UserLogIn(formUser entities.UserBasic) (authTokens [2]st
 		return authTokens, autherrs.ErrWrongPassword
 	}
 
-	authentication, err := serv.tokenRepository.GetAuthenticationToken(user.ID)
-	if err == nil {
-		if err = authentication.Regenerate(refreshTokenDuration); err != nil {
-			return authTokens, err
-		}
+	var authToken entities.AuthenticationToken
+	if authToken, err = serv.tokenRepository.GetAuthenticationToken(user.ID); err != nil &&
+		!errors.Is(err, &dberrs.ErrDatabaseNotFound{}) {
+		return authTokens, fmt.Errorf("internal server error: %w", err)
+	}
+	if err = authToken.Regenerate(refreshTokenDuration); err != nil {
+		return authTokens, fmt.Errorf("failed to renegerate auth-token: %w", err)
 	}
 
 	// Save AuthenticationToken update and returns both tokens
-	if err = serv.tokenRepository.UpdateUserAuthToken(&authentication); err != nil {
-		return [2]string{}, autherrs.ErrUpdateAuthToken
+	if err = serv.tokenRepository.UpsertAuthToken(&authToken); err != nil {
+		return authTokens, autherrs.ErrUpdateAuthToken
 	}
-	return [2]string{authentication.AuthToken, authentication.RefreshToken.UUID.String()}, nil
+	return [2]string{authToken.AuthToken, authToken.RefreshToken.UUID.String()}, nil
 }
 
 // RegenerateLogin get the refresh-token and returns a new one
@@ -107,7 +107,7 @@ func (serv AuthService) RegenerateLogin(refreshToken string) ([2]string, error) 
 	}
 
 	// Save AuthenticationToken update and returns both tokens
-	if err = serv.tokenRepository.UpdateUserAuthToken(authentication); err != nil {
+	if err = serv.tokenRepository.UpsertAuthToken(authentication); err != nil {
 		return [2]string{}, autherrs.ErrUpdateAuthToken
 	}
 	return [2]string{authentication.AuthToken, authentication.RefreshToken.UUID.String()}, nil
@@ -134,7 +134,7 @@ func (serv AuthService) GeneratePasswordRecovery(userEmail string) error {
 	if recoveryCode, err = authcore.GenerateRecoveryCode(userEmail); err != nil {
 		return autherrs.ErrGenRecoveryCode
 	}
-	if err = serv.userRepository.SetRecoveryCode(user.ID, recoveryCode); err != nil {
+	if err = serv.userRepository.SetRecoveryCode(user.ID, recoveryCode, time.Now().Add(resetCodeExpiration)); err != nil {
 		return autherrs.ErrGenRecoveryCode
 	}
 	serv.mailerService.SendPasswordRecoveryEmail(user.Email, recoveryCode)
@@ -161,14 +161,14 @@ func (serv AuthService) ResetPassword(resetUser entities.UserBasic, recoveryCode
 		return err
 	}
 
-	encryptedPassword, err := resetUser.EncryptPassword()
-	if err != nil {
+	encryptedPassword, encryptErr := resetUser.EncryptPassword()
+	if encryptErr != nil {
 		return autherrs.ErrPasswordEncryption
 	}
 	if err = serv.userRepository.UpdatePassword(userID, string(encryptedPassword)); err != nil {
 		return autherrs.ErrUpdatePassword
 	}
-	_ = serv.userRepository.SetRecoveryCode(userID, "")
+	_ = serv.userRepository.SetRecoveryCode(userID, "", time.Time{})
 	return nil
 }
 
