@@ -22,6 +22,10 @@ func main() {
 	inj := remy.NewInjector(remy.Config{DuckTypeElements: true})
 	remy.RegisterInstance(inj, db)
 	bootstrap.DoInjections(inj, conf)
+	if err := registerSecret([]byte(conf.Runtime.AuthSecretKey), inj); err != nil {
+		panic(err)
+	}
+	conf.Runtime.AuthSecretKey = "" // Empty the secret key after injection
 
 	// Create web server
 	server, err := web.NewServer(
@@ -29,7 +33,6 @@ func main() {
 			authctrl.NewAuthRouter(
 				authctrl.Config{
 					ActiveRoutes: authctrl.RouteLogin | authctrl.RouteSignUp | authctrl.RouteRegenerateToken | authctrl.RouteResetPassword,
-					SecretKey:    []byte(conf.Runtime.AuthSecretKey),
 					Injector:     inj,
 				},
 			),

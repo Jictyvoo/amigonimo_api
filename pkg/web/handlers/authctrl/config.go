@@ -27,7 +27,6 @@ func (r DefinedRoute) is(other DefinedRoute) bool {
 type (
 	Config struct {
 		ActiveRoutes DefinedRoute
-		SecretKey    []byte
 		Injector     remy.Injector
 	}
 )

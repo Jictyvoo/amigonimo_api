@@ -27,11 +27,7 @@ func NewAuthRouter(config Config) *RouterAuth {
 }
 
 func (r *RouterAuth) RegisterRoutes(server *fuego.Server) error {
-	authHandlers, err := remy.GetWithPairs[controllers.AuthenticationController](
-		r.config.Injector, []remy.InstancePairAny{
-			{Key: remy.NewBindKey(r.config.SecretKey), Value: r.config.SecretKey},
-		},
-	)
+	authHandlers, err := remy.Get[controllers.AuthenticationController](r.config.Injector)
 	if err != nil {
 		return fmt.Errorf("register auth handler: %w", err)
 	}
