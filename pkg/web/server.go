@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"crypto/rsa"
 	"fmt"
 	"log/slog"
 	"os"
@@ -41,7 +42,11 @@ type Server struct {
 	publicRouters    []RouterContract
 }
 
-func NewServer(conf config.Config, serverOptions ...ServerOption) (*Server, error) {
+func NewServer(
+	conf config.Config,
+	jwtPublicKey *rsa.PublicKey,
+	serverOptions ...ServerOption,
+) (*Server, error) {
 	options := [4]func(*fuego.Server){
 		fuego.WithEngineOptions(
 			fuego.WithRequestContentType("application/json"),
@@ -75,13 +80,17 @@ func NewServer(conf config.Config, serverOptions ...ServerOption) (*Server, erro
 			jwtware.Config[jwt.MapClaims]{
 				SigningKey: jwtware.SigningKey{
 					JWTAlg: "PS256",
-					Key:    conf.Runtime.AuthSecretKey,
+					Key:    jwtPublicKey,
 				},
 			},
 		),
 	}
 	for _, opt := range serverOptions {
 		opt(server)
+	}
+
+	if jwtPublicKey == nil {
+		return nil, fmt.Errorf("JWT secret key is required but not provided or invalid")
 	}
 
 	if err := server.setupRoutes(); err != nil {

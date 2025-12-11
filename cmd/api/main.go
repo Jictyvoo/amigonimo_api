@@ -22,14 +22,17 @@ func main() {
 	inj := remy.NewInjector(remy.Config{DuckTypeElements: true})
 	remy.RegisterInstance(inj, db)
 	bootstrap.DoInjections(inj, conf)
-	if err := registerSecret([]byte(conf.Runtime.AuthSecretKey), inj); err != nil {
-		panic(err)
+
+	// Parse RSA key and extract public key for JWT middleware
+	jwtPublicKey, secretErr := registerSecret([]byte(conf.Runtime.AuthSecretKey), inj)
+	if secretErr != nil {
+		panic(secretErr)
 	}
 	conf.Runtime.AuthSecretKey = "" // Empty the secret key after injection
 
 	// Create web server
 	server, err := web.NewServer(
-		conf, web.WithPublicRouters(
+		conf, jwtPublicKey, web.WithPublicRouters(
 			authctrl.NewAuthRouter(
 				authctrl.Config{
 					ActiveRoutes: authctrl.RouteLogin | authctrl.RouteSignUp | authctrl.RouteRegenerateToken | authctrl.RouteResetPassword,
