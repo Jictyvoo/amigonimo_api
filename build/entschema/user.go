@@ -16,8 +16,15 @@ type User struct{ ent.Schema }
 // Fields of the User.
 func (User) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("fullname"),
-		field.String("email"),
+		field.String("fullname").MaxLen(255),
+		field.String("email").MaxLen(255),
+		field.String("username").Unique().MaxLen(78),
+		field.String("password").MaxLen(76),
+		field.Time("verified_at").Optional(),
+		field.String("remember_token").Optional().MaxLen(52),
+		field.String("verification_code").Optional().MaxLen(116),
+		field.String("recovery_code").Optional().MaxLen(27),
+		field.Time("recovery_code_expires_at").Optional(),
 	}
 }
 
@@ -26,6 +33,9 @@ func (User) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("id").Unique(),
 		index.Fields("email").Unique(),
+		index.Fields("username").Unique(),
+		index.Fields("verification_code"),
+		index.Fields("recovery_code"),
 	}
 }
 
@@ -37,6 +47,8 @@ func (User) Edges() []ent.Edge {
 		edge.To("participants", Participant.Type).
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("denied_entries", Denylist.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)),
+		edge.To("auth_token", AuthToken.Type).
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 	}
 }

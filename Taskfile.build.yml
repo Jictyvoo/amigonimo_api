@@ -46,6 +46,7 @@ tasks:
       - task: install:formatters
       - go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
       - go install go.uber.org/mock/mockgen@latest
+      - go install github.com/jmattheis/goverter/cmd/goverter@vlatest
 
   run:formatters:
     desc: Run linters on entire project

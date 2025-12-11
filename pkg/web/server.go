@@ -2,6 +2,8 @@ package web
 
 import (
 	"context"
+	"crypto/rsa"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -40,7 +42,11 @@ type Server struct {
 	publicRouters    []RouterContract
 }
 
-func NewServer(conf config.Config, serverOptions ...ServerOption) *Server {
+func NewServer(
+	conf config.Config,
+	jwtPublicKey *rsa.PublicKey,
+	serverOptions ...ServerOption,
+) (*Server, error) {
 	options := [4]func(*fuego.Server){
 		fuego.WithEngineOptions(
 			fuego.WithRequestContentType("application/json"),
@@ -74,7 +80,7 @@ func NewServer(conf config.Config, serverOptions ...ServerOption) *Server {
 			jwtware.Config[jwt.MapClaims]{
 				SigningKey: jwtware.SigningKey{
 					JWTAlg: "PS256",
-					Key:    conf.Runtime.AuthSecretKey,
+					Key:    jwtPublicKey,
 				},
 			},
 		),
@@ -83,8 +89,14 @@ func NewServer(conf config.Config, serverOptions ...ServerOption) *Server {
 		opt(server)
 	}
 
-	_ = server.setupRoutes()
-	return server
+	if jwtPublicKey == nil {
+		return nil, fmt.Errorf("JWT secret key is required but not provided or invalid")
+	}
+
+	if err := server.setupRoutes(); err != nil {
+		return nil, fmt.Errorf("failed to setup routes: %w", err)
+	}
+	return server, nil
 }
 
 func (s *Server) setupRoutes() error {
@@ -127,7 +139,7 @@ func (s *Server) gracefulShutdown(sigint chan os.Signal, notifyComplete func()) 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	if err := s.Server.Shutdown(ctx); err != nil {
+	if err := s.Shutdown(ctx); err != nil {
 		slog.Error("Server shutdown error", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
