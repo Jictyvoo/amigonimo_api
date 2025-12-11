@@ -22,12 +22,6 @@ type (
 	}
 )
 
-type PasswordReset struct {
-	UserID uint64
-	User   User
-	Code   string
-}
-
 func (ub UserBasic) ObfuscateEmail() string {
 	obfuscate := strings.Builder{}
 	firstHalf, hostHalf, _ := strings.Cut(ub.Email, "@")

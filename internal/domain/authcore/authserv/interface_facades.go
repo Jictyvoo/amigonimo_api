@@ -23,7 +23,7 @@ type (
 		UserRetriever
 		GetAuthenticationToken(userID entities.HexID) (entities.AuthenticationToken, error)
 		UpsertAuthToken(authentication *entities.AuthenticationToken) error
-		CheckAuthenticationByRefreshToken(authToken string) (*entities.AuthenticationToken, error)
+		CheckAuthenticationByRefreshToken(authToken string) (entities.AuthenticationToken, error)
 	}
 )
 

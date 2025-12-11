@@ -41,10 +41,10 @@ func (m *MockTokenRepository) EXPECT() *MockTokenRepositoryMockRecorder {
 }
 
 // CheckAuthenticationByRefreshToken mocks base method.
-func (m *MockTokenRepository) CheckAuthenticationByRefreshToken(authToken string) (*entities.AuthenticationToken, error) {
+func (m *MockTokenRepository) CheckAuthenticationByRefreshToken(authToken string) (entities.AuthenticationToken, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CheckAuthenticationByRefreshToken", authToken)
-	ret0, _ := ret[0].(*entities.AuthenticationToken)
+	ret0, _ := ret[0].(entities.AuthenticationToken)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

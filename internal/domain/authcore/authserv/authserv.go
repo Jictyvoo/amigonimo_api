@@ -63,57 +63,63 @@ func (serv AuthService) UserSignUp(inputUser entities.UserBasic) (entities.User,
 	return newUser, nil
 }
 
-func (serv AuthService) UserLogIn(formUser entities.UserBasic) (authTokens [2]string, err error) {
+func (serv AuthService) UserLogIn(
+	formUser entities.UserBasic,
+) (authToken entities.AuthenticationToken, err error) {
 	var user entities.User
 	switch {
 	case len(formUser.Email) > 0, len(formUser.Username) > 0:
 		user, err = serv.userRepository.GetUserByEmailOrUsername(formUser.Email, formUser.Username)
 	default:
-		return authTokens, autherrs.ErrUserEmailNotFound
+		return authToken, autherrs.ErrUserEmailNotFound
 	}
 	if err != nil && !errors.Is(err, &dberrs.ErrDatabaseNotFound{}) {
-		return authTokens, fmt.Errorf("internal server error: %w", err)
+		return authToken, fmt.Errorf("internal server error: %w", err)
 	}
 
 	if user.ID.IsEmpty() {
-		return authTokens, autherrs.ErrUserEmailNotFound
+		return authToken, autherrs.ErrUserEmailNotFound
 	}
 	if ok, compareErr := user.ComparePassword(formUser.Password); !ok || compareErr != nil {
-		return authTokens, autherrs.ErrWrongPassword
+		return authToken, autherrs.ErrWrongPassword
 	}
 
-	var authToken entities.AuthenticationToken
 	if authToken, err = serv.tokenRepository.GetAuthenticationToken(user.ID); err != nil &&
 		!errors.Is(err, &dberrs.ErrDatabaseNotFound{}) {
-		return authTokens, fmt.Errorf("internal server error: %w", err)
-	}
-	if err = authToken.Regenerate(refreshTokenDuration); err != nil {
-		return authTokens, fmt.Errorf("failed to renegerate auth-token: %w", err)
+		return authToken, fmt.Errorf("internal server error: %w", err)
 	}
 
-	// Save AuthenticationToken update and returns both tokens
-	if err = serv.tokenRepository.UpsertAuthToken(&authToken); err != nil {
-		return authTokens, autherrs.ErrUpdateAuthToken
+	// Update refresh token and expiration only (JWT will be generated in controller)
+	if err = authToken.Regenerate(refreshTokenDuration); err != nil {
+		return authToken, fmt.Errorf("failed to regenerate refresh token: %w", err)
 	}
-	return [2]string{authToken.AuthToken, authToken.RefreshToken.UUID.String()}, nil
+
+	// Save AuthenticationToken update
+	if err = serv.tokenRepository.UpsertAuthToken(&authToken); err != nil {
+		return authToken, autherrs.ErrUpdateAuthToken
+	}
+
+	authToken.User = user // Set retrieved user
+	return authToken, nil
 }
 
 // RegenerateLogin get the refresh-token and returns a new one
-func (serv AuthService) RegenerateLogin(refreshToken string) ([2]string, error) {
+func (serv AuthService) RegenerateLogin(refreshToken string) (entities.AuthenticationToken, error) {
 	authentication, err := serv.tokenRepository.CheckAuthenticationByRefreshToken(refreshToken)
 	if err != nil || authentication.User.ID.IsEmpty() ||
 		time.Now().After(authentication.ExpiresAt) {
-		return [2]string{}, autherrs.ErrInvalidAuthToken
+		return entities.AuthenticationToken{}, autherrs.ErrInvalidAuthToken
 	}
+	// Update refresh token and expiration only (JWT will be generated in controller)
 	if err = authentication.Regenerate(refreshTokenDuration); err != nil {
-		return [2]string{}, err
+		return entities.AuthenticationToken{}, err
 	}
 
-	// Save AuthenticationToken update and returns both tokens
-	if err = serv.tokenRepository.UpsertAuthToken(authentication); err != nil {
-		return [2]string{}, autherrs.ErrUpdateAuthToken
+	// Save AuthenticationToken update
+	if err = serv.tokenRepository.UpsertAuthToken(&authentication); err != nil {
+		return entities.AuthenticationToken{}, autherrs.ErrUpdateAuthToken
 	}
-	return [2]string{authentication.AuthToken, authentication.RefreshToken.UUID.String()}, nil
+	return authentication, nil
 }
 
 func (serv AuthService) VerifyUserCode(code string) error {
