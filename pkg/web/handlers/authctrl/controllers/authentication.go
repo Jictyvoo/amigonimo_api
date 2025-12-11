@@ -14,10 +14,10 @@ import (
 
 func (h *AuthenticationController) SignUp(
 	c fuego.ContextWithBody[FormUser],
-) (*RegisterResponse, error) {
+) (*SuccessResponse, error) {
 	req, err := c.Body()
 	if err != nil {
-		return nil, err
+		return &SuccessResponse{Message: "Failed to obtain request body"}, err
 	}
 
 	userDTO := entities.UserBasic{
@@ -33,9 +33,7 @@ func (h *AuthenticationController) SignUp(
 		return nil, err
 	}
 
-	return &RegisterResponse{
-		Token: "",
-	}, nil
+	return &SuccessResponse{Success: true, Message: "User created successfully"}, nil
 }
 
 func (h *AuthenticationController) LogIn(
@@ -68,8 +66,7 @@ func (h *AuthenticationController) LogIn(
 	c.Response().Header().Set("Authorization", userToken[0])
 
 	return &LoginResponse{
-		UserID: "", // TODO: Extract user ID from token or service
-		Token:  userToken[0],
+		Token: userToken[0],
 	}, nil
 }
 
@@ -91,8 +88,7 @@ func (h *AuthenticationController) RegenerateAuthToken(
 	c.Response().Header().Set("Authorization", userToken[0])
 
 	return &LoginResponse{
-		UserID: "", // TODO: Extract user ID from token or service
-		Token:  userToken[0],
+		Token: userToken[0],
 	}, nil
 }
 
