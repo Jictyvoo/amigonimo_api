@@ -49,7 +49,7 @@ func (r RepoMySQL) GetAuthenticationToken(
 
 func (r RepoMySQL) CheckAuthenticationByRefreshToken(
 	authToken string,
-) (*entities.AuthenticationToken, error) {
+) (entities.AuthenticationToken, error) {
 	ctx, cancel := r.Ctx()
 	defer cancel()
 
@@ -61,13 +61,17 @@ func (r RepoMySQL) CheckAuthenticationByRefreshToken(
 	dbToken, err := r.Queries().CheckAuthenticationByRefreshToken(ctx, refreshToken)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, dberrs.NewErrDatabaseNotFound("authentication token", authToken, err)
+			return entities.AuthenticationToken{}, dberrs.NewErrDatabaseNotFound(
+				"authentication token", authToken, err,
+			)
 		}
-		return nil, mysqlrepo.WrapError(err, "check authentication by refresh token")
+		return entities.AuthenticationToken{}, mysqlrepo.WrapError(
+			err, "check authentication by refresh token",
+		)
 	}
 
 	// Note: User info should be populated by the service layer
 	// For now, return token with minimal user info
 	token := mappers.ToEntityAuthenticationToken(dbToken)
-	return &token, nil
+	return token, nil
 }
