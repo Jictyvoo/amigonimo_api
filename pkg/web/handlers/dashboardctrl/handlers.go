@@ -18,5 +18,17 @@ func (h *DashboardHandlers) GetDashboard(
 ) (*DashboardResponse, error) {
 	// TODO: Extract userId from JWT token
 	// TODO: Implement service call
-	return nil, nil
+	return &DashboardResponse{
+		ActiveCreated: []SecretFriendSummary{
+			{
+				ID:                "a",
+				Name:              "a",
+				Datetime:          nil,
+				Location:          "s",
+				Status:            "green",
+				ParticipantsCount: 0,
+			},
+		},
+		ActiveParticipant: nil,
+	}, nil
 }

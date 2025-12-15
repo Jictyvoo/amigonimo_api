@@ -17,7 +17,7 @@ func NewRouter() *Router {
 func (r *Router) RegisterRoutes(server *fuego.Server) error {
 	handlers := NewDashboardHandlers()
 
-	fuego.Get(server, "", handlers.GetDashboard)
+	fuego.Get(server, "", handlers.GetDashboard, web.OptionAuthToken())
 
 	return nil
 }
