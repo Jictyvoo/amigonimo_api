@@ -33,6 +33,7 @@ func main() {
 	conf.Runtime.AuthSecretKey = "" // Empty the secret key after injection
 
 	// Create web server
+	//goland:noinspection GoResourceLeak
 	server, err := web.NewServer(
 		conf, jwtPublicKey, web.WithPublicRouters(
 			authctrl.NewAuthRouter(
