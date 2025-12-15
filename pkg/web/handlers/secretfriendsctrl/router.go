@@ -1,9 +1,14 @@
 package secretfriendsctrl
 
 import (
+	"context"
+
 	"github.com/go-fuego/fuego"
+	"github.com/go-fuego/fuego/option"
+	"github.com/go-fuego/fuego/param"
 	"github.com/wrapped-owls/goremy-di/remy"
 
+	"github.com/jictyvoo/amigonimo_api/internal/domain/services/evtserv"
 	"github.com/jictyvoo/amigonimo_api/pkg/web"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/denylistctrl"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/participantsctrl"
@@ -15,18 +20,60 @@ type Router struct {
 	injector    remy.Injector
 }
 
-func NewRouter(inj remy.Injector) *Router {
-	return &Router{injector: inj, middlewares: []web.HttpMiddleware{}}
+func NewRouter(injector remy.Injector) *Router {
+	remy.RegisterFactory[evtserv.SecretFriendRepository](
+		injector, func(retriever remy.DependencyRetriever) (evtserv.SecretFriendRepository, error) {
+			return nil, nil
+		},
+	)
+	return &Router{middlewares: []web.HttpMiddleware{}, injector: injector}
 }
 
 func (r *Router) RegisterRoutes(server *fuego.Server) error {
-	handlers := NewSecretFriendsHandlers()
+	var servFactory ServiceFactory = func(ctx context.Context) (*evtserv.Service, error) {
+		return remy.GetWithContext[*evtserv.Service](r.injector, ctx)
+	}
+	ctrl := NewController(servFactory)
 
-	fuego.Post(server, "", handlers.CreateSecretFriend)
-	fuego.Get(server, "/{id}", handlers.GetSecretFriend)
-	fuego.Patch(server, "/{id}", handlers.UpdateSecretFriend)
-	fuego.Post(server, "/{id}/draw", handlers.DrawSecretFriend)
-	fuego.Get(server, "/{id}/draw-result", handlers.GetDrawResult)
+	groupTag := option.Tags("Secret Friends")
+	optionEventID := option.Path("id", "Secret Friend ID", param.Required())
+
+	fuego.Post(
+		server, "/", ctrl.CreateSecretFriend,
+		option.Summary("Create a new secret friend event"),
+		option.Description(
+			"Create a new secret friend event with name, datetime, location, and optional max deny list size",
+		),
+		groupTag, web.OptionAuthToken(),
+	)
+
+	fuego.Get(
+		server, "/{id}", ctrl.GetSecretFriend,
+		option.Summary("Get secret friend details"),
+		option.Description("Get details of a specific secret friend event"),
+		optionEventID, groupTag, web.OptionAuthToken(),
+	)
+
+	fuego.Patch(
+		server, "/{id}", ctrl.UpdateSecretFriend,
+		option.Summary("Update secret friend event"),
+		option.Description("Update details of a secret friend event"),
+		optionEventID, groupTag, web.OptionAuthToken(),
+	)
+
+	fuego.Post(
+		server, "/{id}/draw", ctrl.DrawSecretFriend,
+		option.Summary("Execute secret friend draw"),
+		option.Description("Execute the draw algorithm for a secret friend event"),
+		optionEventID, groupTag, web.OptionAuthToken(),
+	)
+
+	fuego.Get(
+		server, "/{id}/draw-result", ctrl.GetDrawResult,
+		option.Summary("Get draw result"),
+		option.Description("Get the draw result for the authenticated user"),
+		optionEventID, groupTag, web.OptionAuthToken(),
+	)
 
 	return nil
 }

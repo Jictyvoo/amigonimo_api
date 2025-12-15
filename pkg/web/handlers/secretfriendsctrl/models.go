@@ -7,7 +7,7 @@ type CreateSecretFriendRequest struct {
 	Name            string     `json:"name"                      validate:"required"`
 	Datetime        *time.Time `json:"datetime,omitempty"`
 	Location        string     `json:"location,omitempty"`
-	MaxDenyListSize *int       `json:"maxDenyListSize,omitempty"`
+	MaxDenyListSize int        `json:"maxDenyListSize,omitempty"`
 }
 
 // CreateSecretFriendResponse represents the response when creating a secret friend.
