@@ -9,10 +9,10 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func New[T jwt.Claims](optConfig ...Config[T]) func(http.Handler) http.Handler {
+func New[T any, V TokenClaims[T]](optConfig ...Config[T, V]) func(http.Handler) http.Handler {
 	conf := normalizeConfig(optConfig...)
 	return func(next http.Handler) http.Handler {
-		ware := JWTWare[T]{
+		ware := JWTWare[T, V]{
 			conf: &conf,
 			next: next,
 		}
@@ -21,14 +21,14 @@ func New[T jwt.Claims](optConfig ...Config[T]) func(http.Handler) http.Handler {
 }
 
 type (
-	ctxKeyAuthClaims      struct{}
-	JWTWare[T jwt.Claims] struct {
-		conf *Config[T]
+	ctxKeyAuthClaims                 struct{}
+	JWTWare[T any, V TokenClaims[T]] struct {
+		conf *Config[T, V]
 		next http.Handler
 	}
 )
 
-func (jw JWTWare[T]) handlerFunc(w http.ResponseWriter, r *http.Request) {
+func (jw JWTWare[T, V]) handlerFunc(w http.ResponseWriter, r *http.Request) {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
 		http.Error(w, "missing authorization header", http.StatusUnauthorized)
@@ -53,10 +53,10 @@ func (jw JWTWare[T]) handlerFunc(w http.ResponseWriter, r *http.Request) {
 	jw.next.ServeHTTP(w, r.WithContext(ctx))
 }
 
-func GetClaimsFromContext(ctx context.Context) (jwt.Claims, error) {
-	tkClaims, ok := ctx.Value(ctxKeyAuthClaims{}).(jwt.Claims)
-	if !ok {
-		return nil, errors.New("user ID not found in context")
+func ClaimsFromContext[T jwt.Claims](ctx context.Context) (tkClaims T, err error) {
+	var ok bool
+	if tkClaims, ok = ctx.Value(ctxKeyAuthClaims{}).(T); !ok {
+		return tkClaims, errors.New("user ID not found in context")
 	}
 	return tkClaims, nil
 }

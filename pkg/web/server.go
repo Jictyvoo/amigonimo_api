@@ -14,7 +14,6 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/go-fuego/fuego"
-	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/jictyvoo/amigonimo_api/api"
 	"github.com/jictyvoo/amigonimo_api/pkg/config"
@@ -78,7 +77,7 @@ func NewServer(
 	server := &Server{
 		Server: fuegoServer,
 		authMiddleware: jwtware.New(
-			jwtware.Config[jwt.MapClaims]{
+			jwtware.MapClaimsConfig{
 				SigningKey: jwtware.SigningKey{
 					JWTAlg: "PS256",
 					Key:    jwtPublicKey,
