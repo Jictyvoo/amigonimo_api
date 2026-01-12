@@ -12,7 +12,7 @@ func NewParticipantsHandlers() *ParticipantsHandlers {
 	return &ParticipantsHandlers{}
 }
 
-// ConfirmParticipation handles POST /secret-friends/{id}/participants
+// ConfirmParticipation handles POST /secret-friends/{id}/participants.
 func (h *ParticipantsHandlers) ConfirmParticipation(
 	c fuego.ContextWithBody[ConfirmParticipationRequest],
 ) (*ConfirmParticipationResponse, error) {
@@ -27,7 +27,7 @@ func (h *ParticipantsHandlers) ConfirmParticipation(
 	return nil, nil
 }
 
-// ListParticipants handles GET /secret-friends/{id}/participants
+// ListParticipants handles GET /secret-friends/{id}/participants.
 func (h *ParticipantsHandlers) ListParticipants(
 	c fuego.ContextNoBody,
 ) ([]ParticipantResponse, error) {

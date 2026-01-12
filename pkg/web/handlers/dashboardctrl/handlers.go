@@ -12,7 +12,7 @@ func NewDashboardHandlers() *DashboardHandlers {
 	return &DashboardHandlers{}
 }
 
-// GetDashboard handles GET /dashboard
+// GetDashboard handles GET /dashboard.
 func (h *DashboardHandlers) GetDashboard(
 	c fuego.ContextNoBody,
 ) (*DashboardResponse, error) {

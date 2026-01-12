@@ -9,7 +9,7 @@ import (
 )
 
 // WrapError wraps a database error into an appropriate custom error type
-// based on the error content and MySQL error codes
+// based on the error content and MySQL error codes.
 func WrapError(err error, context string) error {
 	if err == nil {
 		return nil
@@ -67,7 +67,7 @@ func WrapError(err error, context string) error {
 	return dberrs.NewErrDatabaseQuery(context, err)
 }
 
-// extractConstraintName attempts to extract the constraint name from error message
+// extractConstraintName attempts to extract the constraint name from error message.
 func extractConstraintName(errStr string) string {
 	// Try to find constraint name in error message
 	// MySQL format: "Duplicate entry 'value' for key 'constraint_name'"
@@ -80,7 +80,7 @@ func extractConstraintName(errStr string) string {
 	return ""
 }
 
-// extractFieldName attempts to extract the field/column name from error message
+// extractFieldName attempts to extract the field/column name from error message.
 func extractFieldName(errStr string) string {
 	// MySQL format: "Column 'column_name' cannot be null"
 	if idx := strings.Index(errStr, "Column '"); idx != -1 {
@@ -92,7 +92,7 @@ func extractFieldName(errStr string) string {
 	return ""
 }
 
-// extractOperation extracts operation name from context string
+// extractOperation extracts operation name from context string.
 func extractOperation(context string) string {
 	// Simple extraction - could be enhanced
 	if context == "" {

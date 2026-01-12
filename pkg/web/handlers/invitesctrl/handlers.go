@@ -12,7 +12,7 @@ func NewInvitesHandlers() *InvitesHandlers {
 	return &InvitesHandlers{}
 }
 
-// GetInviteByCode handles GET /invites/{code}
+// GetInviteByCode handles GET /invites/{code}.
 func (h *InvitesHandlers) GetInviteByCode(
 	c fuego.ContextNoBody,
 ) (*InviteInfoResponse, error) {

@@ -25,7 +25,7 @@ func NewAuthController(
 	}
 }
 
-// generateJWT creates a JWT token from AuthenticationToken with user info
+// generateJWT creates a JWT token from AuthenticationToken with user info.
 func (h *AuthenticationController) generateJWT(
 	authToken entities.AuthenticationToken,
 ) (string, error) {
@@ -47,7 +47,7 @@ func (h *AuthenticationController) generateJWT(
 	return token.SignedString(h.secretKey)
 }
 
-// NewHTTPError creates a new HTTP error with the given status code and message
+// NewHTTPError creates a new HTTP error with the given status code and message.
 func NewHTTPError(statusCode int, message string) *fuego.HTTPError {
 	return &fuego.HTTPError{
 		Status: statusCode,

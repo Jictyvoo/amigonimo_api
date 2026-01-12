@@ -6,7 +6,7 @@ import (
 )
 
 // ErrDatabaseConstraint represents a database constraint violation error
-// (e.g., unique constraint, foreign key constraint)
+// (e.g., unique constraint, foreign key constraint).
 type ErrDatabaseConstraint struct {
 	baseErrorWrapper[ErrDatabaseConstraint, *ErrDatabaseConstraint]
 	Constraint string

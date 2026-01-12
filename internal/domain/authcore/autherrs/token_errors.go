@@ -2,7 +2,7 @@ package autherrs
 
 import "net/http"
 
-// errUserRecoveryNotFound represents an error when user recovery is not found
+// errUserRecoveryNotFound represents an error when user recovery is not found.
 type errUserRecoveryNotFound struct {
 	baseErrorWrapper[errUserRecoveryNotFound, *errUserRecoveryNotFound]
 }
@@ -15,7 +15,7 @@ func (e errUserRecoveryNotFound) StatusCode() int {
 	return http.StatusPreconditionFailed
 }
 
-// errInvalidAuthToken represents an error when authentication token is invalid
+// errInvalidAuthToken represents an error when authentication token is invalid.
 type errInvalidAuthToken struct {
 	baseErrorWrapper[errInvalidAuthToken, *errInvalidAuthToken]
 }
@@ -28,7 +28,7 @@ func (e errInvalidAuthToken) StatusCode() int {
 	return http.StatusPreconditionFailed
 }
 
-// errUpdateAuthToken represents an error when auth token update fails
+// errUpdateAuthToken represents an error when auth token update fails.
 type errUpdateAuthToken struct {
 	baseErrorWrapper[errUpdateAuthToken, *errUpdateAuthToken]
 }
@@ -37,7 +37,7 @@ func (e errUpdateAuthToken) reason() string {
 	return "was not possible to update the user authentication token"
 }
 
-// errGenRecoveryCode represents an error when recovery code generation fails
+// errGenRecoveryCode represents an error when recovery code generation fails.
 type errGenRecoveryCode struct {
 	baseErrorWrapper[errGenRecoveryCode, *errGenRecoveryCode]
 }
@@ -46,7 +46,7 @@ func (e errGenRecoveryCode) reason() string {
 	return "internal error: cannot generate and save the recovery code"
 }
 
-// errVerificationCode represents an error when verification code is invalid
+// errVerificationCode represents an error when verification code is invalid.
 type errVerificationCode struct {
 	baseErrorWrapper[errVerificationCode, *errVerificationCode]
 }

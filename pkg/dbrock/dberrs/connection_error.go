@@ -2,7 +2,7 @@ package dberrs
 
 import "net/http"
 
-// ErrDatabaseConnection represents a database connection error
+// ErrDatabaseConnection represents a database connection error.
 type ErrDatabaseConnection struct {
 	baseErrorWrapper[ErrDatabaseConnection, *ErrDatabaseConnection]
 }

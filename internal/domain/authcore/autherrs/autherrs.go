@@ -48,7 +48,7 @@ func (e baseErrorWrapper[Self, SelfPtr]) DetailMsg() string {
 	return tempErr.reason()
 }
 
-// Exported error instances for backward compatibility
+// Exported error instances for backward compatibility.
 var (
 	ErrEmailOrUsernameUsed  = &errEmailOrUsernameUsed{}
 	ErrEmailUsed            = &errEmailUsed{}

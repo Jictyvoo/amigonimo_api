@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// ErrDatabaseTransaction represents a database transaction error
+// ErrDatabaseTransaction represents a database transaction error.
 type ErrDatabaseTransaction struct {
 	baseErrorWrapper[ErrDatabaseTransaction, *ErrDatabaseTransaction]
 	Operation string

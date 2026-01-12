@@ -12,7 +12,7 @@ func NewWishlistHandlers() *WishlistHandlers {
 	return &WishlistHandlers{}
 }
 
-// GetWishlist handles GET /secret-friends/{id}/wishlist
+// GetWishlist handles GET /secret-friends/{id}/wishlist.
 func (h *WishlistHandlers) GetWishlist(
 	c fuego.ContextNoBody,
 ) ([]WishlistItemResponse, error) {
@@ -21,7 +21,7 @@ func (h *WishlistHandlers) GetWishlist(
 	return nil, nil
 }
 
-// CreateWishlistItem handles POST /secret-friends/{id}/wishlist
+// CreateWishlistItem handles POST /secret-friends/{id}/wishlist.
 func (h *WishlistHandlers) CreateWishlistItem(
 	c fuego.ContextWithBody[CreateWishlistItemRequest],
 ) (*WishlistItemResponse, error) {
@@ -36,7 +36,7 @@ func (h *WishlistHandlers) CreateWishlistItem(
 	return nil, nil
 }
 
-// DeleteWishlistItem handles DELETE /secret-friends/{id}/wishlist/{itemId}
+// DeleteWishlistItem handles DELETE /secret-friends/{id}/wishlist/{itemId}.
 func (h *WishlistHandlers) DeleteWishlistItem(
 	c fuego.ContextNoBody,
 ) (any, error) {

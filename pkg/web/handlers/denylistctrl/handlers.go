@@ -12,7 +12,7 @@ func NewDenyListHandlers() *DenyListHandlers {
 	return &DenyListHandlers{}
 }
 
-// GetDenyList handles GET /secret-friends/{id}/denylist
+// GetDenyList handles GET /secret-friends/{id}/denylist.
 func (h *DenyListHandlers) GetDenyList(
 	c fuego.ContextNoBody,
 ) ([]DeniedUserResponse, error) {
@@ -21,7 +21,7 @@ func (h *DenyListHandlers) GetDenyList(
 	return nil, nil
 }
 
-// AddDenyListEntry handles POST /secret-friends/{id}/denylist
+// AddDenyListEntry handles POST /secret-friends/{id}/denylist.
 func (h *DenyListHandlers) AddDenyListEntry(
 	c fuego.ContextWithBody[AddDenyListRequest],
 ) (DeniedUserResponse, error) {
@@ -36,7 +36,7 @@ func (h *DenyListHandlers) AddDenyListEntry(
 	return DeniedUserResponse{}, nil
 }
 
-// RemoveDenyListEntry handles DELETE /secret-friends/{id}/denylist/{targetUserId}
+// RemoveDenyListEntry handles DELETE /secret-friends/{id}/denylist/{targetUserId}.
 func (h *DenyListHandlers) RemoveDenyListEntry(
 	c fuego.ContextNoBody,
 ) (any, error) {

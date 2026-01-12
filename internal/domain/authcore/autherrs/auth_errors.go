@@ -14,7 +14,7 @@ func (e errEmailOrUsernameUsed) StatusCode() int {
 	return http.StatusPreconditionFailed
 }
 
-// errEmailUsed represents an error when email is already in use
+// errEmailUsed represents an error when email is already in use.
 type errEmailUsed struct {
 	baseErrorWrapper[errEmailUsed, *errEmailUsed]
 }
@@ -27,7 +27,7 @@ func (e errEmailUsed) StatusCode() int {
 	return http.StatusPreconditionFailed
 }
 
-// errUsernameUsed represents an error when username is already in use
+// errUsernameUsed represents an error when username is already in use.
 type errUsernameUsed struct {
 	baseErrorWrapper[errUsernameUsed, *errUsernameUsed]
 }
@@ -40,7 +40,7 @@ func (e errUsernameUsed) StatusCode() int {
 	return http.StatusPreconditionFailed
 }
 
-// errPasswordEncryption represents an error during password encryption
+// errPasswordEncryption represents an error during password encryption.
 type errPasswordEncryption struct {
 	baseErrorWrapper[errPasswordEncryption, *errPasswordEncryption]
 }
@@ -49,7 +49,7 @@ func (e errPasswordEncryption) reason() string {
 	return "password encryption error"
 }
 
-// errUpdatePassword represents an error when password update fails
+// errUpdatePassword represents an error when password update fails.
 type errUpdatePassword struct {
 	baseErrorWrapper[errUpdatePassword, *errUpdatePassword]
 }
@@ -58,7 +58,7 @@ func (e errUpdatePassword) reason() string {
 	return "internal error: cannot update the password"
 }
 
-// errUpdateUsername represents an error when username update fails
+// errUpdateUsername represents an error when username update fails.
 type errUpdateUsername struct {
 	baseErrorWrapper[errUpdateUsername, *errUpdateUsername]
 }
@@ -67,7 +67,7 @@ func (e errUpdateUsername) reason() string {
 	return "internal error: cannot update the username"
 }
 
-// errUserCreation represents an error when user creation fails
+// errUserCreation represents an error when user creation fails.
 type errUserCreation struct {
 	baseErrorWrapper[errUserCreation, *errUserCreation]
 }
@@ -76,7 +76,7 @@ func (e errUserCreation) reason() string {
 	return "user can't be created"
 }
 
-// errWrongPassword represents an error when password is incorrect
+// errWrongPassword represents an error when password is incorrect.
 type errWrongPassword struct {
 	baseErrorWrapper[errWrongPassword, *errWrongPassword]
 }
@@ -89,7 +89,7 @@ func (e errWrongPassword) StatusCode() int {
 	return http.StatusNotAcceptable
 }
 
-// errUserEmailNotFound represents an error when user is not found by email/username
+// errUserEmailNotFound represents an error when user is not found by email/username.
 type errUserEmailNotFound struct {
 	baseErrorWrapper[errUserEmailNotFound, *errUserEmailNotFound]
 }

@@ -6,7 +6,7 @@ import (
 )
 
 // ErrDatabaseValidation represents a database validation error
-// (e.g., invalid input data, missing required fields)
+// (e.g., invalid input data, missing required fields).
 type ErrDatabaseValidation struct {
 	baseErrorWrapper[ErrDatabaseValidation, *ErrDatabaseValidation]
 	Field string

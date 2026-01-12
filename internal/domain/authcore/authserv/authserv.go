@@ -103,7 +103,7 @@ func (serv AuthService) UserLogIn(
 	return authToken, nil
 }
 
-// RegenerateLogin get the refresh-token and returns a new one
+// RegenerateLogin get the refresh-token and returns a new one.
 func (serv AuthService) RegenerateLogin(refreshToken string) (entities.AuthenticationToken, error) {
 	authentication, err := serv.tokenRepository.CheckAuthenticationByRefreshToken(refreshToken)
 	if err != nil || authentication.User.ID.IsEmpty() ||

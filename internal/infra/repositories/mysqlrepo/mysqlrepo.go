@@ -12,7 +12,7 @@ import (
 var _ dbrock.Transactioner = (*RepoMySQL)(nil)
 
 // RepoMySQL is the main type to be used to perform database operations.
-// It provides wrappers for every required
+// It provides wrappers for every required.
 type RepoMySQL struct {
 	conn    *sql.DB
 	queries *dbgen.Queries

@@ -12,7 +12,7 @@ func NewSecretFriendsHandlers() *SecretFriendsHandlers {
 	return &SecretFriendsHandlers{}
 }
 
-// CreateSecretFriend handles POST /secret-friends
+// CreateSecretFriend handles POST /secret-friends.
 func (h *SecretFriendsHandlers) CreateSecretFriend(
 	c fuego.ContextWithBody[CreateSecretFriendRequest],
 ) (*CreateSecretFriendResponse, error) {
@@ -26,7 +26,7 @@ func (h *SecretFriendsHandlers) CreateSecretFriend(
 	return nil, nil
 }
 
-// GetSecretFriend handles GET /secret-friends/{id}
+// GetSecretFriend handles GET /secret-friends/{id}.
 func (h *SecretFriendsHandlers) GetSecretFriend(
 	c fuego.ContextNoBody,
 ) (*GetSecretFriendResponse, error) {
@@ -35,7 +35,7 @@ func (h *SecretFriendsHandlers) GetSecretFriend(
 	return nil, nil
 }
 
-// UpdateSecretFriend handles PATCH /secret-friends/{id}
+// UpdateSecretFriend handles PATCH /secret-friends/{id}.
 func (h *SecretFriendsHandlers) UpdateSecretFriend(
 	c fuego.ContextWithBody[UpdateSecretFriendRequest],
 ) (any, error) {
@@ -50,7 +50,7 @@ func (h *SecretFriendsHandlers) UpdateSecretFriend(
 	return nil, nil
 }
 
-// DrawSecretFriend handles POST /secret-friends/{id}/draw
+// DrawSecretFriend handles POST /secret-friends/{id}/draw.
 func (h *SecretFriendsHandlers) DrawSecretFriend(
 	c fuego.ContextNoBody,
 ) (*DrawSecretFriendResponse, error) {
@@ -59,7 +59,7 @@ func (h *SecretFriendsHandlers) DrawSecretFriend(
 	return nil, nil
 }
 
-// GetDrawResult handles GET /secret-friends/{id}/draw-result
+// GetDrawResult handles GET /secret-friends/{id}/draw-result.
 func (h *SecretFriendsHandlers) GetDrawResult(
 	c fuego.ContextNoBody,
 ) (*DrawResultResponse, error) {

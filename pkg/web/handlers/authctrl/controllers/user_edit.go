@@ -115,7 +115,7 @@ func (ctrl UserEditionController) EditUserEmail(
 	}, nil
 }
 
-// analyseAndReturnError analyzes the error and returns an appropriate HTTP error
+// analyseAndReturnError analyzes the error and returns an appropriate HTTP error.
 func (ctrl UserEditionController) analyseAndReturnError(err error) error {
 	if errors.Is(err, autherrs.ErrUserNotFound) ||
 		errors.Is(err, autherrs.ErrEmailInUse) ||
