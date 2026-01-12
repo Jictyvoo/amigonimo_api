@@ -9,7 +9,7 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/internal/dbgen"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/internal/mappers"
-	"github.com/jictyvoo/amigonimo_api/pkg/dberrs"
+	"github.com/jictyvoo/amigonimo_api/pkg/dbrock/dberrs"
 )
 
 func (r RepoMySQL) GetUserByUsername(username string) (entities.User, error) {

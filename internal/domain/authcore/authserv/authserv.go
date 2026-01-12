@@ -10,7 +10,7 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore"
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/autherrs"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
-	"github.com/jictyvoo/amigonimo_api/pkg/dberrs"
+	"github.com/jictyvoo/amigonimo_api/pkg/dbrock/dberrs"
 )
 
 const (

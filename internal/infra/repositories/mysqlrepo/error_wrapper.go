@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/jictyvoo/amigonimo_api/pkg/dberrs"
+	"github.com/jictyvoo/amigonimo_api/pkg/dbrock/dberrs"
 )
 
 // WrapError wraps a database error into an appropriate custom error type
