@@ -9,7 +9,7 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
-//go:generate goverter gen -g wrapErrors -g useZeroValueOnPointerInconsistency .
+//go:generate go tool -modfile=../../../../../../build/tools/go.mod goverter gen -g wrapErrors -g useZeroValueOnPointerInconsistency .
 
 func HexIDFromBytes(b []byte) entities.HexID {
 	if len(b) != 16 {

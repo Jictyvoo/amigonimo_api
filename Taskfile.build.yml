@@ -2,6 +2,7 @@ version: "3"
 
 vars:
   APP_NAME: anonymigo_api
+  TOOLS_MODFILE: build/tools/go.mod
 
 tasks:
   build:
@@ -37,24 +38,24 @@ tasks:
   install:formatters:
     desc: Install all formatters dependencies
     cmds:
-      - go install github.com/segmentio/golines@latest
-      - go install mvdan.cc/gofumpt@latest
+      - go get -tool -modfile={{.TOOLS_MODFILE}} github.com/segmentio/golines@latest
+      - go get -tool -modfile={{.TOOLS_MODFILE}} mvdan.cc/gofumpt@latest
 
   install:deps:
     desc: Install all needed dependencies to run project
     cmds:
       - task: install:formatters
-      - go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
-      - go install go.uber.org/mock/mockgen@latest
-      - go install github.com/jmattheis/goverter/cmd/goverter@vlatest
+      - go get -tool -modfile={{.TOOLS_MODFILE}} github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+      - go get -tool -modfile={{.TOOLS_MODFILE}} go.uber.org/mock/mockgen@latest
+      - go get -tool -modfile={{.TOOLS_MODFILE}} github.com/jmattheis/goverter/cmd/goverter@latest
 
   run:formatters:
     desc: Run linters on entire project
     cmds:
-      - golines --base-formatter=gofumpt -w .
+      - go tool -modfile={{.TOOLS_MODFILE}} golines --base-formatter=gofumpt -w .
 
   gen:code:
     desc: Generate all needed code for the project to run
     cmds:
       - go generate ./...
-      - sqlc generate
+      - go tool -modfile={{.TOOLS_MODFILE}} sqlc generate
