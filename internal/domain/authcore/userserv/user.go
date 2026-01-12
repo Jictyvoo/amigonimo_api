@@ -27,21 +27,6 @@ func NewUserEditService(
 	}
 }
 
-func (serv UserEditionService) findAndCheckUser(
-	authToken string, password string,
-) (user entities.User, err error) {
-	user, err = serv.userEditRepository.GetUserByAuthCode(authToken)
-	if err != nil || user.ID.IsEmpty() {
-		return entities.User{}, autherrs.ErrUserNotFound
-	}
-
-	// Check if current password matches stored password
-	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		return entities.User{}, autherrs.ErrWrongPassword
-	}
-	return user, nil
-}
-
 func (serv UserEditionService) ChangePassword(
 	authToken string, currentPassword, newPassword string,
 ) error {
@@ -107,4 +92,19 @@ func (serv UserEditionService) ChangeUsername(
 		return autherrs.ErrUpdateUsername
 	}
 	return nil
+}
+
+func (serv UserEditionService) findAndCheckUser(
+	authToken string, password string,
+) (user entities.User, err error) {
+	user, err = serv.userEditRepository.GetUserByAuthCode(authToken)
+	if err != nil || user.ID.IsEmpty() {
+		return entities.User{}, autherrs.ErrUserNotFound
+	}
+
+	// Check if current password matches stored password
+	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		return entities.User{}, autherrs.ErrWrongPassword
+	}
+	return user, nil
 }

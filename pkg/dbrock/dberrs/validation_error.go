@@ -9,6 +9,7 @@ import (
 // (e.g., invalid input data, missing required fields).
 type ErrDatabaseValidation struct {
 	baseErrorWrapper[ErrDatabaseValidation, *ErrDatabaseValidation]
+
 	Field string
 }
 

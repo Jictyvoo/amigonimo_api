@@ -23,7 +23,8 @@ func NewRepoMySQL(db *sql.DB) RepoMySQL {
 }
 
 func (r *RepoMySQL) Ctx() (context.Context, context.CancelFunc) {
-	return context.WithTimeout(context.Background(), 30*time.Second)
+	const dbTimeout = 30 * time.Second
+	return context.WithTimeout(context.Background(), dbTimeout)
 }
 
 func (r *RepoMySQL) Connection() *sql.DB {

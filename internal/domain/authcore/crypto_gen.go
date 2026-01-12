@@ -62,9 +62,10 @@ func GenerateActivationToken(baseKey string) string {
 	timeSalt := []byte(time.Now().UTC().Format(time.RFC3339Nano))
 
 	// Derive a second buffer to enrich entropy (64 bytes is enough for b64)
+	const extraEntropySize = 64
 	var extra []byte
 	if extra, err = deriveRandomBytes(
-		baseKey, 64, append([]byte("activation-extra"), timeSalt...),
+		baseKey, extraEntropySize, append([]byte("activation-extra"), timeSalt...),
 	); err != nil {
 		shaSalt := sha256.Sum256(timeSalt)
 		extra = shaSalt[:]

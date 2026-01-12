@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"time"
 
 	"github.com/jictyvoo/amigonimo_api/pkg/config"
 )
@@ -26,7 +25,7 @@ func OpenDatabase(dbConfig config.Database) *sql.DB {
 	}
 
 	// Test the connection
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), dbConfig.Timeout)
 	defer cancel()
 
 	if err := db.PingContext(ctx); err != nil {

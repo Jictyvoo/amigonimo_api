@@ -7,6 +7,7 @@ import (
 // ErrDatabaseTransaction represents a database transaction error.
 type ErrDatabaseTransaction struct {
 	baseErrorWrapper[ErrDatabaseTransaction, *ErrDatabaseTransaction]
+
 	Operation string
 }
 

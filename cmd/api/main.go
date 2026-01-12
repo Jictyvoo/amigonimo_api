@@ -17,7 +17,9 @@ import (
 func main() {
 	conf := bootstrap.Config()
 	db := bootstrap.OpenDatabase(conf.Database)
-	defer db.Close()
+	defer func() {
+		_ = db.Close()
+	}()
 
 	inj := remy.NewInjector(remy.Config{DuckTypeElements: true})
 	remy.RegisterInstance(inj, db)
@@ -50,7 +52,9 @@ func main() {
 		panic(err)
 	}
 
-	defer server.Close()
+	defer func() {
+		_ = server.Close()
+	}()
 	if err = server.Run(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		panic(err)
 	}

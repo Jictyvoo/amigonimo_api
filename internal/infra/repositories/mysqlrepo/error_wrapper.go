@@ -22,6 +22,24 @@ func WrapError(err error, context string) error {
 
 	errStr := err.Error()
 
+	if e := handleConnectionError(err, errStr); e != nil {
+		return e
+	}
+	if e := handleConstraintError(err, errStr); e != nil {
+		return e
+	}
+	if e := handleValidationError(err, errStr); e != nil {
+		return e
+	}
+	if e := handleTransactionError(err, errStr, context); e != nil {
+		return e
+	}
+
+	// Default to query error
+	return dberrs.NewErrDatabaseQuery(context, err)
+}
+
+func handleConnectionError(err error, errStr string) error {
 	// MySQL error code patterns
 	// Connection errors (1045, 2002, 2003, 2006, 2013)
 	if strings.Contains(errStr, "connection") ||
@@ -32,7 +50,10 @@ func WrapError(err error, context string) error {
 		strings.Contains(errStr, "2013") {
 		return dberrs.NewErrDatabaseConnection(err)
 	}
+	return nil
+}
 
+func handleConstraintError(err error, errStr string) error {
 	// Constraint violations (1062 = duplicate entry, 1452 = foreign key, 1451 = cannot delete)
 	if strings.Contains(errStr, "1062") || // Duplicate entry
 		strings.Contains(errStr, "1452") || // Foreign key constraint
@@ -43,7 +64,10 @@ func WrapError(err error, context string) error {
 		constraint := extractConstraintName(errStr)
 		return dberrs.NewErrDatabaseConstraint(constraint, err)
 	}
+	return nil
+}
 
+func handleValidationError(err error, errStr string) error {
 	// Validation errors (1048 = column cannot be null, 1264 = out of range)
 	if strings.Contains(errStr, "1048") || // Column cannot be null
 		strings.Contains(errStr, "1264") || // Out of range
@@ -52,7 +76,10 @@ func WrapError(err error, context string) error {
 		field := extractFieldName(errStr)
 		return dberrs.NewErrDatabaseValidation(field, err)
 	}
+	return nil
+}
 
+func handleTransactionError(err error, errStr string, context string) error {
 	// Transaction errors (1213 = deadlock, 1205 = lock wait timeout)
 	if strings.Contains(errStr, "1213") || // Deadlock
 		strings.Contains(errStr, "1205") || // Lock wait timeout
@@ -62,17 +89,16 @@ func WrapError(err error, context string) error {
 		operation := extractOperation(context)
 		return dberrs.NewErrDatabaseTransaction(operation, err)
 	}
-
-	// Default to query error
-	return dberrs.NewErrDatabaseQuery(context, err)
+	return nil
 }
 
 // extractConstraintName attempts to extract the constraint name from error message.
 func extractConstraintName(errStr string) string {
 	// Try to find constraint name in error message
 	// MySQL format: "Duplicate entry 'value' for key 'constraint_name'"
-	if idx := strings.Index(errStr, "for key '"); idx != -1 {
-		start := idx + 9
+	const keyPrefix = "for key '"
+	if idx := strings.Index(errStr, keyPrefix); idx != -1 {
+		start := idx + len(keyPrefix)
 		if end := strings.Index(errStr[start:], "'"); end != -1 {
 			return errStr[start : start+end]
 		}
@@ -83,8 +109,9 @@ func extractConstraintName(errStr string) string {
 // extractFieldName attempts to extract the field/column name from error message.
 func extractFieldName(errStr string) string {
 	// MySQL format: "Column 'column_name' cannot be null"
-	if idx := strings.Index(errStr, "Column '"); idx != -1 {
-		start := idx + 8
+	const columnPrefix = "Column '"
+	if idx := strings.Index(errStr, columnPrefix); idx != -1 {
+		start := idx + len(columnPrefix)
 		if end := strings.Index(errStr[start:], "'"); end != -1 {
 			return errStr[start : start+end]
 		}

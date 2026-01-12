@@ -6,27 +6,30 @@ import (
 )
 
 type DeniedUser struct {
+	Timestamp
+
 	ID          HexID
 	DeniedUsers Participant
-	Timestamp
 }
 
 type Participant struct {
+	Timestamp
+
 	ID             HexID
 	RelatedUser    User
 	SecretFriendID HexID
 	JoinedAt       time.Time
 	DenyList       []DeniedUser
 	Wishlist       Wishlist
-	Timestamp
 }
 
 type (
 	WishlistItem struct {
+		Timestamp
+
 		ID       HexID
 		Label    string
 		Comments string
-		Timestamp
 	}
 
 	Wishlist struct {

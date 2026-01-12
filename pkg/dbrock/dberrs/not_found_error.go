@@ -8,6 +8,7 @@ import (
 // ErrDatabaseNotFound represents a "not found" error (e.g., sql.ErrNoRows).
 type ErrDatabaseNotFound struct {
 	baseErrorWrapper[ErrDatabaseNotFound, *ErrDatabaseNotFound]
+
 	Resource   string
 	Identifier string
 }

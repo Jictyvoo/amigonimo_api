@@ -37,6 +37,7 @@ func WithPrivateRouters(routers ...RouterContract) ServerOption {
 
 type Server struct {
 	*fuego.Server
+
 	authMiddleware   HttpMiddleware
 	protectedRouters []RouterContract
 	publicRouters    []RouterContract
@@ -99,6 +100,20 @@ func NewServer(
 	return server, nil
 }
 
+func (s *Server) Run() error {
+	sigint := make(chan os.Signal, 1)
+	signal.Notify(sigint, os.Interrupt, syscall.SIGTERM, syscall.SIGSEGV)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go s.gracefulShutdown(sigint, wg.Done)
+
+	// Run server on the main goroutine (blocking)
+	err := s.Server.Run()
+	wg.Wait()
+	return err
+}
+
 func (s *Server) setupRoutes() error {
 	// Firstly do with public APIs
 	if err := SetupRoutes(s.Server, s.publicRouters...); err != nil {
@@ -116,27 +131,14 @@ func (s *Server) setupRoutes() error {
 	return err
 }
 
-func (s *Server) Run() error {
-	sigint := make(chan os.Signal, 1)
-	signal.Notify(sigint, os.Interrupt, syscall.SIGTERM, syscall.SIGSEGV)
-
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go s.gracefulShutdown(sigint, wg.Done)
-
-	// Run server on the main goroutine (blocking)
-	err := s.Server.Run()
-	wg.Wait()
-	return err
-}
-
 func (s *Server) gracefulShutdown(sigint chan os.Signal, notifyComplete func()) {
 	defer notifyComplete()
 	// Start signal detection in a goroutine
 	receivedSignal := <-sigint
 	slog.With("signal", receivedSignal.String()).Warn("Server shutdown init")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	const shutdownTimeout = 30 * time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 
 	if err := s.Shutdown(ctx); err != nil {

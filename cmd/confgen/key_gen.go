@@ -8,8 +8,9 @@ import (
 )
 
 func generateAuthKey() string {
+	const rsaKeySize = 2048
 	// Generate a 2048-bit RSA private key for PS256 JWT signing
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	privateKey, err := rsa.GenerateKey(rand.Reader, rsaKeySize)
 	if err != nil {
 		// Fallback: if generation fails, return empty string
 		// The config loader should handle this case

@@ -16,7 +16,12 @@ const (
 	envAPILocale     = "API_LOCALE"
 	envAPIHost       = "API_HOST"
 	envAPIPort       = "API_PORT"
-	envAuthSecretKey = "AUTH_SECRET_KEY"
+	envAuthSecretKey = "AUTH_SECRET_KEY" //nolint:gosec
+)
+
+const (
+	defaultAPIPort      = 8649
+	defaultDatabasePort = 3306
 )
 
 func DefaultConfig() Config {
@@ -25,11 +30,11 @@ func DefaultConfig() Config {
 		ProjectName: "amigonymus_api",
 		Runtime: Runtime{
 			APILocale: "pt_BR",
-			Port:      8649,
+			Port:      defaultAPIPort,
 		},
 		Database: Database{
 			Host:     "localhost",
-			Port:     3306,
+			Port:     defaultDatabasePort,
 			User:     "secretshhh",
 			Password: "testing_u-know",
 			Database: "amigonimo_db",

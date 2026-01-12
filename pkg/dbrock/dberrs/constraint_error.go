@@ -9,6 +9,7 @@ import (
 // (e.g., unique constraint, foreign key constraint).
 type ErrDatabaseConstraint struct {
 	baseErrorWrapper[ErrDatabaseConstraint, *ErrDatabaseConstraint]
+
 	Constraint string
 }
 

@@ -5,6 +5,7 @@ import "fmt"
 // ErrDatabaseQuery represents a database query execution error.
 type ErrDatabaseQuery struct {
 	baseErrorWrapper[ErrDatabaseQuery, *ErrDatabaseQuery]
+
 	Query string
 }
 

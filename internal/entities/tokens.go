@@ -14,9 +14,10 @@ type BasicAuthToken struct {
 }
 
 type AuthenticationToken struct {
+	BasicAuthToken
+
 	ID   HexID
 	User User
-	BasicAuthToken
 }
 
 type VerifyToken struct {

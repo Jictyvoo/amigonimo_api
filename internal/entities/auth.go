@@ -14,19 +14,21 @@ type (
 		Password string
 	}
 	User struct {
+		UserBasic
+
 		ID            HexID
 		FullName      string
 		VerifiedAt    time.Time
 		RememberToken string
-		UserBasic
 	}
 )
 
 func (ub UserBasic) ObfuscateEmail() string {
 	obfuscate := strings.Builder{}
 	firstHalf, hostHalf, _ := strings.Cut(ub.Email, "@")
+	const obfuscationRatio = 3
 	for index, character := range []byte(firstHalf) {
-		if index <= (len(firstHalf) / 3) {
+		if index <= (len(firstHalf) / obfuscationRatio) {
 			obfuscate.WriteByte(character)
 		} else if index%2 == 0 {
 			obfuscate.WriteRune('*')

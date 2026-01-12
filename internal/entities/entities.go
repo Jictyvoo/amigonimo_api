@@ -16,16 +16,16 @@ type (
 	}
 )
 
+func NewHexID() HexID {
+	return HexID(uuid.New())
+}
+
 func (id HexID) IsEmpty() bool {
 	return id == HexID(uuid.Nil)
 }
 
 func (id HexID) String() string {
 	return uuid.UUID(id).String()
-}
-
-func NewHexID() HexID {
-	return HexID(uuid.New())
 }
 
 func (ts *Timestamp) Normalize() {
