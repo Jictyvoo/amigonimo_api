@@ -6,9 +6,10 @@ import (
 	"time"
 
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/internal/dbgen"
+	"github.com/jictyvoo/amigonimo_api/pkg/dbrock"
 )
 
-type OnFinishFunc func(commit bool) error
+var _ dbrock.Transactioner = (*RepoMySQL)(nil)
 
 // RepoMySQL is the main type to be used to perform database operations.
 // It provides wrappers for every required
@@ -33,7 +34,9 @@ func (r *RepoMySQL) Queries() *dbgen.Queries {
 	return r.queries
 }
 
-func (r *RepoMySQL) BeginTx(ctx context.Context, txOpts *sql.TxOptions) (OnFinishFunc, error) {
+func (r *RepoMySQL) BeginTx(
+	ctx context.Context, txOpts *sql.TxOptions,
+) (dbrock.OnFinishFunc, error) {
 	tx, err := r.conn.BeginTx(ctx, txOpts)
 	if err != nil {
 		return nil, err
