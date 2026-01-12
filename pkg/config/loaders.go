@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/BurntSushi/toml"
 	"github.com/pkg/errors"
@@ -14,8 +15,8 @@ func LoadConfigFromEnv(config *Config) error {
 	var useDebugStr string
 
 	err := BindEnv(
-		BindField(&useDebugStr, envUseDebug, nil),
-		BindField(&config.ProjectName, envProjectName, nil),
+		BindField(&useDebugStr, envUseDebug, strings.ToLower),
+		BindField(&config.ProjectName, envProjectName, strings.TrimSpace),
 		BindField(&config.Runtime.APILocale, envAPILocale, strings.TrimSpace),
 		BindField(&config.Runtime.Host, envAPIHost, strings.ToLower),
 		BindField(&config.Runtime.Port, envAPIPort, nil),
@@ -27,7 +28,7 @@ func LoadConfigFromEnv(config *Config) error {
 
 	// Handle IsDebug special logic
 	if !config.IsDebug && useDebugStr != "" {
-		config.IsDebug = strings.ToLower(useDebugStr) != "false"
+		config.IsDebug = useDebugStr != "false"
 	}
 
 	return LoadDatabaseFromEnv(&config.Database)
@@ -40,6 +41,7 @@ func LoadDatabaseFromEnv(conf *Database) error {
 		BindField(&conf.User, envDatabaseUser, nil),
 		BindField(&conf.Password, envDatabasePassword, nil),
 		BindField(&conf.Database, envDatabaseName, nil),
+		BindFieldErr(&conf.Timeout, envDatabaseTimeout, time.ParseDuration),
 	)
 }
 

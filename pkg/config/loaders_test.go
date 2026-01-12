@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+	"time"
 )
 
 func testValues() (Config, map[string]string) {
@@ -22,6 +23,7 @@ func testValues() (Config, map[string]string) {
 			User:     "admin",
 			Password: "secret",
 			Database: "appdb",
+			Timeout:  time.Second << 2,
 		},
 	}
 
@@ -37,6 +39,7 @@ func testValues() (Config, map[string]string) {
 		envDatabaseUser:     expected.Database.User,
 		envDatabasePassword: expected.Database.Password,
 		envDatabaseName:     expected.Database.Database,
+		envDatabaseTimeout:  expected.Database.Timeout.String(),
 	}
 
 	return expected, env

@@ -1,5 +1,7 @@
 package config
 
+import "time"
+
 const (
 	envUseDebug    = "DEBUG"
 	envProjectName = "PROJECT_NAME"
@@ -9,6 +11,7 @@ const (
 	envDatabaseUser     = "DATABASE_USER"
 	envDatabasePassword = "DATABASE_PASSWORD"
 	envDatabaseName     = "DATABASE_NAME"
+	envDatabaseTimeout  = "DATABASE_TIMEOUT"
 
 	envAPILocale     = "API_LOCALE"
 	envAPIHost       = "API_HOST"
@@ -30,6 +33,7 @@ func DefaultConfig() Config {
 			User:     "secretshhh",
 			Password: "testing_u-know",
 			Database: "amigonimo_db",
+			Timeout:  time.Second,
 		},
 	}
 }

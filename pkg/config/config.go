@@ -1,5 +1,7 @@
 package config
 
+import "time"
+
 const DefaultFileName = "conf.toml"
 
 type (
@@ -11,11 +13,12 @@ type (
 	}
 
 	Database struct {
-		Host     string `toml:"host"`
-		Port     uint16 `toml:"port"`
-		User     string `toml:"user"`
-		Password string `toml:"password"`
-		Database string `toml:"database"`
+		Host     string        `toml:"host"`
+		Port     uint16        `toml:"port"`
+		User     string        `toml:"user"`
+		Password string        `toml:"password"`
+		Database string        `toml:"database"`
+		Timeout  time.Duration `toml:"timeout"`
 	}
 
 	Config struct {

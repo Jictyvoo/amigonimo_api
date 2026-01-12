@@ -9,12 +9,12 @@ import (
 
 type Binder func() error
 
-func BindField[T any](ptr *T, field string, parserCallback func(string) T) Binder {
+func BindFieldErr[T any](ptr *T, field string, parserCallback func(string) (T, error)) Binder {
 	return func() (err error) {
 		if resultStr := os.Getenv(field); resultStr != "" {
 			if parserCallback != nil {
-				*ptr = parserCallback(resultStr)
-				return nil
+				*ptr, err = parserCallback(resultStr)
+				return err
 			}
 
 			return tryTypeParse(ptr, resultStr)
@@ -22,6 +22,17 @@ func BindField[T any](ptr *T, field string, parserCallback func(string) T) Binde
 
 		return nil
 	}
+}
+
+func BindField[T any](ptr *T, field string, parserCallback func(string) T) Binder {
+	subCallback := func(v string) (T, error) {
+		return parserCallback(v), nil
+	}
+
+	if parserCallback == nil {
+		subCallback = nil
+	}
+	return BindFieldErr[T](ptr, field, subCallback)
 }
 
 func tryTypeParse(ptr any, resultStr string) (err error) {
