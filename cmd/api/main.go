@@ -50,6 +50,7 @@ func main() {
 		panic(err)
 	}
 
+	defer server.Close()
 	if err = server.Run(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		panic(err)
 	}
