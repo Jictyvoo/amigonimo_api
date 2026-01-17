@@ -2,29 +2,37 @@ package secretfriendsctrl
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/go-fuego/fuego"
-	"github.com/google/uuid"
+	"github.com/wrapped-owls/goremy-di/remy"
 
-	"github.com/jictyvoo/amigonimo_api/internal/domain/services/evtserv"
+	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/drawfriends"
+	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/secretfriend"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 	"github.com/jictyvoo/amigonimo_api/pkg/web"
 )
 
 type (
-	ServiceFactory func(ctx context.Context) (*evtserv.Service, error)
-	Controller     struct {
-		serviceFactory ServiceFactory
+	UseCaseFactory[T any] func(ctx context.Context) (T, error)
+	Controller            struct {
 		web.DefaultController
+
+		sfUseCaseFactory   UseCaseFactory[*secretfriend.UseCase]
+		drawUseCaseFactory UseCaseFactory[*drawfriends.UseCase]
 	}
 )
 
-func NewController(servFac ServiceFactory) Controller {
-	return Controller{serviceFactory: servFac}
+func NewController(
+	sfFac UseCaseFactory[*secretfriend.UseCase],
+	drawFac UseCaseFactory[*drawfriends.UseCase],
+) Controller {
+	return Controller{
+		sfUseCaseFactory:   sfFac,
+		drawUseCaseFactory: drawFac,
+	}
 }
 
-// CreateSecretFriend handles POST /secret-friends
+// CreateSecretFriend handles POST /secret-friends.
 func (ctrl *Controller) CreateSecretFriend(
 	c fuego.ContextWithBody[CreateSecretFriendRequest],
 ) (*CreateSecretFriendResponse, error) {
@@ -33,15 +41,27 @@ func (ctrl *Controller) CreateSecretFriend(
 		return nil, err
 	}
 
-	serv, err := ctrl.serviceFactory(c.Context())
+	sfUC, err := ctrl.sfUseCaseFactory(c.Context())
 	if err != nil {
 		return nil, err
 	}
-	secretFriend, err := serv.CreateSecretFriend(
-		req.Name,
-		req.Datetime,
-		req.Location,
-		req.MaxDenyListSize,
+
+	user, err := remy.GetWithContext[entities.User](
+		nil,
+		c.Context(),
+	) // Assuming User is injected in context
+	if err != nil {
+		return nil, err
+	}
+
+	secretFriend, err := sfUC.Create(
+		secretfriend.CreateInput{
+			Name:            req.Name,
+			Datetime:        req.Datetime,
+			Location:        req.Location,
+			MaxDenyListSize: req.MaxDenyListSize,
+			OwnerID:         user.ID,
+		},
 	)
 	if err != nil {
 		return nil, err
@@ -50,11 +70,10 @@ func (ctrl *Controller) CreateSecretFriend(
 	return &CreateSecretFriendResponse{
 		SecretFriendID: secretFriend.ID.String(),
 		InviteCode:     secretFriend.InviteCode,
-		InviteLink:     secretFriend.InviteLink,
 	}, nil
 }
 
-// GetSecretFriend handles GET /secret-friends/{id}
+// GetSecretFriend handles GET /secret-friends/{id}.
 func (ctrl *Controller) GetSecretFriend(
 	c fuego.ContextNoBody,
 ) (*GetSecretFriendResponse, error) {
@@ -63,18 +82,14 @@ func (ctrl *Controller) GetSecretFriend(
 		return nil, err
 	}
 
-	serv, err := ctrl.serviceFactory(c.Context())
+	sfUC, err := ctrl.sfUseCaseFactory(c.Context())
 	if err != nil {
 		return nil, err
 	}
-	secretFriend, err := serv.GetSecretFriend(id)
+	secretFriend, err := sfUC.Get(id)
 	if err != nil {
 		return nil, err
 	}
-
-	// Get participants count (assuming service provides this)
-	// For now, we'll use the length of participants array
-	participantsCount := len(secretFriend.Participants)
 
 	return &GetSecretFriendResponse{
 		ID:                secretFriend.ID.String(),
@@ -82,12 +97,12 @@ func (ctrl *Controller) GetSecretFriend(
 		Datetime:          secretFriend.Datetime,
 		Location:          secretFriend.Location,
 		OwnerID:           secretFriend.OwnerID.String(),
-		ParticipantsCount: participantsCount,
+		ParticipantsCount: len(secretFriend.Participants),
 		Status:            string(secretFriend.Status),
 	}, nil
 }
 
-// UpdateSecretFriend handles PATCH /secret-friends/{id}
+// UpdateSecretFriend handles PATCH /secret-friends/{id}.
 func (ctrl *Controller) UpdateSecretFriend(
 	c fuego.ContextWithBody[UpdateSecretFriendRequest],
 ) (any, error) {
@@ -101,56 +116,59 @@ func (ctrl *Controller) UpdateSecretFriend(
 		return nil, err
 	}
 
-	serv, err := ctrl.serviceFactory(c.Context())
+	sfUC, err := ctrl.sfUseCaseFactory(c.Context())
 	if err != nil {
 		return nil, err
 	}
-	if err = serv.UpdateSecretFriend(
-		id,
-		req.Name,
-		req.Datetime,
-		req.Location,
+
+	if err = sfUC.Update(
+		secretfriend.UpdateInput{
+			ID:       id,
+			Name:     req.Name,
+			Datetime: req.Datetime,
+			Location: req.Location,
+		},
 	); err != nil {
 		return nil, err
 	}
 
-	return map[string]interface{}{
+	return map[string]any{
 		"success": true,
 		"message": "secret friend updated successfully",
 	}, nil
 }
 
-// DrawSecretFriend handles POST /secret-friends/{id}/draw
+// DrawSecretFriend handles POST /secret-friends/{id}/drawfriends.
 func (ctrl *Controller) DrawSecretFriend(
 	c fuego.ContextNoBody,
 ) (*DrawSecretFriendResponse, error) {
-	idStr := c.Request().PathValue("id")
-	if idStr == "" {
-		return nil, ctrl.HTTPError(http.StatusBadRequest, "id is required")
-	}
-
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		return nil, ctrl.HTTPError(http.StatusBadRequest, "invalid id format")
-	}
-
-	serv, err := ctrl.serviceFactory(c.Context())
+	id, err := ctrl.ParamID(c.Request())
 	if err != nil {
 		return nil, err
 	}
-	resultCount, err := serv.DrawSecretFriend(entities.HexID(id))
+
+	drawUC, err := ctrl.drawUseCaseFactory(c.Context())
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := drawUC.Execute(
+		drawfriends.ExecuteInput{
+			SecretFriendID: id,
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
 
 	return &DrawSecretFriendResponse{
-		SecretFriendID: idStr,
+		SecretFriendID: id.String(),
 		Status:         string(entities.StatusDrawn),
-		ResultCount:    resultCount,
+		ResultCount:    result.ParticipantCount,
 	}, nil
 }
 
-// GetDrawResult handles GET /secret-friends/{id}/draw-result
+// GetDrawResult handles GET /secret-friends/{id}/drawfriends-result.
 func (ctrl *Controller) GetDrawResult(
 	c fuego.ContextNoBody,
 ) (*DrawResultResponse, error) {
@@ -158,19 +176,35 @@ func (ctrl *Controller) GetDrawResult(
 	if err != nil {
 		return nil, err
 	}
-	serv, err := ctrl.serviceFactory(c.Context())
-	if err != nil {
-		return nil, err
-	}
-	result, err := serv.GetDrawResultForUser(id)
+
+	drawUC, err := ctrl.drawUseCaseFactory(c.Context())
 	if err != nil {
 		return nil, err
 	}
 
-	// Map wishlist items from participant
-	wishlist := make([]WishlistItem, 0)
-	// Note: Wishlist items would need to be fetched from the Receiver participant
-	// This is a placeholder for the actual wishlist mapping
+	user, err := remy.GetWithContext[entities.User](nil, c.Context())
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := drawUC.GetResult(
+		drawfriends.GetResultInput{
+			SecretFriendID: id,
+			UserID:         user.ID,
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	wishlist := make([]WishlistItem, len(result.Receiver.Wishlist.Items))
+	for i, item := range result.Receiver.Wishlist.Items {
+		wishlist[i] = WishlistItem{
+			ItemID:   item.ID.String(),
+			Label:    item.Label,
+			Comments: item.Comments,
+		}
+	}
 
 	return &DrawResultResponse{
 		TargetUserID: result.Receiver.RelatedUser.ID.String(),
