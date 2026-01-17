@@ -7,14 +7,13 @@ type CreateSecretFriendRequest struct {
 	Name            string     `json:"name"                      validate:"required"`
 	Datetime        *time.Time `json:"datetime,omitempty"`
 	Location        string     `json:"location,omitempty"`
-	MaxDenyListSize int        `json:"maxDenyListSize,omitempty"`
+	MaxDenyListSize uint8      `json:"maxDenyListSize,omitempty"`
 }
 
 // CreateSecretFriendResponse represents the response when creating a secret friend.
 type CreateSecretFriendResponse struct {
 	SecretFriendID string `json:"secretFriendId"`
 	InviteCode     string `json:"inviteCode"`
-	InviteLink     string `json:"inviteLink"`
 }
 
 // GetSecretFriendResponse represents the response when getting secret friend details.
@@ -42,14 +41,14 @@ type DrawSecretFriendResponse struct {
 	ResultCount    int    `json:"resultCount"`
 }
 
-// WishlistItem represents a wishlist item in the draw result.
+// WishlistItem represents a wishlist item in the drawfriends result.
 type WishlistItem struct {
 	ItemID   string `json:"itemId"`
 	Label    string `json:"label"`
 	Comments string `json:"comments,omitempty"`
 }
 
-// DrawResultResponse represents the result of the draw for the current user.
+// DrawResultResponse represents the result of the drawfriends for the current user.
 type DrawResultResponse struct {
 	TargetUserID string         `json:"targetUserId"`
 	TargetName   string         `json:"targetName"`
