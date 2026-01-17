@@ -16,6 +16,7 @@ const (
 type (
 	DrawResultItem struct {
 		Timestamp
+
 		Giver    Participant
 		Receiver Participant
 	}
@@ -26,16 +27,17 @@ type (
 
 type SecretFriend struct {
 	Timestamp
-	ID           HexID
-	Name         string
-	Datetime     *time.Time
-	Location     string
-	OwnerID      HexID
-	InviteCode   string
-	InviteLink   string
-	Status       SecretFriendStatus
-	Participants []Participant
-	DrawResult   *DrawResult
+
+	ID              HexID
+	Name            string
+	Datetime        *time.Time
+	Location        string
+	OwnerID         HexID
+	InviteCode      string
+	MaxDenyListSize uint8
+	Status          SecretFriendStatus
+	Participants    []Participant
+	DrawResult      *DrawResult
 }
 
 func (sf *SecretFriend) Normalize() {
