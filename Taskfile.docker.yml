@@ -49,6 +49,14 @@ tasks:
       RUN_CMD: "{{.COMPOSE_BIN}} up {{.OPTIONS}} -d"
       OPTIONS: "{{.OPTIONS}}"
 
+  exec:
+    desc: Execute a command in the running container
+    cmds:
+      - '{{.COMPOSE_BIN}} exec -T {{.IMAGE_NAME}} {{.COMMAND}}'
+    vars:
+      IMAGE_NAME: '{{.IMAGE_NAME | default .APP_NAME}}'
+      COMMAND: '{{.COMMAND}}'
+
   copy:
     desc: Copy a file from the running container to a host folder
     cmds:
