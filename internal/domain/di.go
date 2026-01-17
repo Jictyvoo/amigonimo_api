@@ -4,7 +4,9 @@ import (
 	"github.com/wrapped-owls/goremy-di/remy"
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/authserv"
-	"github.com/jictyvoo/amigonimo_api/internal/domain/services/evtserv"
+	"github.com/jictyvoo/amigonimo_api/internal/domain/services/drawserv"
+	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/drawfriends"
+	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/secretfriend"
 )
 
 func RegisterServices(inj remy.Injector) {
@@ -13,7 +15,7 @@ func RegisterServices(inj remy.Injector) {
 	)
 
 	// General protected services
-	remy.RegisterConstructorArgs2(
-		inj, remy.Factory[*evtserv.Service], evtserv.NewService,
-	)
+	remy.RegisterConstructor(inj, remy.Factory[*drawserv.Service], drawserv.New)
+	remy.RegisterConstructorArgs1(inj, remy.Factory[*secretfriend.UseCase], secretfriend.New)
+	remy.RegisterConstructorArgs2(inj, remy.Factory[*drawfriends.UseCase], drawfriends.New)
 }
