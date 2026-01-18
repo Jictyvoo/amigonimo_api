@@ -43,7 +43,7 @@ tasks:
   run:
     desc: Run docker
     cmds:
-      - "{{.COMPOSE_FILE}} {{.RUN_CMD}} mysql"
+      - "{{.COMPOSE_FILE}} {{.RUN_CMD}} mariadb"
     vars:
       COMPOSE_FILE: "{{.COMPOSE_FILE}}"
       RUN_CMD: "{{.COMPOSE_BIN}} up {{.OPTIONS}} -d"

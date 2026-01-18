@@ -5,7 +5,7 @@ vars:
   SCHEMA_DIRECTORY: "./entschema"
 
 dotenv:
-  - ./local.mysql.env
+  - ./local.mariadb.env
 
 tasks:
   install:deps:
@@ -25,9 +25,9 @@ tasks:
     cmds:
       - atlas migrate diff {{.DIFF_NAME}} --dir "file://../{{.MIGRATIONS_DIRECTORY}}" --to ent://./ --dev-url "{{.DEV_URL}}"
     vars:
-      MYSQL_PASSWORD_URLENCODED: "{{ .MYSQL_PASSWORD | replace `@` `%40` }}"
+      MARIADB_PASSWORD_URLENCODED: "{{ .MARIADB_PASSWORD | replace `@` `%40` }}"
       TEMP_DATABASE_NAME: "atlas_temp"
-      DEV_URL: "mysql://{{.MYSQL_USER}}:{{.MYSQL_PASSWORD_URLENCODED}}@localhost:3306/{{.TEMP_DATABASE_NAME}}"
+      DEV_URL: "mysql://{{.MARIADB_USER}}:{{.MARIADB_PASSWORD_URLENCODED}}@localhost:3306/{{.TEMP_DATABASE_NAME}}"
     requires:
       vars: [ DIFF_NAME ]
     dir: "{{.SCHEMA_DIRECTORY}}" # Atlas(with Ent) requires to be run from a module root
@@ -44,5 +44,5 @@ tasks:
     cmds:
       - atlas migrate apply --dir file://{{.MIGRATIONS_DIRECTORY}} --url "{{.DB_URL}}"
     vars:
-      MYSQL_PASSWORD_URLENCODED: "{{ .MYSQL_PASSWORD | replace `@` `%40` }}"
-      DB_URL: "mysql://{{.MYSQL_USER}}:{{.MYSQL_PASSWORD_URLENCODED}}@localhost:3306/{{.MYSQL_DATABASE}}"
+      MARIADB_PASSWORD_URLENCODED: "{{ .MARIADB_PASSWORD | replace `@` `%40` }}"
+      DB_URL: "mysql://{{.MARIADB_USER}}:{{.MARIADB_PASSWORD_URLENCODED}}@localhost:3306/{{.MARIADB_DATABASE}}"
