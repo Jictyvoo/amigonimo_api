@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore"
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/autherrs"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
@@ -46,13 +44,15 @@ func (serv AuthService) UserSignUp(inputUser entities.UserBasic) (entities.User,
 		return entities.User{}, autherrs.ErrPasswordEncryption
 	}
 	newUser := entities.User{
-		ID: entities.HexID(uuid.New()),
 		UserBasic: entities.UserBasic{
 			Username: inputUser.Username,
 			Email:    inputUser.Email,
 			Password: string(encryptedPassword),
 		},
 		RememberToken: "",
+	}
+	if newUser.ID, err = entities.NewHexID(); err != nil {
+		return entities.User{}, autherrs.NewErrUserCreation(err)
 	}
 	// Here the activation email will be generated
 	verificationToken := authcore.GenerateActivationToken(newUser.Username + ":" + newUser.Email)
