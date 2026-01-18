@@ -22,6 +22,7 @@ func (SecretFriend) Fields() []ent.Field {
 		field.Time("datetime"),
 		field.String("location").Optional(),
 		field.UUID("owner_id", uuid.UUID{}),
+		field.Uint8("max_deny_list_size").Default(0),
 		field.String("invite_code"),
 		field.String("invite_link").Optional(),
 		field.String("status"),

@@ -23,10 +23,15 @@ func (TimestampsMixin) Fields() []ent.Field {
 		},
 	)
 	return []ent.Field{
-		field.Time("created_at").Immutable().Default(time.Now).Annotations(defaultDatetime),
+		field.Time("created_at").
+			Immutable().
+			Default(time.Now).
+			SchemaType(map[string]string{dialect.MySQL: "TIMESTAMP"}).
+			Annotations(defaultDatetime),
 		field.Time("updated_at").
 			UpdateDefault(time.Now).
 			Default(time.Now).
+			SchemaType(map[string]string{dialect.MySQL: "TIMESTAMP"}).
 			Annotations(defaultDatetime),
 	}
 }

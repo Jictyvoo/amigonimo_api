@@ -20,6 +20,9 @@ func (WishlistItem) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("participant_id", uuid.UUID{}),
 		field.String("label"),
+		field.Text("comments").
+			Optional().
+			Nillable(),
 	}
 }
 
