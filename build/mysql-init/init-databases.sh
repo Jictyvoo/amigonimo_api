@@ -1,8 +1,0 @@
-#!/bin/bash
-set -e
-
-mysql -uroot -p"$MYSQL_ROOT_PASSWORD" <<EOF
-CREATE DATABASE IF NOT EXISTS atlas_temp;
-GRANT ALL PRIVILEGES ON atlas_temp.* TO '$MYSQL_USER'@'%';
-FLUSH PRIVILEGES;
-EOF

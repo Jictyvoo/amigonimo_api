@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+
+mariadb -uroot -p"$MARIADB_ROOT_PASSWORD" <<EOF
+CREATE DATABASE IF NOT EXISTS atlas_temp;
+GRANT ALL PRIVILEGES ON atlas_temp.* TO '$MARIADB_USER'@'%';
+FLUSH PRIVILEGES;
+EOF
