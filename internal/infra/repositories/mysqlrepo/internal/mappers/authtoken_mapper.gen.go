@@ -10,15 +10,15 @@ import (
 
 func ToEntityAuthenticationToken(source dbgen.AuthToken) entities.AuthenticationToken {
 	var entitiesAuthenticationToken entities.AuthenticationToken
+	entitiesAuthenticationToken.BasicAuthToken = convertBasicAuthToken(source)
 	entitiesAuthenticationToken.ID = HexIDFromBytes(source.ID)
 	entitiesAuthenticationToken.User = convertTokenUserToEntityUser(source)
-	entitiesAuthenticationToken.BasicAuthToken = convertBasicAuthToken(source)
 	return entitiesAuthenticationToken
 }
 func convertBasicAuthToken(source dbgen.AuthToken) entities.BasicAuthToken {
 	var entitiesBasicAuthToken entities.BasicAuthToken
 	entitiesBasicAuthToken.AuthToken = source.Token
-	entitiesBasicAuthToken.ExpiresAt = CopyTime(source.ExpiresAt)
+	entitiesBasicAuthToken.ExpiresAt = TimeFromNullTime(source.ExpiresAt)
 	entitiesBasicAuthToken.RefreshToken = UUIDFromNullString(source.RefreshToken)
 	return entitiesBasicAuthToken
 }

@@ -8,7 +8,6 @@ package dbgen
 import (
 	"context"
 	"database/sql"
-	"time"
 )
 
 const CheckAuthenticationByRefreshToken = `-- name: CheckAuthenticationByRefreshToken :one
@@ -94,7 +93,7 @@ type UpsertAuthTokenParams struct {
 	UserID       []byte         `db:"user_id"`
 	Token        string         `db:"token"`
 	RefreshToken sql.NullString `db:"refresh_token"`
-	ExpiresAt    time.Time      `db:"expires_at"`
+	ExpiresAt    sql.NullTime   `db:"expires_at"`
 }
 
 func (q *Queries) UpsertAuthToken(ctx context.Context, arg UpsertAuthTokenParams) (sql.Result, error) {

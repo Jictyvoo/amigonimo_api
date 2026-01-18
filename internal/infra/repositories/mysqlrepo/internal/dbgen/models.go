@@ -15,7 +15,7 @@ type AuthToken struct {
 	UpdatedAt    time.Time      `db:"updated_at"`
 	Token        string         `db:"token"`
 	RefreshToken sql.NullString `db:"refresh_token"`
-	ExpiresAt    time.Time      `db:"expires_at"`
+	ExpiresAt    sql.NullTime   `db:"expires_at"`
 	UserID       []byte         `db:"user_id"`
 }
 
@@ -37,25 +37,26 @@ type DrawResult struct {
 }
 
 type Participant struct {
-	ID             []byte    `db:"id"`
-	CreatedAt      time.Time `db:"created_at"`
-	UpdatedAt      time.Time `db:"updated_at"`
-	JoinedAt       time.Time `db:"joined_at"`
-	SecretFriendID []byte    `db:"secret_friend_id"`
-	UserID         []byte    `db:"user_id"`
+	ID             []byte       `db:"id"`
+	CreatedAt      time.Time    `db:"created_at"`
+	UpdatedAt      time.Time    `db:"updated_at"`
+	JoinedAt       sql.NullTime `db:"joined_at"`
+	SecretFriendID []byte       `db:"secret_friend_id"`
+	UserID         []byte       `db:"user_id"`
 }
 
 type SecretFriend struct {
-	ID         []byte         `db:"id"`
-	CreatedAt  time.Time      `db:"created_at"`
-	UpdatedAt  time.Time      `db:"updated_at"`
-	Name       string         `db:"name"`
-	Datetime   time.Time      `db:"datetime"`
-	Location   sql.NullString `db:"location"`
-	InviteCode string         `db:"invite_code"`
-	InviteLink sql.NullString `db:"invite_link"`
-	Status     string         `db:"status"`
-	OwnerID    []byte         `db:"owner_id"`
+	ID              []byte         `db:"id"`
+	CreatedAt       time.Time      `db:"created_at"`
+	UpdatedAt       time.Time      `db:"updated_at"`
+	Name            string         `db:"name"`
+	Datetime        sql.NullTime   `db:"datetime"`
+	Location        sql.NullString `db:"location"`
+	MaxDenyListSize uint8          `db:"max_deny_list_size"`
+	InviteCode      string         `db:"invite_code"`
+	InviteLink      sql.NullString `db:"invite_link"`
+	Status          string         `db:"status"`
+	OwnerID         []byte         `db:"owner_id"`
 }
 
 type User struct {
@@ -74,9 +75,10 @@ type User struct {
 }
 
 type WishlistItem struct {
-	ID            []byte    `db:"id"`
-	CreatedAt     time.Time `db:"created_at"`
-	UpdatedAt     time.Time `db:"updated_at"`
-	Label         string    `db:"label"`
-	ParticipantID []byte    `db:"participant_id"`
+	ID            []byte         `db:"id"`
+	CreatedAt     time.Time      `db:"created_at"`
+	UpdatedAt     time.Time      `db:"updated_at"`
+	Label         string         `db:"label"`
+	Comments      sql.NullString `db:"comments"`
+	ParticipantID []byte         `db:"participant_id"`
 }
