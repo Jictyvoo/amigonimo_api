@@ -19,7 +19,10 @@ func (AuthToken) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("user_id", uuid.UUID{}).Unique(),
 		field.String("token").MaxLen(52),
-		field.UUID("refresh_token", uuid.UUID{}).Optional(),
+		field.UUID("refresh_token", uuid.UUID{}).
+			// This is needed because SQLc doesn't recognize the UUID type on MariaDB dialect
+			SchemaType(customixins.SchemaTypeUUID()).
+			Optional(),
 		field.Time("expires_at"),
 	}
 }

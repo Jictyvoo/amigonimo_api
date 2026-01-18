@@ -31,13 +31,15 @@ func (UUIDMixin) Fields() []ent.Field {
 			Immutable().
 			Default(uuid.New). // generate in Go for SQLite and fallback
 			Annotations(defaultExpr).
-			SchemaType(
-				map[string]string{
-					// dialect.MySQL:    "BINARY(16)", // MySQL
-					dialect.MySQL:    "UUID", // MariaDB
-					dialect.Postgres: "uuid",
-					dialect.SQLite:   "blob",
-				},
-			),
+			SchemaType(SchemaTypeUUID()),
+	}
+}
+
+func SchemaTypeUUID() map[string]string {
+	return map[string]string{
+		dialect.MySQL: "BINARY(16)", // MySQL
+		// dialect.MySQL:    "UUID", // MariaDB
+		dialect.Postgres: "uuid",
+		dialect.SQLite:   "blob",
 	}
 }
