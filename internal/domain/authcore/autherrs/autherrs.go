@@ -56,7 +56,6 @@ var (
 	ErrPasswordEncryption   = &errPasswordEncryption{}
 	ErrUpdatePassword       = &errUpdatePassword{}
 	ErrUpdateUsername       = &errUpdateUsername{}
-	ErrUserCreation         = &errUserCreation{}
 	ErrWrongPassword        = &errWrongPassword{}
 	ErrVerificationCode     = &errVerificationCode{}
 	ErrGenRecoveryCode      = &errGenRecoveryCode{}

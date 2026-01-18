@@ -16,8 +16,9 @@ type (
 	}
 )
 
-func NewHexID() HexID {
-	return HexID(uuid.New())
+func NewHexID() (HexID, error) {
+	uid, err := uuid.NewV7()
+	return HexID(uid), err
 }
 
 func (id HexID) IsEmpty() bool {

@@ -67,12 +67,17 @@ func (e errUpdateUsername) reason() string {
 	return "internal error: cannot update the username"
 }
 
-// errUserCreation represents an error when user creation fails.
-type errUserCreation struct {
-	baseErrorWrapper[errUserCreation, *errUserCreation]
+// ErrUserCreation represents an error when user creation fails.
+type ErrUserCreation struct {
+	baseErrorWrapper[ErrUserCreation, *ErrUserCreation]
 }
 
-func (e errUserCreation) reason() string {
+func NewErrUserCreation(err error) (newErr ErrUserCreation) {
+	newErr.Err = err
+	return
+}
+
+func (e ErrUserCreation) reason() string {
 	return "user can't be created"
 }
 
