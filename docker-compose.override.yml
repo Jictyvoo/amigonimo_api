@@ -1,6 +1,6 @@
 services:
-  mysql:
+  mariadb:
     ports:
       - "3306:3306"
     volumes:
-      - ./build/mysql-init:/docker-entrypoint-initdb.d:ro
+      - ./build/mariadb-init:/docker-entrypoint-initdb.d:ro

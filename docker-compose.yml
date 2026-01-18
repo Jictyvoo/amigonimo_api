@@ -1,11 +1,11 @@
 services:
-  mysql:
-    image: mysql:8
+  mariadb:
+    image: mariadb:12
     env_file:
-      - path: build/local.mysql.env
+      - path: build/local.mariadb.env
         required: true
     environment:
-      MYSQL_ROOT_HOST: "%"
+      MARIADB_ROOT_HOST: "%"
     ports:
       - "3306:3306"
     deploy:
@@ -15,7 +15,7 @@ services:
         reservations:
           memory: 250M   # Guaranteed minimum
     healthcheck:
-      test: [ "CMD-SHELL", "mysql -h localhost -u$$MYSQL_USER -p$$MYSQL_PASSWORD -e 'SELECT 1;'" ]
+      test: [ "CMD-SHELL", "mariadb -h localhost -u$$MARIADB_USER -p$$MARIADB_PASSWORD -e 'SELECT 1;'" ]
       interval: 20s
       timeout: 5s
       retries: 8
