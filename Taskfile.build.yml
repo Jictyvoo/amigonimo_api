@@ -57,5 +57,5 @@ tasks:
   gen:code:
     desc: Generate all needed code for the project to run
     cmds:
-      - go generate ./...
       - go tool -modfile={{.TOOLS_MODFILE}} sqlc generate
+      - go generate ./...
