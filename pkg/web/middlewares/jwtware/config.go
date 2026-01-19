@@ -7,6 +7,11 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+type TokenClaims[T any] interface {
+	*T
+	jwt.Claims
+}
+
 type AuthScheme string
 
 const (
@@ -26,29 +31,32 @@ type SigningKey struct {
 	Key any
 }
 
-type Config[T jwt.Claims] struct {
-	// SigningKey is the primary key used to validate tokens.
-	SigningKey SigningKey
+type (
+	MapClaimsConfig                 = Config[jwt.MapClaims, *jwt.MapClaims]
+	Config[T any, V TokenClaims[T]] struct {
+		// SigningKey is the primary key used to validate tokens.
+		SigningKey SigningKey
 
-	// KeyFunc provides the public key for JWT verification.
-	// It handles algorithm verification and key selection.
-	// At least one of the following is required: KeyFunc or SigningKey.
-	KeyFunc jwt.Keyfunc
+		// KeyFunc provides the public key for JWT verification.
+		// It handles algorithm verification and key selection.
+		// At least one of the following is required: KeyFunc or SigningKey.
+		KeyFunc jwt.Keyfunc
 
-	// TokenProcessorFunc processes the token extracted.
-	// Optional. Default: nil
-	TokenProcessorFunc func(token string, keyFunc jwt.Keyfunc) (T, error)
+		// TokenProcessorFunc processes the token extracted.
+		// Optional. Default: nil
+		TokenProcessorFunc func(token string, keyFunc jwt.Keyfunc) (T, error)
 
-	// ErrorHandler deals with all errors raised.
-	// Optional. Default: nil
-	ErrorHandler func(w http.ResponseWriter, err error)
+		// ErrorHandler deals with all errors raised.
+		// Optional. Default: nil
+		ErrorHandler func(w http.ResponseWriter, err error)
 
-	// Scheme represents the desired scheme to check on Authorization header.
-	// Optional. Default: SchemeBearer
-	Scheme AuthScheme
-}
+		// Scheme represents the desired scheme to check on Authorization header.
+		// Optional. Default: SchemeBearer
+		Scheme AuthScheme
+	}
+)
 
-func normalizeConfig[T jwt.Claims](optConfigList ...Config[T]) (conf Config[T]) {
+func normalizeConfig[T any, V TokenClaims[T]](optConfigList ...Config[T, V]) (conf Config[T, V]) {
 	if len(optConfigList) > 0 {
 		conf = optConfigList[0]
 	}
@@ -58,7 +66,7 @@ func normalizeConfig[T jwt.Claims](optConfigList ...Config[T]) (conf Config[T]) 
 	}
 
 	if conf.TokenProcessorFunc == nil {
-		conf.TokenProcessorFunc = defaultTokenProcessor[T]
+		conf.TokenProcessorFunc = defaultTokenProcessor[T, V]
 	}
 
 	if conf.KeyFunc == nil {
@@ -71,9 +79,9 @@ func normalizeConfig[T jwt.Claims](optConfigList ...Config[T]) (conf Config[T]) 
 	return conf
 }
 
-func defaultTokenProcessor[T jwt.Claims](token string, keyFunc jwt.Keyfunc) (T, error) {
+func defaultTokenProcessor[T any, V TokenClaims[T]](token string, keyFunc jwt.Keyfunc) (T, error) {
 	var storedClaims T
-	decodedToken, err := jwt.ParseWithClaims(token, storedClaims, keyFunc)
+	decodedToken, err := jwt.ParseWithClaims(token, V(&storedClaims), keyFunc)
 	if err != nil {
 		return storedClaims, err
 	}
@@ -81,6 +89,6 @@ func defaultTokenProcessor[T jwt.Claims](token string, keyFunc jwt.Keyfunc) (T, 
 	if !decodedToken.Valid {
 		return storedClaims, errors.New("invalid token")
 	}
-	storedClaims, _ = decodedToken.Claims.(T)
+
 	return storedClaims, nil
 }

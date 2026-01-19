@@ -55,7 +55,7 @@ func (serv AuthService) UserSignUp(inputUser entities.UserBasic) (entities.User,
 		return entities.User{}, autherrs.NewErrUserCreation(err)
 	}
 	// Here the activation email will be generated
-	verificationToken := authcore.GenerateActivationToken(newUser.Username + ":" + newUser.Email)
+	verificationToken := authcore.GenerateActivationToken(newUser.ID.String())
 	if err = serv.userRepository.CreateUser(newUser, verificationToken); err != nil {
 		return entities.User{}, autherrs.NewErrUserCreation(err)
 	}

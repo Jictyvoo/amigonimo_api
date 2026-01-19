@@ -9,8 +9,6 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/bootstrap"
 	"github.com/jictyvoo/amigonimo_api/pkg/web"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/authctrl"
-	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/dashboardctrl"
-	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/invitesctrl"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/secretfriendsctrl"
 )
 
@@ -33,6 +31,7 @@ func main() {
 	conf.Runtime.AuthSecretKey = "" // Empty the secret key after injection
 
 	// Create web server
+	//goland:noinspection GoResourceLeak
 	server, err := web.NewServer(
 		conf, jwtPublicKey, web.WithPublicRouters(
 			authctrl.NewAuthRouter(
@@ -43,8 +42,6 @@ func main() {
 			),
 		),
 		web.WithPrivateRouters(
-			dashboardctrl.NewRouter(),
-			invitesctrl.NewRouter(),
 			secretfriendsctrl.NewRouter(inj),
 		),
 	)

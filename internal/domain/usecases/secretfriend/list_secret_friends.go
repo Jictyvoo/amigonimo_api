@@ -1,0 +1,60 @@
+package secretfriend
+
+import (
+	"time"
+
+	"github.com/jictyvoo/amigonimo_api/internal/entities"
+)
+
+type (
+	EventsList struct {
+		Created     []entities.SecretFriend
+		Participant []entities.SecretFriend
+	}
+	ActiveInactiveListEvents struct {
+		Active, Inactive EventsList
+	}
+)
+
+func (uc *UseCase) ListUserSecretFriends(userID entities.HexID) (ActiveInactiveListEvents, error) {
+	rawList, err := uc.repo.ListSecretFriends(userID)
+	if err != nil {
+		return ActiveInactiveListEvents{}, err
+	}
+
+	initialCap := len(rawList) >> 2 // divide by 4
+	sortedList := ActiveInactiveListEvents{
+		Active: EventsList{
+			Created:     make([]entities.SecretFriend, 0, initialCap),
+			Participant: make([]entities.SecretFriend, 0, initialCap),
+		},
+		Inactive: EventsList{
+			Created:     make([]entities.SecretFriend, 0, initialCap),
+			Participant: make([]entities.SecretFriend, 0, initialCap),
+		},
+	}
+
+	// Iterate over the returned list and sort each status
+	for _, sf := range rawList {
+		asOwner := !sf.OwnerID.IsEmpty()
+		isActive := sf.Status != entities.StatusClosed &&
+			// Check for zero datetime, so allow it only if the valid date is after today
+			(sf.Datetime.IsZero() || sf.Datetime.After(time.Now()))
+
+		var dest *[]entities.SecretFriend
+		switch {
+		case asOwner && isActive:
+			dest = &sortedList.Active.Created
+		case isActive:
+			dest = &sortedList.Active.Participant
+		case asOwner:
+			dest = &sortedList.Inactive.Created
+		default:
+			dest = &sortedList.Inactive.Participant
+		}
+
+		*dest = append(*dest, sf)
+	}
+
+	return sortedList, nil
+}

@@ -3,11 +3,11 @@ A idéia desse sistema é seguir o seguinte fluxo:
 - Gerente vai e cria um amigo secreto
     - Possibilidades:
         - ~~nomeia quem vai e tals, põe por email/apelido (algo assim)~~
-            - ~~⁠enquanto o gerente vai nomeando, verificamos na base os perfis públicos e já botamos um "já tem conta, nome X"~~
+            - ~~enquanto o gerente vai nomeando, verificamos na base os perfis públicos e já botamos um "já tem conta, nome X"~~
         - ele recebe um código para mandar para todos
         - ele recebe um link gerado para mandar para todos
             - pode ser só uma forma de encapsular o código anterior
-- ⁠a partir desse link cada um gera uma credencial e acessa os dados de em quais amigos secretos está e o dashboard deles
+- a partir desse link cada um gera uma credencial e acessa os dados de em quais amigos secretos está e o dashboard deles
 
 ## Entrada e/ou cadastro no amigo secreto
 Com o intuito de realizar um cadastro mais ágil e acelerar o processo de desenvolvimento, nós iremos adotar a abordagem de autenticação via código/nome.

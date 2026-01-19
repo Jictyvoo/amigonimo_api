@@ -4,6 +4,10 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/authtokenrepo"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/authuserepo"
+	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/denylistrepo"
+	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/participantrepo"
+	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/secretfriendrepo"
+	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/wishlistrepo"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/wrapped-owls/goremy-di/remy"
@@ -21,5 +25,21 @@ func RegisterRepositories(inj remy.Injector) {
 	remy.RegisterConstructorArgs1(
 		inj, remy.Factory[*authtokenrepo.RepoMySQL],
 		authtokenrepo.NewRepoMySQL,
+	)
+	remy.RegisterConstructorArgs1(
+		inj, remy.Factory[*secretfriendrepo.RepoMySQL],
+		secretfriendrepo.NewRepoMySQL,
+	)
+	remy.RegisterConstructorArgs1(
+		inj, remy.Factory[*participantrepo.RepoMySQL],
+		participantrepo.NewRepoMySQL,
+	)
+	remy.RegisterConstructorArgs1(
+		inj, remy.Factory[*denylistrepo.RepoMySQL],
+		denylistrepo.NewRepoMySQL,
+	)
+	remy.RegisterConstructorArgs1(
+		inj, remy.Factory[*wishlistrepo.RepoMySQL],
+		wishlistrepo.NewRepoMySQL,
 	)
 }

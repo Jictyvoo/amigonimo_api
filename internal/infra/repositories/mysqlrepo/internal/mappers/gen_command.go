@@ -27,6 +27,10 @@ func TimeFromNullTime(nt sql.NullTime) time.Time {
 	return time.Time{}
 }
 
+func TimeToNullTime(t time.Time) sql.NullTime {
+	return sql.NullTime{Time: t, Valid: !t.IsZero()}
+}
+
 func StringFromNullString(ns sql.NullString) string {
 	if ns.Valid {
 		return ns.String
