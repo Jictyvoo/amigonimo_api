@@ -26,11 +26,11 @@ func NewRouter(injector remy.Injector) *Router {
 }
 
 func (r *Router) RegisterRoutes(server *fuego.Server) error {
-	var sfFac UseCaseFactory[*secretfriend.UseCase] = func(ctx context.Context) (*secretfriend.UseCase, error) {
-		return remy.GetWithContext[*secretfriend.UseCase](r.injector, ctx)
+	var sfFac UseCaseFactory[secretfriend.UseCase] = func(ctx context.Context) (secretfriend.UseCase, error) {
+		return remy.GetWithContext[secretfriend.UseCase](r.injector, ctx)
 	}
-	var drawFac UseCaseFactory[*drawfriends.UseCase] = func(ctx context.Context) (*drawfriends.UseCase, error) {
-		return remy.GetWithContext[*drawfriends.UseCase](r.injector, ctx)
+	var drawFac UseCaseFactory[drawfriends.UseCase] = func(ctx context.Context) (drawfriends.UseCase, error) {
+		return remy.GetWithContext[drawfriends.UseCase](r.injector, ctx)
 	}
 
 	ctrl := NewController(sfFac, drawFac)
@@ -44,6 +44,21 @@ func (r *Router) RegisterRoutes(server *fuego.Server) error {
 		option.Description(
 			"Create a new secret friend event with name, datetime, location, and optional max deny list size",
 		),
+		groupTag, web.OptionAuthToken(),
+	)
+
+	fuego.Get(
+		server, "/", ctrl.GetSecretFriendList,
+		option.Summary("List all user's linked secret-friends"),
+		option.Description(
+			"List secret-friends grouped by active/inactive",
+		),
+		groupTag, web.OptionAuthToken(),
+	)
+
+	fuego.Get(
+		server, "/invites/description/{code}", ctrl.GetInviteByCode,
+		option.Summary("Get secret friend details by its invite-code"),
 		groupTag, web.OptionAuthToken(),
 	)
 
@@ -62,16 +77,16 @@ func (r *Router) RegisterRoutes(server *fuego.Server) error {
 	)
 
 	fuego.Post(
-		server, "/{id}/drawfriends", ctrl.DrawSecretFriend,
-		option.Summary("Execute secret friend drawfriends"),
-		option.Description("Execute the drawfriends algorithm for a secret friend event"),
+		server, "/{id}/draw", ctrl.DrawSecretFriend,
+		option.Summary("Execute secret friend draw"),
+		option.Description("Execute the draw algorithm for a secret friend event"),
 		optionEventID, groupTag, web.OptionAuthToken(),
 	)
 
 	fuego.Get(
-		server, "/{id}/drawfriends-result", ctrl.GetDrawResult,
-		option.Summary("Get drawfriends result"),
-		option.Description("Get the drawfriends result for the authenticated user"),
+		server, "/{id}/draw-result", ctrl.GetDrawResult,
+		option.Summary("Get draw result"),
+		option.Description("Get the draw result for the authenticated user"),
 		optionEventID, groupTag, web.OptionAuthToken(),
 	)
 

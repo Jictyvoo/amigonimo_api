@@ -2,6 +2,7 @@ package secretfriendsctrl
 
 import (
 	"context"
+	"errors"
 
 	"github.com/go-fuego/fuego"
 	"github.com/wrapped-owls/goremy-di/remy"
@@ -17,14 +18,14 @@ type (
 	Controller            struct {
 		web.DefaultController
 
-		sfUseCaseFactory   UseCaseFactory[*secretfriend.UseCase]
-		drawUseCaseFactory UseCaseFactory[*drawfriends.UseCase]
+		sfUseCaseFactory   UseCaseFactory[secretfriend.UseCase]
+		drawUseCaseFactory UseCaseFactory[drawfriends.UseCase]
 	}
 )
 
 func NewController(
-	sfFac UseCaseFactory[*secretfriend.UseCase],
-	drawFac UseCaseFactory[*drawfriends.UseCase],
+	sfFac UseCaseFactory[secretfriend.UseCase],
+	drawFac UseCaseFactory[drawfriends.UseCase],
 ) Controller {
 	return Controller{
 		sfUseCaseFactory:   sfFac,
@@ -46,21 +47,12 @@ func (ctrl *Controller) CreateSecretFriend(
 		return nil, err
 	}
 
-	user, err := remy.GetWithContext[entities.User](
-		nil,
-		c.Context(),
-	) // Assuming User is injected in context
-	if err != nil {
-		return nil, err
-	}
-
 	secretFriend, err := sfUC.Create(
 		secretfriend.CreateInput{
 			Name:            req.Name,
 			Datetime:        req.Datetime,
 			Location:        req.Location,
 			MaxDenyListSize: req.MaxDenyListSize,
-			OwnerID:         user.ID,
 		},
 	)
 	if err != nil {
@@ -71,6 +63,34 @@ func (ctrl *Controller) CreateSecretFriend(
 		SecretFriendID: secretFriend.ID.String(),
 		InviteCode:     secretFriend.InviteCode,
 	}, nil
+}
+
+// GetSecretFriendList handles GET /.
+func (ctrl *Controller) GetSecretFriendList(
+	c fuego.ContextNoBody,
+) (DashboardResponse, error) {
+	user, err := remy.GetWithContext[entities.User](nil, c.Context())
+	if err != nil {
+		return DashboardResponse{}, err
+	}
+
+	uc, err := ctrl.sfUseCaseFactory(c.Context())
+	if err != nil {
+		return DashboardResponse{}, err
+	}
+
+	result, err := uc.ListUserSecretFriends(user.ID)
+	if err != nil {
+		return DashboardResponse{}, err
+	}
+
+	var dashResp DashboardResponse
+	parseEventList(&dashResp.Active.Created, result.Active.Created)
+	parseEventList(&dashResp.Active.Participant, result.Active.Participant)
+	parseEventList(&dashResp.Inactive.Created, result.Inactive.Created)
+	parseEventList(&dashResp.Inactive.Participant, result.Inactive.Participant)
+
+	return dashResp, nil
 }
 
 // GetSecretFriend handles GET /secret-friends/{id}.
@@ -138,7 +158,7 @@ func (ctrl *Controller) UpdateSecretFriend(
 	}, nil
 }
 
-// DrawSecretFriend handles POST /secret-friends/{id}/drawfriends.
+// DrawSecretFriend handles POST /secret-friends/{id}/draw.
 func (ctrl *Controller) DrawSecretFriend(
 	c fuego.ContextNoBody,
 ) (*DrawSecretFriendResponse, error) {
@@ -210,5 +230,30 @@ func (ctrl *Controller) GetDrawResult(
 		TargetUserID: result.Receiver.RelatedUser.ID.String(),
 		TargetName:   result.Receiver.RelatedUser.FullName,
 		Wishlist:     wishlist,
+	}, nil
+}
+
+// GetInviteByCode handles GET /invites/{code}.
+func (ctrl *Controller) GetInviteByCode(
+	c fuego.ContextNoBody,
+) (*InviteInfoResponse, error) {
+	code := c.PathParam("code")
+	if code == "" {
+		return nil, errors.New("missing invite code")
+	}
+
+	uc, err := ctrl.sfUseCaseFactory(c.Context())
+	if err != nil {
+		return nil, err
+	}
+
+	sf, err := uc.GetInviteInfo(code)
+	if err != nil {
+		return nil, err
+	}
+
+	return &InviteInfoResponse{
+		SecretFriendID: sf.ID.String(),
+		Name:           sf.Name,
 	}, nil
 }
