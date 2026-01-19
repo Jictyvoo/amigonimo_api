@@ -11,7 +11,7 @@ type HttpMiddleware = func(http.Handler) http.Handler
 
 type (
 	RouterWithSubRouter interface {
-		SubRouters() []RouterContract
+		SubRouters() (subgroupPattern string, routers []RouterContract)
 	}
 	RouterMiddlewareExtender interface {
 		AddMiddleware(middleware HttpMiddleware)
@@ -31,15 +31,20 @@ func SetupRoutes(server *fuego.Server, routerList ...RouterContract) error {
 			fuego.OptionMiddleware(router.Middlewares()...),
 		)
 
+		if withSubRouter, ok := router.(RouterWithSubRouter); ok {
+			subGroupPattern, subRouterList := withSubRouter.SubRouters()
+			subGroupRouter := groupRouter
+			if subGroupPattern != "" {
+				subGroupRouter = fuego.Group(groupRouter, subGroupPattern)
+			}
+			if err := SetupRoutes(subGroupRouter, subRouterList...); err != nil {
+				return err
+			}
+		}
+
 		// Setup versioned route
 		if err := router.RegisterRoutes(groupRouter); err != nil {
 			return fmt.Errorf("failed to register `%s` routes: %w", groupName, err)
-		}
-
-		if withSubRouter, ok := router.(RouterWithSubRouter); ok {
-			if err := SetupRoutes(groupRouter, withSubRouter.SubRouters()...); err != nil {
-				return err
-			}
 		}
 	}
 

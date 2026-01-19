@@ -45,7 +45,7 @@ func main() {
 		web.WithPrivateRouters(
 			dashboardctrl.NewRouter(),
 			invitesctrl.NewRouter(),
-			secretfriendsctrl.NewRouter(),
+			secretfriendsctrl.NewRouter(inj),
 		),
 	)
 	if err != nil {

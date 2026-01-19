@@ -2,6 +2,7 @@ package secretfriendsctrl
 
 import (
 	"github.com/go-fuego/fuego"
+	"github.com/wrapped-owls/goremy-di/remy"
 
 	"github.com/jictyvoo/amigonimo_api/pkg/web"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/denylistctrl"
@@ -11,10 +12,11 @@ import (
 
 type Router struct {
 	middlewares []web.HttpMiddleware
+	injector    remy.Injector
 }
 
-func NewRouter() *Router {
-	return &Router{middlewares: []web.HttpMiddleware{}}
+func NewRouter(inj remy.Injector) *Router {
+	return &Router{injector: inj, middlewares: []web.HttpMiddleware{}}
 }
 
 func (r *Router) RegisterRoutes(server *fuego.Server) error {
@@ -41,10 +43,10 @@ func (r *Router) Middlewares() []web.HttpMiddleware {
 	return r.middlewares
 }
 
-func (r *Router) SubRouters() []web.RouterContract {
-	return []web.RouterContract{
-		wishlistctrl.NewRouter(),
-		denylistctrl.NewRouter(),
-		participantsctrl.NewRouter(),
+func (r *Router) SubRouters() (subgroupPattern string, routers []web.RouterContract) {
+	return "/{id}", []web.RouterContract{
+		wishlistctrl.NewRouter(r.injector),
+		denylistctrl.NewRouter(r.injector),
+		participantsctrl.NewRouter(r.injector),
 	}
 }

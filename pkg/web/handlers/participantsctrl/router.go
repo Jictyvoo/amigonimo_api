@@ -2,6 +2,7 @@ package participantsctrl
 
 import (
 	"github.com/go-fuego/fuego"
+	"github.com/wrapped-owls/goremy-di/remy"
 
 	"github.com/jictyvoo/amigonimo_api/pkg/web"
 )
@@ -10,7 +11,7 @@ type Router struct {
 	middlewares []web.HttpMiddleware
 }
 
-func NewRouter() *Router {
+func NewRouter(remy.Injector) *Router {
 	return &Router{middlewares: []web.HttpMiddleware{}}
 }
 
@@ -25,7 +26,7 @@ func (r *Router) RegisterRoutes(server *fuego.Server) error {
 }
 
 func (r *Router) GroupName() string {
-	return "/{id}/participants"
+	return "/participants"
 }
 
 func (r *Router) Middlewares() []web.HttpMiddleware {
