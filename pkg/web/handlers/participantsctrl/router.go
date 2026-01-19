@@ -6,8 +6,6 @@ import (
 	"github.com/go-fuego/fuego"
 	"github.com/wrapped-owls/goremy-di/remy"
 
-	"github.com/wrapped-owls/goremy-di/remy"
-
 	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/participant"
 	"github.com/jictyvoo/amigonimo_api/pkg/web"
 )
