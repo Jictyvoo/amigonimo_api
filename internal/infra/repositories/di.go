@@ -4,6 +4,7 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/authtokenrepo"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/authuserepo"
+	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/denylistrepo"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/wrapped-owls/goremy-di/remy"
@@ -21,5 +22,9 @@ func RegisterRepositories(inj remy.Injector) {
 	remy.RegisterConstructorArgs1(
 		inj, remy.Factory[*authtokenrepo.RepoMySQL],
 		authtokenrepo.NewRepoMySQL,
+	)
+	remy.RegisterConstructorArgs1(
+		inj, remy.Factory[*denylistrepo.RepoMySQL],
+		denylistrepo.NewRepoMySQL,
 	)
 }
