@@ -28,8 +28,8 @@ type UseCase struct {
 	drawServ drawserv.Service
 }
 
-func New(repo Repository, drawServ drawserv.Service) *UseCase {
-	return &UseCase{
+func New(repo Repository, drawServ drawserv.Service) UseCase {
+	return UseCase{
 		repo:     repo,
 		drawServ: drawServ,
 	}

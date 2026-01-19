@@ -11,6 +11,7 @@ type Repository interface {
 	GetSecretFriendByID(id entities.HexID) (entities.SecretFriend, error)
 	UpdateSecretFriend(sf *entities.SecretFriend) error
 	ListSecretFriends(userID entities.HexID) ([]entities.SecretFriend, error)
+	GetSecretFriendByInviteCode(code string) (entities.SecretFriend, error)
 }
 
 type UseCase struct {
