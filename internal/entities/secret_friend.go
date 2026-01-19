@@ -30,7 +30,7 @@ type SecretFriend struct {
 
 	ID              HexID
 	Name            string
-	Datetime        *time.Time
+	Datetime        time.Time
 	Location        string
 	OwnerID         HexID
 	InviteCode      string
@@ -41,7 +41,7 @@ type SecretFriend struct {
 }
 
 func (sf *SecretFriend) Normalize() {
-	if sf.Datetime != nil {
-		*sf.Datetime = sf.Datetime.In(time.UTC)
+	if !sf.Datetime.IsZero() {
+		sf.Datetime = sf.Datetime.In(time.UTC)
 	}
 }

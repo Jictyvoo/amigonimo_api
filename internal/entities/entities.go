@@ -21,6 +21,14 @@ func NewHexID() (HexID, error) {
 	return HexID(uid), err
 }
 
+func ParseHexID(input string) (HexID, error) {
+	loadId, err := uuid.Parse(input)
+	if err != nil {
+		return HexID{}, err
+	}
+	return HexID(loadId), nil
+}
+
 func (id HexID) IsEmpty() bool {
 	return id == HexID(uuid.Nil)
 }
