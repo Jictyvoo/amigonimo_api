@@ -16,6 +16,6 @@ func RegisterServices(inj remy.Injector) {
 
 	// General protected services
 	remy.RegisterConstructor(inj, remy.Factory[drawserv.Service], drawserv.New)
-	remy.RegisterConstructorArgs1(inj, remy.Factory[*secretfriend.UseCase], secretfriend.New)
+	remy.RegisterConstructorArgs2(inj, remy.Factory[secretfriend.UseCase], secretfriend.New)
 	remy.RegisterConstructorArgs2(inj, remy.Factory[*drawfriends.UseCase], drawfriends.New)
 }

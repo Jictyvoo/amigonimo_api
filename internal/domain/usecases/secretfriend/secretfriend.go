@@ -10,14 +10,16 @@ type Repository interface {
 	CreateSecretFriend(sf *entities.SecretFriend) error
 	GetSecretFriendByID(id entities.HexID) (entities.SecretFriend, error)
 	UpdateSecretFriend(sf *entities.SecretFriend) error
+	ListSecretFriends(userID entities.HexID) ([]entities.SecretFriend, error)
 }
 
 type UseCase struct {
-	repo Repository
+	repo           Repository
+	associatedUser entities.User
 }
 
-func New(repo Repository) *UseCase {
-	return &UseCase{repo: repo}
+func New(associatedUser entities.User, repo Repository) UseCase {
+	return UseCase{associatedUser: associatedUser, repo: repo}
 }
 
 func (uc *UseCase) Get(id entities.HexID) (entities.SecretFriend, error) {

@@ -23,6 +23,10 @@ type Participant struct {
 	Wishlist       Wishlist
 }
 
+func NewParticipant(secretFriendID HexID, relatedUser User) Participant {
+	return Participant{SecretFriendID: secretFriendID, RelatedUser: relatedUser}
+}
+
 type (
 	WishlistItem struct {
 		Timestamp

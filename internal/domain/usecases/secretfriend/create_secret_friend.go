@@ -11,10 +11,9 @@ import (
 
 type CreateInput struct {
 	Name            string
-	Datetime        *time.Time
+	Datetime        time.Time
 	Location        string
 	MaxDenyListSize uint8
-	OwnerID         entities.HexID
 }
 
 func (uc *UseCase) Create(input CreateInput) (entities.SecretFriend, error) {
@@ -25,7 +24,7 @@ func (uc *UseCase) Create(input CreateInput) (entities.SecretFriend, error) {
 		Name:            input.Name,
 		Datetime:        input.Datetime,
 		Location:        input.Location,
-		OwnerID:         input.OwnerID,
+		OwnerID:         uc.associatedUser.ID,
 		InviteCode:      inviteCode,
 		MaxDenyListSize: input.MaxDenyListSize,
 		Status:          entities.StatusDraft,
