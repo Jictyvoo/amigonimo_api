@@ -9,8 +9,8 @@ import (
 
 type Service struct{}
 
-func New() *Service {
-	return &Service{}
+func New() Service {
+	return Service{}
 }
 
 // ExecuteDraw generates a valid draw based on participants and their denylist.
