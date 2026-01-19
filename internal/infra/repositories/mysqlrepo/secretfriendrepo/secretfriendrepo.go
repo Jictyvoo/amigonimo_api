@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/drawfriends"
-	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/invite"
 	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/secretfriend"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo"
@@ -19,7 +18,6 @@ import (
 var (
 	_ secretfriend.Repository = (*RepoMySQL)(nil)
 	_ drawfriends.Repository  = (*RepoMySQL)(nil)
-	_ invite.Repository       = (*RepoMySQL)(nil)
 )
 
 type RepoMySQL struct {
@@ -233,9 +231,7 @@ func (r *RepoMySQL) GetSecretFriendByInviteCode(code string) (entities.SecretFri
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return entities.SecretFriend{}, dberrs.NewErrDatabaseNotFound(
-				"secret_friend",
-				code,
-				err,
+				"secret_friend", code, err,
 			)
 		}
 		return entities.SecretFriend{}, mysqlrepo.WrapError(err, "get secret friend by invite code")
