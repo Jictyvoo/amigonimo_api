@@ -13,48 +13,52 @@ import (
 
 const AddDenyListEntry = `-- name: AddDenyListEntry :execresult
 INSERT INTO denylists (id, participant_id, denied_user_id, created_at, updated_at)
-VALUES (?, (SELECT id FROM participants WHERE user_id = ? AND secret_friend_id = ?), ?, NOW(), NOW())
+VALUES (?,
+        COALESCE(
+                ?,
+                (SELECT id
+                 FROM participants
+                 WHERE user_id = ?
+                   AND secret_friend_id = ?
+                 LIMIT 1)
+        ),
+        ?, NOW(), NOW())
 `
 
 type AddDenyListEntryParams struct {
-	ID             []byte `db:"id"`
-	UserID         []byte `db:"user_id"`
-	SecretFriendID []byte `db:"secret_friend_id"`
-	DeniedUserID   []byte `db:"denied_user_id"`
+	ID             []byte      `db:"id"`
+	ParticipantID  interface{} `db:"participant_id"`
+	UserID         []byte      `db:"user_id"`
+	SecretFriendID []byte      `db:"secret_friend_id"`
+	DeniedUserID   []byte      `db:"denied_user_id"`
 }
 
 func (q *Queries) AddDenyListEntry(ctx context.Context, arg AddDenyListEntryParams) (sql.Result, error) {
 	return q.db.ExecContext(ctx, AddDenyListEntry,
 		arg.ID,
+		arg.ParticipantID,
 		arg.UserID,
 		arg.SecretFriendID,
 		arg.DeniedUserID,
 	)
 }
 
-const AddDenyListEntryByID = `-- name: AddDenyListEntryByID :execresult
-INSERT INTO denylists (id, participant_id, denied_user_id, created_at, updated_at)
-VALUES (?, ?, ?, NOW(), NOW())
-`
-
-type AddDenyListEntryByIDParams struct {
-	ID            []byte `db:"id"`
-	ParticipantID []byte `db:"participant_id"`
-	DeniedUserID  []byte `db:"denied_user_id"`
-}
-
-func (q *Queries) AddDenyListEntryByID(ctx context.Context, arg AddDenyListEntryByIDParams) (sql.Result, error) {
-	return q.db.ExecContext(ctx, AddDenyListEntryByID, arg.ID, arg.ParticipantID, arg.DeniedUserID)
-}
-
 const GetDenyListByParticipant = `-- name: GetDenyListByParticipant :many
 SELECT d.id, d.created_at, d.updated_at, d.participant_id, d.denied_user_id, u.fullname, u.email, u.username
 FROM denylists d
          JOIN users u ON d.denied_user_id = u.id
-WHERE d.participant_id = (SELECT id FROM participants WHERE user_id = ? AND secret_friend_id = ?)
+WHERE d.participant_id = COALESCE(
+        ?,
+        (SELECT id
+         FROM participants
+         WHERE user_id = ?
+           AND secret_friend_id = ?
+         LIMIT 1)
+                         )
 `
 
 type GetDenyListByParticipantParams struct {
+	ParticipantID  []byte `db:"participant_id"`
 	UserID         []byte `db:"user_id"`
 	SecretFriendID []byte `db:"secret_friend_id"`
 }
@@ -71,7 +75,7 @@ type GetDenyListByParticipantRow struct {
 }
 
 func (q *Queries) GetDenyListByParticipant(ctx context.Context, arg GetDenyListByParticipantParams) ([]GetDenyListByParticipantRow, error) {
-	rows, err := q.db.QueryContext(ctx, GetDenyListByParticipant, arg.UserID, arg.SecretFriendID)
+	rows, err := q.db.QueryContext(ctx, GetDenyListByParticipant, arg.ParticipantID, arg.UserID, arg.SecretFriendID)
 	if err != nil {
 		return nil, err
 	}
@@ -102,87 +106,33 @@ func (q *Queries) GetDenyListByParticipant(ctx context.Context, arg GetDenyListB
 	return items, nil
 }
 
-const GetDenyListByParticipantID = `-- name: GetDenyListByParticipantID :many
-SELECT d.id, d.created_at, d.updated_at, d.participant_id, d.denied_user_id, u.fullname, u.email, u.username
-FROM denylists d
-         JOIN users u ON d.denied_user_id = u.id
-WHERE d.participant_id = ?
-`
-
-type GetDenyListByParticipantIDRow struct {
-	ID            []byte    `db:"id"`
-	CreatedAt     time.Time `db:"created_at"`
-	UpdatedAt     time.Time `db:"updated_at"`
-	ParticipantID []byte    `db:"participant_id"`
-	DeniedUserID  []byte    `db:"denied_user_id"`
-	Fullname      string    `db:"fullname"`
-	Email         string    `db:"email"`
-	Username      string    `db:"username"`
-}
-
-func (q *Queries) GetDenyListByParticipantID(ctx context.Context, participantID []byte) ([]GetDenyListByParticipantIDRow, error) {
-	rows, err := q.db.QueryContext(ctx, GetDenyListByParticipantID, participantID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []GetDenyListByParticipantIDRow{}
-	for rows.Next() {
-		var i GetDenyListByParticipantIDRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.ParticipantID,
-			&i.DeniedUserID,
-			&i.Fullname,
-			&i.Email,
-			&i.Username,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const RemoveDenyListEntry = `-- name: RemoveDenyListEntry :exec
 DELETE
 FROM denylists
-WHERE participant_id = (SELECT id FROM participants WHERE user_id = ? AND secret_friend_id = ?)
+WHERE participant_id = COALESCE(
+        ?,
+        (SELECT id
+         FROM participants
+         WHERE user_id = ?
+           AND secret_friend_id = ?
+         LIMIT 1)
+                       )
   AND denied_user_id = ?
 `
 
 type RemoveDenyListEntryParams struct {
+	ParticipantID  []byte `db:"participant_id"`
 	UserID         []byte `db:"user_id"`
 	SecretFriendID []byte `db:"secret_friend_id"`
 	DeniedUserID   []byte `db:"denied_user_id"`
 }
 
 func (q *Queries) RemoveDenyListEntry(ctx context.Context, arg RemoveDenyListEntryParams) error {
-	_, err := q.db.ExecContext(ctx, RemoveDenyListEntry, arg.UserID, arg.SecretFriendID, arg.DeniedUserID)
-	return err
-}
-
-const RemoveDenyListEntryByID = `-- name: RemoveDenyListEntryByID :exec
-DELETE
-FROM denylists
-WHERE participant_id = ?
-  AND denied_user_id = ?
-`
-
-type RemoveDenyListEntryByIDParams struct {
-	ParticipantID []byte `db:"participant_id"`
-	DeniedUserID  []byte `db:"denied_user_id"`
-}
-
-func (q *Queries) RemoveDenyListEntryByID(ctx context.Context, arg RemoveDenyListEntryByIDParams) error {
-	_, err := q.db.ExecContext(ctx, RemoveDenyListEntryByID, arg.ParticipantID, arg.DeniedUserID)
+	_, err := q.db.ExecContext(ctx, RemoveDenyListEntry,
+		arg.ParticipantID,
+		arg.UserID,
+		arg.SecretFriendID,
+		arg.DeniedUserID,
+	)
 	return err
 }
