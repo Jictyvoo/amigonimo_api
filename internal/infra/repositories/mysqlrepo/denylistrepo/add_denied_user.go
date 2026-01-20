@@ -39,6 +39,6 @@ func (r *RepoMySQL) AddDenyListEntry(
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 		},
-		DeniedUsers: entities.Participant{RelatedUser: entities.User{ID: deniedUserID}},
+		InnerParticipant: entities.Participant{RelatedUser: entities.User{ID: deniedUserID}},
 	}, nil
 }

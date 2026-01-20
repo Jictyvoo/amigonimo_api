@@ -27,19 +27,7 @@ func (r *RepoMySQL) GetDenyListByParticipant(
 
 	deniedUsers := make([]entities.DeniedUser, len(rows))
 	for i, row := range rows {
-		deniedUsers[i] = entities.DeniedUser{
-			ID: mappers.HexIDFromBytes(row.ID),
-			DeniedUsers: entities.Participant{
-				RelatedUser: entities.User{
-					ID:       mappers.HexIDFromBytes(row.DeniedUserID),
-					FullName: row.Fullname,
-					UserBasic: entities.UserBasic{
-						Email:    row.Email,
-						Username: row.Username,
-					},
-				},
-			},
-		}
+		deniedUsers[i] = mappers.ToEntityDeniedUser(row)
 	}
 
 	return deniedUsers, nil

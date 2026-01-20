@@ -8,8 +8,8 @@ import (
 type DeniedUser struct {
 	Timestamp
 
-	ID          HexID
-	DeniedUsers Participant
+	ID               HexID
+	InnerParticipant Participant
 }
 
 type Participant struct {
