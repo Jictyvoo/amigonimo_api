@@ -3,7 +3,7 @@ INSERT INTO participants (id, secret_friend_id, user_id, joined_at, created_at, 
 VALUES (?, ?, ?, NOW(), NOW(), NOW());
 
 -- name: ListParticipantsBySecretFriend :many
-SELECT p.*, u.fullname, u.email, u.username
+SELECT sqlc.embed(p), u.fullname, u.email, u.username, u.id AS user_id
 FROM participants p
          JOIN users u ON p.user_id = u.id
 WHERE p.secret_friend_id = ?;

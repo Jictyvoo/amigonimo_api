@@ -15,38 +15,39 @@ import (
 // goverter:extend CopyTime
 // goverter:extend StringFromNullString
 type ParticipantConverter interface {
-	dbPartipantTimestampToEntity(p dbgen.Participant) entities.Timestamp
+	dbParticipantTimestampToEntity(p dbgen.Participant) entities.Timestamp
 
 	// goverter:map UserID ID | HexIDFromBytes
 	// goverter:ignore UserBasic
 	// goverter:ignore FullName
 	// goverter:ignore VerifiedAt
 	// goverter:ignore RememberToken
-	dbPartipantToRelatedUser(p dbgen.Participant) entities.User
+	dbParticipantToRelatedUser(p dbgen.Participant) entities.User
 
 	// goverter:map . Timestamp
 	// goverter:map . RelatedUser
 	// goverter:ignore DenyList
 	// goverter:ignore Wishlist
 	ToEntityParticipant(p dbgen.Participant) entities.Participant
-}
 
-func MapParticipantRow(p dbgen.ListParticipantsBySecretFriendRow) entities.Participant {
-	return entities.Participant{
-		Timestamp: entities.Timestamp{
-			CreatedAt: p.CreatedAt,
-			UpdatedAt: p.UpdatedAt,
-		},
-		ID:             HexIDFromBytes(p.ID),
-		SecretFriendID: HexIDFromBytes(p.SecretFriendID),
-		JoinedAt:       p.JoinedAt.Time,
-		RelatedUser: entities.User{
-			ID:       HexIDFromBytes(p.UserID),
-			FullName: p.Fullname,
-			UserBasic: entities.UserBasic{
-				Email:    p.Email,
-				Username: p.Username,
-			},
-		},
-	}
+	// goverter:ignore Password
+	dbListParticipantsBySecretFriendRowToBasicUser(
+		p dbgen.ListParticipantsBySecretFriendRow,
+	) entities.UserBasic
+
+	// goverter:map Fullname FullName
+	// goverter:map UserID ID
+	// goverter:map . UserBasic
+	// goverter:ignore VerifiedAt
+	// goverter:ignore RememberToken
+	dbListParticipantsBySecretFriendRowToRelatedUser(
+		p dbgen.ListParticipantsBySecretFriendRow,
+	) entities.User
+
+	// goverter:autoMap Participant
+	// goverter:map Participant Timestamp
+	// goverter:map . RelatedUser
+	// goverter:ignore DenyList
+	// goverter:ignore Wishlist
+	MapParticipantRow(p dbgen.ListParticipantsBySecretFriendRow) entities.Participant
 }

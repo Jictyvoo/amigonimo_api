@@ -8,22 +8,44 @@ import (
 	dbgen "github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/internal/dbgen"
 )
 
+func MapParticipantRow(source dbgen.ListParticipantsBySecretFriendRow) entities.Participant {
+	var entitiesParticipant entities.Participant
+	entitiesParticipant.Timestamp = dbParticipantTimestampToEntity(source.Participant)
+	entitiesParticipant.ID = HexIDFromBytes(source.Participant.ID)
+	entitiesParticipant.RelatedUser = dbListParticipantsBySecretFriendRowToRelatedUser(source)
+	entitiesParticipant.SecretFriendID = HexIDFromBytes(source.Participant.SecretFriendID)
+	entitiesParticipant.JoinedAt = TimeFromNullTime(source.Participant.JoinedAt)
+	return entitiesParticipant
+}
 func ToEntityParticipant(source dbgen.Participant) entities.Participant {
 	var entitiesParticipant entities.Participant
-	entitiesParticipant.Timestamp = dbPartipantTimestampToEntity(source)
+	entitiesParticipant.Timestamp = dbParticipantTimestampToEntity(source)
 	entitiesParticipant.ID = HexIDFromBytes(source.ID)
-	entitiesParticipant.RelatedUser = dbPartipantToRelatedUser(source)
+	entitiesParticipant.RelatedUser = dbParticipantToRelatedUser(source)
 	entitiesParticipant.SecretFriendID = HexIDFromBytes(source.SecretFriendID)
 	entitiesParticipant.JoinedAt = TimeFromNullTime(source.JoinedAt)
 	return entitiesParticipant
 }
-func dbPartipantTimestampToEntity(source dbgen.Participant) entities.Timestamp {
+func dbListParticipantsBySecretFriendRowToBasicUser(source dbgen.ListParticipantsBySecretFriendRow) entities.UserBasic {
+	var entitiesUserBasic entities.UserBasic
+	entitiesUserBasic.Username = source.Username
+	entitiesUserBasic.Email = source.Email
+	return entitiesUserBasic
+}
+func dbListParticipantsBySecretFriendRowToRelatedUser(source dbgen.ListParticipantsBySecretFriendRow) entities.User {
+	var entitiesUser entities.User
+	entitiesUser.UserBasic = dbListParticipantsBySecretFriendRowToBasicUser(source)
+	entitiesUser.ID = HexIDFromBytes(source.UserID)
+	entitiesUser.FullName = source.Fullname
+	return entitiesUser
+}
+func dbParticipantTimestampToEntity(source dbgen.Participant) entities.Timestamp {
 	var entitiesTimestamp entities.Timestamp
 	entitiesTimestamp.CreatedAt = CopyTime(source.CreatedAt)
 	entitiesTimestamp.UpdatedAt = CopyTime(source.UpdatedAt)
 	return entitiesTimestamp
 }
-func dbPartipantToRelatedUser(source dbgen.Participant) entities.User {
+func dbParticipantToRelatedUser(source dbgen.Participant) entities.User {
 	var entitiesUser entities.User
 	entitiesUser.ID = HexIDFromBytes(source.UserID)
 	return entitiesUser

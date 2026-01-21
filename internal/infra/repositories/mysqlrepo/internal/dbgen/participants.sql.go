@@ -8,7 +8,6 @@ package dbgen
 import (
 	"context"
 	"database/sql"
-	"time"
 )
 
 const AddParticipant = `-- name: AddParticipant :execresult
@@ -73,22 +72,18 @@ func (q *Queries) GetParticipantBySFAndUser(ctx context.Context, arg GetParticip
 }
 
 const ListParticipantsBySecretFriend = `-- name: ListParticipantsBySecretFriend :many
-SELECT p.id, p.created_at, p.updated_at, p.joined_at, p.secret_friend_id, p.user_id, u.fullname, u.email, u.username
+SELECT p.id, p.created_at, p.updated_at, p.joined_at, p.secret_friend_id, p.user_id, u.fullname, u.email, u.username, u.id AS user_id
 FROM participants p
          JOIN users u ON p.user_id = u.id
 WHERE p.secret_friend_id = ?
 `
 
 type ListParticipantsBySecretFriendRow struct {
-	ID             []byte       `db:"id"`
-	CreatedAt      time.Time    `db:"created_at"`
-	UpdatedAt      time.Time    `db:"updated_at"`
-	JoinedAt       sql.NullTime `db:"joined_at"`
-	SecretFriendID []byte       `db:"secret_friend_id"`
-	UserID         []byte       `db:"user_id"`
-	Fullname       string       `db:"fullname"`
-	Email          string       `db:"email"`
-	Username       string       `db:"username"`
+	Participant Participant `db:"participant"`
+	Fullname    string      `db:"fullname"`
+	Email       string      `db:"email"`
+	Username    string      `db:"username"`
+	UserID      []byte      `db:"user_id"`
 }
 
 func (q *Queries) ListParticipantsBySecretFriend(ctx context.Context, secretFriendID []byte) ([]ListParticipantsBySecretFriendRow, error) {
@@ -101,15 +96,16 @@ func (q *Queries) ListParticipantsBySecretFriend(ctx context.Context, secretFrie
 	for rows.Next() {
 		var i ListParticipantsBySecretFriendRow
 		if err := rows.Scan(
-			&i.ID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.JoinedAt,
-			&i.SecretFriendID,
-			&i.UserID,
+			&i.Participant.ID,
+			&i.Participant.CreatedAt,
+			&i.Participant.UpdatedAt,
+			&i.Participant.JoinedAt,
+			&i.Participant.SecretFriendID,
+			&i.Participant.UserID,
 			&i.Fullname,
 			&i.Email,
 			&i.Username,
+			&i.UserID,
 		); err != nil {
 			return nil, err
 		}
