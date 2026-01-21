@@ -27,8 +27,3 @@ type SecretFriendConverter interface {
 func StatusToEntity(status string) entities.SecretFriendStatus {
 	return entities.SecretFriendStatus(status)
 }
-
-func DatetimeToEntity(dt interface{}) *interface{} {
-	// This is a placeholder for goverter logic if needed for pointers
-	return nil
-}

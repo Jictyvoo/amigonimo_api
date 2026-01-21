@@ -13,26 +13,27 @@ import (
 // goverter:extend HexIDFromBytes
 // goverter:extend CopyTime
 type DenylistConverter interface {
-	// goverter:map . RelatedUser
-	// goverter:map . Timestamp
-	// goverter:map CreatedAt JoinedAt
-	// goverter:ignore SecretFriendID
-	// goverter:ignore DenyList
-	// goverter:ignore Wishlist
-	dbDenyRowToDeniedParticipant(row dbgen.GetDenyListByParticipantRow) entities.Participant
+	// goverter:ignore Password
+	dbDenyRowToBasicDeniedUserData(row dbgen.GetDenyListByParticipantRow) entities.UserBasic
 
-	// goverter:map DeniedUserID ID
 	// goverter:map Fullname FullName
 	// goverter:map . UserBasic
+	// goverter:map Denylist.DeniedUserID ID
 	// goverter:ignore VerifiedAt
 	// goverter:ignore RememberToken
 	dbDenyRowToDeniedUser(row dbgen.GetDenyListByParticipantRow) entities.User
 
-	// goverter:ignore Password
-	dbDenyRowToBasicDeniedUserData(row dbgen.GetDenyListByParticipantRow) entities.UserBasic
+	// goverter:map Denylist.ParticipantID ID
+	// goverter:map Denylist.CreatedAt JoinedAt
+	// goverter:map . RelatedUser
+	// goverter:ignore SecretFriendID
+	// goverter:ignore Timestamp
+	// goverter:ignore DenyList
+	// goverter:ignore Wishlist
+	dbDenyRowToDeniedParticipant(row dbgen.GetDenyListByParticipantRow) entities.Participant
 
-	// goverter:map . Timestamp
+	// goverter:map Denylist.ID ID
+	// goverter:map Denylist Timestamp
 	// goverter:map . InnerParticipant
-	// goverter:map DeniedUserID ID
 	ToEntityDeniedUser(row dbgen.GetDenyListByParticipantRow) entities.DeniedUser
 }

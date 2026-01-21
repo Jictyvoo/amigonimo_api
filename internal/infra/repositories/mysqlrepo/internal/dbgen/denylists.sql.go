@@ -8,7 +8,6 @@ package dbgen
 import (
 	"context"
 	"database/sql"
-	"time"
 )
 
 const AddDenyListEntry = `-- name: AddDenyListEntry :execresult
@@ -44,7 +43,7 @@ func (q *Queries) AddDenyListEntry(ctx context.Context, arg AddDenyListEntryPara
 }
 
 const GetDenyListByParticipant = `-- name: GetDenyListByParticipant :many
-SELECT d.id, d.created_at, d.updated_at, d.participant_id, d.denied_user_id, u.fullname, u.email, u.username
+SELECT d.id, d.created_at, d.updated_at, d.participant_id, d.denied_user_id, u.fullname, u.email, u.username, u.id AS user_id
 FROM denylists d
          JOIN users u ON d.denied_user_id = u.id
 WHERE d.participant_id = COALESCE(
@@ -64,14 +63,11 @@ type GetDenyListByParticipantParams struct {
 }
 
 type GetDenyListByParticipantRow struct {
-	ID            []byte    `db:"id"`
-	CreatedAt     time.Time `db:"created_at"`
-	UpdatedAt     time.Time `db:"updated_at"`
-	ParticipantID []byte    `db:"participant_id"`
-	DeniedUserID  []byte    `db:"denied_user_id"`
-	Fullname      string    `db:"fullname"`
-	Email         string    `db:"email"`
-	Username      string    `db:"username"`
+	Denylist Denylist `db:"denylist"`
+	Fullname string   `db:"fullname"`
+	Email    string   `db:"email"`
+	Username string   `db:"username"`
+	UserID   []byte   `db:"user_id"`
 }
 
 func (q *Queries) GetDenyListByParticipant(ctx context.Context, arg GetDenyListByParticipantParams) ([]GetDenyListByParticipantRow, error) {
@@ -84,14 +80,15 @@ func (q *Queries) GetDenyListByParticipant(ctx context.Context, arg GetDenyListB
 	for rows.Next() {
 		var i GetDenyListByParticipantRow
 		if err := rows.Scan(
-			&i.ID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.ParticipantID,
-			&i.DeniedUserID,
+			&i.Denylist.ID,
+			&i.Denylist.CreatedAt,
+			&i.Denylist.UpdatedAt,
+			&i.Denylist.ParticipantID,
+			&i.Denylist.DeniedUserID,
 			&i.Fullname,
 			&i.Email,
 			&i.Username,
+			&i.UserID,
 		); err != nil {
 			return nil, err
 		}

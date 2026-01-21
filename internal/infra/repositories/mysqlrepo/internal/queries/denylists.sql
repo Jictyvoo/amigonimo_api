@@ -25,7 +25,7 @@ WHERE participant_id = COALESCE(
   AND denied_user_id = ?;
 
 -- name: GetDenyListByParticipant :many
-SELECT d.*, u.fullname, u.email, u.username
+SELECT sqlc.embed(d), u.fullname, u.email, u.username, u.id AS user_id
 FROM denylists d
          JOIN users u ON d.denied_user_id = u.id
 WHERE d.participant_id = COALESCE(

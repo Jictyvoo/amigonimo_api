@@ -10,8 +10,8 @@ import (
 
 func ToEntityDeniedUser(source dbgen.GetDenyListByParticipantRow) entities.DeniedUser {
 	var entitiesDeniedUser entities.DeniedUser
-	entitiesDeniedUser.Timestamp = dbgenGetDenyListByParticipantRowToEntitiesTimestamp(source)
-	entitiesDeniedUser.ID = HexIDFromBytes(source.DeniedUserID)
+	entitiesDeniedUser.Timestamp = dbgenDenylistToEntitiesTimestamp(source.Denylist)
+	entitiesDeniedUser.ID = HexIDFromBytes(source.Denylist.ID)
 	entitiesDeniedUser.InnerParticipant = dbDenyRowToDeniedParticipant(source)
 	return entitiesDeniedUser
 }
@@ -23,20 +23,19 @@ func dbDenyRowToBasicDeniedUserData(source dbgen.GetDenyListByParticipantRow) en
 }
 func dbDenyRowToDeniedParticipant(source dbgen.GetDenyListByParticipantRow) entities.Participant {
 	var entitiesParticipant entities.Participant
-	entitiesParticipant.Timestamp = dbgenGetDenyListByParticipantRowToEntitiesTimestamp(source)
-	entitiesParticipant.ID = HexIDFromBytes(source.ID)
+	entitiesParticipant.ID = HexIDFromBytes(source.Denylist.ParticipantID)
 	entitiesParticipant.RelatedUser = dbDenyRowToDeniedUser(source)
-	entitiesParticipant.JoinedAt = CopyTime(source.CreatedAt)
+	entitiesParticipant.JoinedAt = CopyTime(source.Denylist.CreatedAt)
 	return entitiesParticipant
 }
 func dbDenyRowToDeniedUser(source dbgen.GetDenyListByParticipantRow) entities.User {
 	var entitiesUser entities.User
 	entitiesUser.UserBasic = dbDenyRowToBasicDeniedUserData(source)
-	entitiesUser.ID = HexIDFromBytes(source.DeniedUserID)
+	entitiesUser.ID = HexIDFromBytes(source.Denylist.DeniedUserID)
 	entitiesUser.FullName = source.Fullname
 	return entitiesUser
 }
-func dbgenGetDenyListByParticipantRowToEntitiesTimestamp(source dbgen.GetDenyListByParticipantRow) entities.Timestamp {
+func dbgenDenylistToEntitiesTimestamp(source dbgen.Denylist) entities.Timestamp {
 	var entitiesTimestamp entities.Timestamp
 	entitiesTimestamp.CreatedAt = CopyTime(source.CreatedAt)
 	entitiesTimestamp.UpdatedAt = CopyTime(source.UpdatedAt)
