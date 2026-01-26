@@ -7,9 +7,6 @@ import (
 	"github.com/wrapped-owls/goremy-di/remy"
 
 	"github.com/jictyvoo/amigonimo_api/internal/bootstrap"
-	"github.com/jictyvoo/amigonimo_api/pkg/web"
-	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/authctrl"
-	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/secretfriendsctrl"
 )
 
 func main() {
@@ -32,19 +29,7 @@ func main() {
 
 	// Create web server
 	//goland:noinspection GoResourceLeak
-	server, err := web.NewServer(
-		conf, jwtPublicKey, web.WithPublicRouters(
-			authctrl.NewAuthRouter(
-				authctrl.Config{
-					ActiveRoutes: authctrl.RouteLogin | authctrl.RouteSignUp | authctrl.RouteRegenerateToken | authctrl.RouteResetPassword,
-					Injector:     inj,
-				},
-			),
-		),
-		web.WithPrivateRouters(
-			secretfriendsctrl.NewRouter(inj),
-		),
-	)
+	server, err := bootstrap.NewWebServer(conf, jwtPublicKey, inj)
 	if err != nil {
 		panic(err)
 	}

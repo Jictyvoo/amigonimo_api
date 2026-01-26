@@ -33,6 +33,7 @@ func (h *AuthenticationController) SignUp(
 		return nil, err
 	}
 
+	c.SetStatus(http.StatusCreated)
 	return &SuccessResponse{Success: true, Message: "User created successfully"}, nil
 }
 
