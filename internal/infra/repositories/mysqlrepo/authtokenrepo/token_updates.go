@@ -24,7 +24,7 @@ func (r RepoMySQL) UpsertAuthToken(authentication *entities.AuthenticationToken)
 	var refreshToken sql.NullString
 	if authentication.RefreshToken.Valid {
 		refreshToken = sql.NullString{
-			String: authentication.RefreshToken.UUID.String(),
+			String: string(authentication.RefreshToken.UUID[:]),
 			Valid:  true,
 		}
 	}
