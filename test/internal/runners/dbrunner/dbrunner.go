@@ -4,13 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"testing"
 
 	"github.com/jictyvoo/amigonimo_api/test/internal/runners"
 )
 
 type dbValidator interface {
 	SelectionFields() string
-	Validate(rows *sql.Rows) error
+	Validate(t testing.TB, rows *sql.Rows) error
 }
 
 // DbRunner is a test runner for database assertions.
@@ -67,7 +68,7 @@ func (r *DbRunner) Run(rCtx runners.RunnerContext) error {
 			return err
 		}
 
-		if err = v.Validate(rows); err != nil {
+		if err = v.Validate(rCtx, rows); err != nil {
 			rCtx.Fatalf("Database validation failed: %v", err)
 		}
 		_ = rows.Close()

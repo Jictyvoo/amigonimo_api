@@ -3,6 +3,10 @@ package dbrunner
 import (
 	"database/sql"
 	"fmt"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/vinovest/sqlx"
 
 	"github.com/jictyvoo/amigonimo_api/test/internal/runners"
 	"github.com/jictyvoo/amigonimo_api/test/internal/runners/dbrunner/sanitizers"
@@ -36,10 +40,12 @@ func WithSubsequentQuery[V any](table string, fn func(val V) map[string]any) Opt
 // WithExpect adds a validator that queries the database and compares the result with the expected object.
 func WithExpect[O any](expected O, sanitizer sanitizers.DbSanitizer[O]) Option {
 	return func(r *DbRunner) {
-		r.validators = append(r.validators, &expectValidator[O]{
-			expected:  expected,
-			sanitizer: sanitizer,
-		})
+		r.validators = append(
+			r.validators, &expectValidator[O]{
+				expected:  expected,
+				sanitizer: sanitizer,
+			},
+		)
 	}
 }
 
@@ -52,23 +58,28 @@ func (v *expectValidator[O]) SelectionFields() string {
 	return "*"
 }
 
-func (v *expectValidator[O]) Validate(rows *sql.Rows) error {
+func (v *expectValidator[O]) Validate(t testing.TB, rows *sql.Rows) error {
 	if !rows.Next() {
 		return fmt.Errorf("no records found")
 	}
 
-	// Note: Generic scanning into a struct without sqlx or reflection 
-	// is complex and out of scope for this simple implementation.
-	// We'll assume the user might want to extend this with a proper mapper.
+	var destination O
+	if err := sqlx.StructScan(rows, &destination); err != nil {
+		return err
+	}
+
+	assert.Equal(t, v.expected, destination)
 	return nil
 }
 
 // ExpectCount is a simple matcher to check the number of rows.
 func ExpectCount(expectedAmount int) Option {
 	return func(r *DbRunner) {
-		r.validators = append(r.validators, &countValidator{
-			expected: expectedAmount,
-		})
+		r.validators = append(
+			r.validators, &countValidator{
+				expected: expectedAmount,
+			},
+		)
 	}
 }
 
@@ -80,7 +91,7 @@ func (v *countValidator) SelectionFields() string {
 	return "COUNT(*)"
 }
 
-func (v *countValidator) Validate(rows *sql.Rows) error {
+func (v *countValidator) Validate(t testing.TB, rows *sql.Rows) error {
 	if !rows.Next() {
 		return fmt.Errorf("no records found")
 	}
@@ -91,7 +102,7 @@ func (v *countValidator) Validate(rows *sql.Rows) error {
 	}
 
 	if count != v.expected {
-		return fmt.Errorf("expected count %d, got %d", v.expected, count)
+		t.Fatalf("expected count %d, got %d", v.expected, count)
 	}
 
 	return nil
