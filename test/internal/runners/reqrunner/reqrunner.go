@@ -10,12 +10,16 @@ import (
 // RequestMaker defines how to construct an HTTP request.
 type RequestMaker func(baseURL string, ctx runners.RunnerContext) (*http.Request, error)
 
+// RequestModifier updates a request after it is created.
+type RequestModifier func(ctx runners.RunnerContext, req *http.Request) error
+
 // HttpRunner is the main HTTP test runner.
 type HttpRunner struct {
-	BaseURL     string
-	Client      *http.Client
-	makeRequest RequestMaker
-	validators  []Validator
+	BaseURL          string
+	Client           *http.Client
+	makeRequest      RequestMaker
+	requestModifiers []RequestModifier
+	validators       []Validator
 }
 
 // Option is a functional option for configuring the HttpRunner.
@@ -44,6 +48,15 @@ func (r *HttpRunner) Run(rCtx runners.RunnerContext) error {
 	httpReq, err := r.makeRequest(r.BaseURL, rCtx)
 	if err != nil {
 		rCtx.Fatalf("Impossible to perform request: %v", err)
+	}
+
+	for _, modifier := range r.requestModifiers {
+		if modifier == nil {
+			continue
+		}
+		if modErr := modifier(rCtx, httpReq); modErr != nil {
+			rCtx.Fatalf("Failed to modify request: %v", modErr)
+		}
 	}
 
 	resp, reqErr := r.Client.Do(httpReq)
