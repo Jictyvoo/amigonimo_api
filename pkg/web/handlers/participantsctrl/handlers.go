@@ -13,6 +13,7 @@ type (
 	UseCaseFactory[T any] func(ctx context.Context) (T, error)
 	ParticipantsHandlers  struct {
 		web.DefaultController
+
 		useCaseFactory UseCaseFactory[participant.UseCase]
 	}
 )

@@ -14,6 +14,7 @@ type (
 	UseCaseFactory[T any] func(ctx context.Context) (T, error)
 	Controller            struct {
 		web.DefaultController
+
 		useCaseFactory UseCaseFactory[wishlist.UseCase]
 	}
 )
