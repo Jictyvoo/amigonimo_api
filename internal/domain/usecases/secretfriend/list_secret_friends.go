@@ -22,7 +22,7 @@ func (uc *UseCase) ListUserSecretFriends(userID entities.HexID) (ActiveInactiveL
 		return ActiveInactiveListEvents{}, err
 	}
 
-	initialCap := len(rawList) >> 2 // divide by 4
+	initialCap := len(rawList) >> 2 //nolint:mnd // divide by 4
 	sortedList := ActiveInactiveListEvents{
 		Active: EventsList{
 			Created:     make([]entities.SecretFriend, 0, initialCap),

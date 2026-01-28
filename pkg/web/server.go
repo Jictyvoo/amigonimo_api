@@ -47,6 +47,12 @@ func NewServer(
 	jwtPublicKey *rsa.PublicKey,
 	serverOptions ...ServerOption,
 ) (*Server, error) {
+	const (
+		kiloBytes    = 1024
+		megaBytes    = kiloBytes * 1024
+		maxBodyBytes = 2 * megaBytes
+	)
+
 	options := [4]func(*fuego.Server){
 		fuego.WithEngineOptions(
 			fuego.WithRequestContentType("application/json"),
@@ -63,7 +69,7 @@ func NewServer(
 			),
 		),
 		fuego.WithDisallowUnknownFields(false),
-		fuego.WithMaxBodySize(2 * 1024 * 1024),
+		fuego.WithMaxBodySize(maxBodyBytes),
 	}
 
 	optSlice := options[:2] // Transform into a slice to save bytes later

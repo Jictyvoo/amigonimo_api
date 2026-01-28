@@ -12,10 +12,12 @@ import (
 //go:generate go tool -modfile=../../../../../../build/tools/go.mod goverter gen -g wrapErrors -g useZeroValueOnPointerInconsistency .
 
 func HexIDFromBytes(b []byte) entities.HexID {
-	if len(b) != 16 {
+	const uuidLen = 16
+	if len(b) != uuidLen {
 		return entities.HexID(uuid.Nil)
 	}
-	var uuidBytes [16]byte
+
+	var uuidBytes [uuidLen]byte
 	copy(uuidBytes[:], b)
 	return uuidBytes
 }

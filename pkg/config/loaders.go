@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -54,7 +55,8 @@ func LoadTOML(paths ...string) (config Config, err error) {
 			fileBytes []byte
 		)
 
-		file, err = os.OpenFile(path, os.O_RDONLY, os.ModePerm)
+		cleanPath := filepath.Clean(path)
+		file, err = os.OpenFile(cleanPath, os.O_RDONLY, 0)
 		if os.IsNotExist(err) || file == nil {
 			err = errors.Wrap(err, fmt.Sprintf("Unable to load config from %s", path))
 			return
