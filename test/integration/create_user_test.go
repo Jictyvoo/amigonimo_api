@@ -6,6 +6,7 @@ import (
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/authctrl/controllers"
 	"github.com/jictyvoo/amigonimo_api/test/internal/fixtures"
 	"github.com/jictyvoo/amigonimo_api/test/internal/runners"
+	"github.com/jictyvoo/amigonimo_api/test/internal/runners/dbrunner"
 	"github.com/jictyvoo/amigonimo_api/test/internal/runners/reqrunner"
 )
 
@@ -34,9 +35,20 @@ func TestCreateUserSimple(t *testing.T) {
 			},
 		),
 	)
-	
+
+	dbVerifyRunner := dbrunner.NewDbRunner(
+		engine.DB(),
+		dbrunner.WithQuery(
+			"users", map[string]any{"email": reqBody.Email, "username": reqBody.Username},
+		),
+		dbrunner.ExpectCount(1),
+	)
+
 	mr := runners.MultiRunner{
-		Runners: []runners.Runner{runner},
+		Runners: []runners.Runner{
+			runner,
+			dbVerifyRunner,
+		},
 	}
 	if err := mr.Run(t); err != nil {
 		t.Fatalf("Unexpected error: %s", err)
