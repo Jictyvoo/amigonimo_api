@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/authctrl/controllers"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/participantsctrl"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/secretfriendsctrl"
 	"github.com/jictyvoo/amigonimo_api/test/integration/stdrunners"
@@ -46,10 +45,7 @@ func TestCreateSecretFriendAndJoin(t *testing.T) {
 						Location: "Virtual",
 					},
 				),
-				reqrunner.WithHeaderFromCtx(
-					"Authorization",
-					func(logResp controllers.LoginResponse) string { return "Bearer " + logResp.Token },
-				),
+				stdrunners.WithAuthHeaderFromLogin(),
 				reqrunner.ExpectStatus(http.StatusOK),
 				reqrunner.ExpectBody(
 					secretfriendsctrl.CreateSecretFriendResponse{},
@@ -75,10 +71,7 @@ func TestCreateSecretFriendAndJoin(t *testing.T) {
 					"/secret-friends/{secretFriendId}/participants/",
 					participantsctrl.ConfirmParticipationRequest{Confirm: true},
 				),
-				reqrunner.WithHeaderFromCtx(
-					"Authorization",
-					func(logResp controllers.LoginResponse) string { return "Bearer " + logResp.Token },
-				),
+				stdrunners.WithAuthHeaderFromLogin(),
 				reqrunner.WithPathParamFromCtx(
 					"secretFriendId",
 					func(newSecretFriend secretfriendsctrl.CreateSecretFriendResponse) string {
