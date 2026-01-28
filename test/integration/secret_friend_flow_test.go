@@ -9,6 +9,7 @@ import (
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/authctrl/controllers"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/participantsctrl"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/secretfriendsctrl"
+	"github.com/jictyvoo/amigonimo_api/test/integration/stdrunners"
 	"github.com/jictyvoo/amigonimo_api/test/internal/fixtures"
 	"github.com/jictyvoo/amigonimo_api/test/internal/runners"
 	"github.com/jictyvoo/amigonimo_api/test/internal/runners/reqrunner"
@@ -33,27 +34,7 @@ func TestCreateSecretFriendAndJoin(t *testing.T) {
 
 	mr := runners.MultiRunner{
 		Runners: []runners.Runner{
-			reqrunner.NewHttpRunner(
-				engine.BaseURL(),
-				reqrunner.WithRequest(
-					http.MethodPost, "/auth/login", controllers.FormUser{
-						Email:    manager.Email,
-						Password: userPassword,
-					},
-				),
-				reqrunner.ExpectStatus(http.StatusOK),
-				reqrunner.ExpectBody(
-					controllers.LoginResponse{},
-					func(expected, actual *controllers.LoginResponse) error {
-						if actual.Token == "" {
-							return errors.New("token is empty")
-						}
-
-						actual.Token = expected.Token
-						return nil
-					},
-				),
-			),
+			stdrunners.LoginRunner(engine.BaseURL(), manager.Email, userPassword),
 			reqrunner.NewHttpRunner(
 				engine.BaseURL(),
 				reqrunner.WithRequest(
@@ -86,27 +67,7 @@ func TestCreateSecretFriendAndJoin(t *testing.T) {
 					},
 				),
 			),
-			reqrunner.NewHttpRunner(
-				engine.BaseURL(),
-				reqrunner.WithRequest(
-					http.MethodPost, "/auth/login", controllers.FormUser{
-						Email:    participant.Email,
-						Password: userPassword,
-					},
-				),
-				reqrunner.ExpectStatus(http.StatusOK),
-				reqrunner.ExpectBody(
-					controllers.LoginResponse{},
-					func(expected, actual *controllers.LoginResponse) error {
-						if actual.Token == "" {
-							return errors.New("token is empty")
-						}
-
-						actual.Token = expected.Token
-						return nil
-					},
-				),
-			),
+			stdrunners.LoginRunner(engine.BaseURL(), participant.Email, userPassword),
 			reqrunner.NewHttpRunner(
 				engine.BaseURL(),
 				reqrunner.WithRequest(
