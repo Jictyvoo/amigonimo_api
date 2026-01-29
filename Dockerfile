@@ -1,20 +1,11 @@
 ### STAGE 1: Build ###
-FROM golang:1.25-bullseye AS builder
+FROM golang:1.25-alpine AS builder
 
-ENV PATH $GOPATH/bin:$PATH
-ENV CGO_ENABLED=1
+ENV PATH=$GOPATH/bin:$PATH
+ENV CGO_ENABLED=0
 ENV GO1111MODULE=on
 
-
-RUN apt update && \
-    apt install -y --no-install-recommends \
-    gcc \
-    git \
-    libc6-dev \
-    libcurl4-openssl-dev && \
-    pkg-config \
-    rm -rf /var/lib/apt/lists/*
-
+RUN apk add --no-cache git curl ca-certificates
 
 ENV SOURCE_DIR=/go/src/amigonimo
 WORKDIR $SOURCE_DIR
@@ -27,19 +18,16 @@ RUN go mod download
 COPY . .
 
 # Builds the application as a staticly linked one, to allow it to run on alpine
-RUN GOOS=linux GOARCH=amd64 go build -ldflags '-w -s' -a -installsuffix cgo -o anonymigo_api ./cmd/discordbot
+RUN GOOS=linux GOARCH=amd64 go build -ldflags '-w -s' -a -installsuffix cgo -o anonymigo_api ./cmd/api
 #
 #
 ########################################################################################################################
 # Moving the binary to the 'final Image' to make it smaller
-FROM debian:buster-slim
+FROM alpine:latest AS runtime
 
-RUN apt update && \
-        apt install -y --no-install-recommends \
-        ca-certificates curl \
-        && rm -rf /var/lib/apt/lists/*
-
-RUN curl -sSf https://atlasgo.sh | sh
+RUN apk add --no-cache ca-certificates curl && \
+    curl -sSf https://atlasgo.sh | sh && \
+    apk del curl
 
 WORKDIR /home/amigonimo
 
