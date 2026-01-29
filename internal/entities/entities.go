@@ -21,6 +21,14 @@ func NewHexID() (HexID, error) {
 	return HexID(uid), err
 }
 
+func NewHexIDFromBytes(b []byte) (HexID, error) {
+	id, err := uuid.FromBytes(b)
+	if err != nil {
+		return HexID{}, err
+	}
+	return HexID(id), nil
+}
+
 func ParseHexID(input string) (HexID, error) {
 	loadId, err := uuid.Parse(input)
 	if err != nil {

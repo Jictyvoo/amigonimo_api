@@ -90,6 +90,8 @@ func resolveStringValue(rCtx runners.RunnerContext, value any) (string, error) {
 		return v, nil
 	case func() string:
 		return v(), nil
+	case fmt.Stringer:
+		return v.String(), nil
 	case func(runners.RunnerContext) string:
 		return v(rCtx), nil
 	case func(runners.RunnerContext) (string, error):
