@@ -85,22 +85,29 @@ func (h *Controller) CreateWishlistItem(
 // DeleteWishlistItem handles DELETE /wishlist/{itemId}.
 func (h *Controller) DeleteWishlistItem(
 	c fuego.ContextNoBody,
-) (any, error) {
+) (DeleteWishlistItemResponse, error) {
 	sfID, err := h.ParamID(c.Request())
 	if err != nil {
-		return nil, err
+		return DeleteWishlistItemResponse{}, err
 	}
 
 	itemIDStr := c.PathParam("itemId")
 	itemID, err := entities.ParseHexID(itemIDStr)
 	if err != nil {
-		return nil, err
+		return DeleteWishlistItemResponse{}, err
 	}
 
 	uc, err := h.useCaseFactory(c.Context())
 	if err != nil {
-		return nil, err
+		return DeleteWishlistItemResponse{}, err
 	}
 
-	return nil, uc.DeleteItem(sfID, itemID)
+	if err = uc.DeleteItem(sfID, itemID); err != nil {
+		return DeleteWishlistItemResponse{}, err
+	}
+
+	return DeleteWishlistItemResponse{
+		Success:   true,
+		DeletedID: itemID.String(),
+	}, nil
 }

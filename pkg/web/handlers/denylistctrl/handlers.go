@@ -59,19 +59,19 @@ func (h *Controller) AddDenyListEntry(
 		return DeniedUserResponse{}, err
 	}
 
-	body, err := c.Body()
-	if err != nil {
+	body, decodeErr := c.Body()
+	if decodeErr != nil {
+		return DeniedUserResponse{}, decodeErr
+	}
+
+	var deniedUserID entities.HexID
+	if deniedUserID, err = entities.ParseHexID(body.TargetUserID); err != nil {
 		return DeniedUserResponse{}, err
 	}
 
-	uc, err := h.useCaseFactory(c.Context())
-	if err != nil {
-		return DeniedUserResponse{}, err
-	}
-
-	deniedUserID, err := entities.ParseHexID(body.TargetUserID)
-	if err != nil {
-		return DeniedUserResponse{}, err
+	uc, ucErr := h.useCaseFactory(c.Context())
+	if ucErr != nil {
+		return DeniedUserResponse{}, ucErr
 	}
 
 	deniedUser, err := uc.AddEntry(sfID, deniedUserID)
@@ -91,9 +91,8 @@ func (h *Controller) RemoveDenyListEntry(
 		return RemoveDenyListEntryResponse{}, err
 	}
 
-	deniedUserIDStr := c.PathParam("deniedUserId")
-	deniedUserID, err := entities.ParseHexID(deniedUserIDStr)
-	if err != nil {
+	var deniedUserID entities.HexID
+	if deniedUserID, err = entities.ParseHexID(c.PathParam("deniedUserId")); err != nil {
 		return RemoveDenyListEntryResponse{}, err
 	}
 
@@ -102,7 +101,7 @@ func (h *Controller) RemoveDenyListEntry(
 		return RemoveDenyListEntryResponse{}, err
 	}
 
-	if err := uc.RemoveEntry(sfID, deniedUserID); err != nil {
+	if err = uc.RemoveEntry(sfID, deniedUserID); err != nil {
 		return RemoveDenyListEntryResponse{}, err
 	}
 

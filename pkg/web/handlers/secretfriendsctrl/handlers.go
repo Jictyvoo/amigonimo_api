@@ -125,20 +125,20 @@ func (ctrl *Controller) GetSecretFriend(
 // UpdateSecretFriend handles PATCH /secret-friends/{id}.
 func (ctrl *Controller) UpdateSecretFriend(
 	c fuego.ContextWithBody[UpdateSecretFriendRequest],
-) (any, error) {
+) (UpdateSecretFriendResponse, error) {
 	req, err := c.Body()
 	if err != nil {
-		return nil, err
+		return UpdateSecretFriendResponse{}, err
 	}
 
 	id, err := ctrl.ParamID(c.Request())
 	if err != nil {
-		return nil, err
+		return UpdateSecretFriendResponse{}, err
 	}
 
 	sfUC, err := ctrl.sfUseCaseFactory(c.Context())
 	if err != nil {
-		return nil, err
+		return UpdateSecretFriendResponse{}, err
 	}
 
 	if err = sfUC.Update(
@@ -149,12 +149,12 @@ func (ctrl *Controller) UpdateSecretFriend(
 			Location: req.Location,
 		},
 	); err != nil {
-		return nil, err
+		return UpdateSecretFriendResponse{}, err
 	}
 
-	return map[string]any{
-		"success": true,
-		"message": "secret friend updated successfully",
+	return UpdateSecretFriendResponse{
+		Success: true,
+		Message: "secret friend updated successfully",
 	}, nil
 }
 

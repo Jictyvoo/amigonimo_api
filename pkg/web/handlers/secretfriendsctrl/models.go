@@ -34,6 +34,12 @@ type UpdateSecretFriendRequest struct {
 	Location string    `json:"location,omitempty"`
 }
 
+// UpdateSecretFriendResponse represents the response after updating a secret friend.
+type UpdateSecretFriendResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message,omitempty"`
+}
+
 // DrawSecretFriendResponse represents the response when drawing a secret friend.
 type DrawSecretFriendResponse struct {
 	SecretFriendID string `json:"secretFriendId"`
