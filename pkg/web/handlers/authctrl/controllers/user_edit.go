@@ -30,7 +30,7 @@ func NewUserEditionController(
 }
 
 func (ctrl UserEditionController) EditUserPassword(
-	c fuego.ContextWithBody[FormEditPassword],
+	c fuego.Context[FormEditPassword, struct{}],
 ) (*SuccessResponse, error) {
 	authHeader := c.Request().Header.Get("Authorization")
 	token := strings.TrimPrefix(authHeader, "Bearer ")
@@ -58,7 +58,7 @@ func (ctrl UserEditionController) EditUserPassword(
 }
 
 func (ctrl UserEditionController) EditUsername(
-	c fuego.ContextWithBody[FormEditUsername],
+	c fuego.Context[FormEditUsername, struct{}],
 ) (*SuccessResponse, error) {
 	authHeader := c.Request().Header.Get("Authorization")
 	token := strings.TrimPrefix(authHeader, "Bearer ")
@@ -87,7 +87,7 @@ func (ctrl UserEditionController) EditUsername(
 }
 
 func (ctrl UserEditionController) EditUserEmail(
-	c fuego.ContextWithBody[FormEditEmail],
+	c fuego.Context[FormEditEmail, struct{}],
 ) (*SuccessResponse, error) {
 	authHeader := c.Request().Header.Get("Authorization")
 	token := strings.TrimPrefix(authHeader, "Bearer ")

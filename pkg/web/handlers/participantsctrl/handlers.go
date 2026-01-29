@@ -26,7 +26,7 @@ func NewParticipantsHandlers(
 
 // ConfirmParticipation handles POST /secret-friends/{id}/participants.
 func (h *ParticipantsHandlers) ConfirmParticipation(
-	c fuego.ContextWithBody[ConfirmParticipationRequest],
+	c fuego.Context[ConfirmParticipationRequest, struct{}],
 ) (*ConfirmParticipationResponse, error) {
 	sfID, err := h.ParamID(c.Request())
 	if err != nil {

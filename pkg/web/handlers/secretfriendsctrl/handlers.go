@@ -35,7 +35,7 @@ func NewController(
 
 // CreateSecretFriend handles POST /secret-friends.
 func (ctrl *Controller) CreateSecretFriend(
-	c fuego.ContextWithBody[CreateSecretFriendRequest],
+	c fuego.Context[CreateSecretFriendRequest, struct{}],
 ) (*CreateSecretFriendResponse, error) {
 	req, err := c.Body()
 	if err != nil {
@@ -124,7 +124,7 @@ func (ctrl *Controller) GetSecretFriend(
 
 // UpdateSecretFriend handles PATCH /secret-friends/{id}.
 func (ctrl *Controller) UpdateSecretFriend(
-	c fuego.ContextWithBody[UpdateSecretFriendRequest],
+	c fuego.Context[UpdateSecretFriendRequest, struct{}],
 ) (UpdateSecretFriendResponse, error) {
 	req, err := c.Body()
 	if err != nil {

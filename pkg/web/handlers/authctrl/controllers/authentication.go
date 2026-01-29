@@ -13,7 +13,7 @@ import (
 )
 
 func (h *AuthenticationController) SignUp(
-	c fuego.ContextWithBody[FormUser],
+	c fuego.Context[FormUser, struct{}],
 ) (*SuccessResponse, error) {
 	req, err := c.Body()
 	if err != nil {
@@ -38,7 +38,7 @@ func (h *AuthenticationController) SignUp(
 }
 
 func (h *AuthenticationController) LogIn(
-	c fuego.ContextWithBody[FormUser],
+	c fuego.Context[FormUser, struct{}],
 ) (*LoginResponse, error) {
 	req, err := c.Body()
 	if err != nil {
@@ -128,7 +128,7 @@ func (h *AuthenticationController) VerifyUser(
 }
 
 func (h *AuthenticationController) ForgotPassword(
-	c fuego.ContextWithBody[FormUser],
+	c fuego.Context[FormUser, struct{}],
 ) (*ForgotPasswordResponse, error) {
 	req, err := c.Body()
 	if err != nil {
@@ -168,7 +168,7 @@ func (h *AuthenticationController) ForgotPassword(
 }
 
 func (h *AuthenticationController) CheckRecoveryCode(
-	c fuego.ContextWithBody[FormRecoveryCode],
+	c fuego.Context[FormRecoveryCode, struct{}],
 ) (*SuccessResponse, error) {
 	req, err := c.Body()
 	if err != nil {
@@ -189,7 +189,7 @@ func (h *AuthenticationController) CheckRecoveryCode(
 }
 
 func (h *AuthenticationController) PasswordReset(
-	c fuego.ContextWithBody[FormResetPassword],
+	c fuego.Context[FormResetPassword, struct{}],
 ) (*SuccessResponse, error) {
 	req, err := c.Body()
 	if err != nil {

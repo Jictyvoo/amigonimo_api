@@ -57,7 +57,7 @@ func (h *Controller) GetWishlist(
 
 // CreateWishlistItem handles POST /wishlist.
 func (h *Controller) CreateWishlistItem(
-	c fuego.ContextWithBody[WishlistItemRequest],
+	c fuego.Context[WishlistItemRequest, struct{}],
 ) (WishlistItemResponse, error) {
 	sfID, err := h.ParamID(c.Request())
 	if err != nil {
