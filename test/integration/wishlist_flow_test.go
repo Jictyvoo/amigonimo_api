@@ -4,12 +4,13 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores"
+	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores/netoche"
+
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/wishlistctrl"
 	"github.com/jictyvoo/amigonimo_api/test/integration/stdrunners"
 	"github.com/jictyvoo/amigonimo_api/test/internal/fixtures"
-	"github.com/jictyvoo/amigonimo_api/test/internal/runners"
-	"github.com/jictyvoo/amigonimo_api/test/internal/runners/reqrunner"
 )
 
 func TestWishlistFlowSeeded(t *testing.T) {
@@ -41,16 +42,16 @@ func TestWishlistFlowSeeded(t *testing.T) {
 		Comments: "No socks, please.",
 	}
 
-	mr := runners.MultiRunner{
-		Runners: []runners.Runner{
+	mr := atores.MultiRunner{
+		Runners: []atores.Runner{
 			stdrunners.LoginRunner(engine.BaseURL(), participant.Email, userPassword),
-			reqrunner.NewHttpRunner(
+			netoche.New(
 				engine.BaseURL(),
-				reqrunner.WithRequest(http.MethodPost, "/secret-friends/{id}/wishlist/", createReq),
-				reqrunner.WithPathParam("id", secretFriendID),
+				netoche.WithRequest(http.MethodPost, "/secret-friends/{id}/wishlist/", createReq),
+				netoche.WithPathParam("id", secretFriendID),
 				stdrunners.WithAuthHeaderFromLogin(),
-				reqrunner.ExpectStatus(http.StatusOK),
-				reqrunner.ExpectBody(
+				netoche.ExpectStatus(http.StatusOK),
+				netoche.ExpectBody(
 					wishlistctrl.WishlistItemResponse{
 						Label:    createReq.Label,
 						Comments: createReq.Comments,
@@ -62,13 +63,13 @@ func TestWishlistFlowSeeded(t *testing.T) {
 					},
 				),
 			),
-			reqrunner.NewHttpRunner(
+			netoche.New(
 				engine.BaseURL(),
-				reqrunner.WithRequest(http.MethodGet, "/secret-friends/{id}/wishlist/", struct{}{}),
-				reqrunner.WithPathParam("id", secretFriendID),
+				netoche.WithRequest(http.MethodGet, "/secret-friends/{id}/wishlist/", struct{}{}),
+				netoche.WithPathParam("id", secretFriendID),
 				stdrunners.WithAuthHeaderFromLogin(),
-				reqrunner.ExpectStatus(http.StatusOK),
-				reqrunner.ExpectBody(
+				netoche.ExpectStatus(http.StatusOK),
+				netoche.ExpectBody(
 					[]wishlistctrl.WishlistItemResponse{
 						{
 							Label:    createReq.Label,
@@ -88,33 +89,33 @@ func TestWishlistFlowSeeded(t *testing.T) {
 					},
 				),
 			),
-			reqrunner.NewHttpRunner(
+			netoche.New(
 				engine.BaseURL(),
-				reqrunner.WithRequest(
+				netoche.WithRequest(
 					http.MethodDelete, "/secret-friends/{id}/wishlist/{itemId}", struct{}{},
 				),
-				reqrunner.WithPathParam("id", secretFriendID),
-				reqrunner.WithPathParamFromCtx(
+				netoche.WithPathParam("id", secretFriendID),
+				netoche.WithPathParamFromCtx(
 					"itemId",
 					func(item wishlistctrl.WishlistItemResponse) string { return item.ItemID },
 				),
 				stdrunners.WithAuthHeaderFromLogin(),
-				reqrunner.ExpectStatus(http.StatusOK),
+				netoche.ExpectStatus(http.StatusOK),
 			),
-			reqrunner.NewHttpRunner(
+			netoche.New(
 				engine.BaseURL(),
-				reqrunner.WithRequest(http.MethodGet, "/secret-friends/{id}/wishlist/", struct{}{}),
-				reqrunner.WithPathParam("id", secretFriendID),
+				netoche.WithRequest(http.MethodGet, "/secret-friends/{id}/wishlist/", struct{}{}),
+				netoche.WithPathParam("id", secretFriendID),
 				stdrunners.WithAuthHeaderFromLogin(),
-				reqrunner.ExpectStatus(http.StatusOK),
-				reqrunner.ExpectBody(
+				netoche.ExpectStatus(http.StatusOK),
+				netoche.ExpectBody(
 					[]wishlistctrl.WishlistItemResponse{},
 				),
 			),
 		},
 	}
 
-	if err := mr.Run(t); err != nil {
+	if err := engine.Execute(t, mr); err != nil {
 		t.Fatalf("MultiRunner failed: %v", err)
 	}
 }

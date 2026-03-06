@@ -6,12 +6,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores"
+	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores/netoche"
+
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/participantsctrl"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/secretfriendsctrl"
 	"github.com/jictyvoo/amigonimo_api/test/integration/stdrunners"
 	"github.com/jictyvoo/amigonimo_api/test/internal/fixtures"
-	"github.com/jictyvoo/amigonimo_api/test/internal/runners"
-	"github.com/jictyvoo/amigonimo_api/test/internal/runners/reqrunner"
 )
 
 func TestCreateSecretFriendAndJoin(t *testing.T) {
@@ -31,12 +32,12 @@ func TestCreateSecretFriendAndJoin(t *testing.T) {
 		Build()
 	engine.Seed(manager, participant)
 
-	mr := runners.MultiRunner{
-		Runners: []runners.Runner{
+	mr := atores.MultiRunner{
+		Runners: []atores.Runner{
 			stdrunners.LoginRunner(engine.BaseURL(), manager.Email, userPassword),
-			reqrunner.NewHttpRunner(
+			netoche.New(
 				engine.BaseURL(),
-				reqrunner.WithRequest(
+				netoche.WithRequest(
 					http.MethodPost,
 					"/secret-friends/",
 					secretfriendsctrl.CreateSecretFriendRequest{
@@ -46,8 +47,8 @@ func TestCreateSecretFriendAndJoin(t *testing.T) {
 					},
 				),
 				stdrunners.WithAuthHeaderFromLogin(),
-				reqrunner.ExpectStatus(http.StatusOK),
-				reqrunner.ExpectBody(
+				netoche.ExpectStatus(http.StatusOK),
+				netoche.ExpectBody(
 					secretfriendsctrl.CreateSecretFriendResponse{},
 					func(expected, actual *secretfriendsctrl.CreateSecretFriendResponse) error {
 						if actual.SecretFriendID == "" {
@@ -64,22 +65,22 @@ func TestCreateSecretFriendAndJoin(t *testing.T) {
 				),
 			),
 			stdrunners.LoginRunner(engine.BaseURL(), participant.Email, userPassword),
-			reqrunner.NewHttpRunner(
+			netoche.New(
 				engine.BaseURL(),
-				reqrunner.WithRequest(
+				netoche.WithRequest(
 					http.MethodPost,
 					"/secret-friends/{secretFriendId}/participants/",
 					participantsctrl.ConfirmParticipationRequest{Confirm: true},
 				),
 				stdrunners.WithAuthHeaderFromLogin(),
-				reqrunner.WithPathParamFromCtx(
+				netoche.WithPathParamFromCtx(
 					"secretFriendId",
 					func(newSecretFriend secretfriendsctrl.CreateSecretFriendResponse) string {
 						return newSecretFriend.SecretFriendID
 					},
 				),
-				reqrunner.ExpectStatus(http.StatusOK),
-				reqrunner.ExpectBody(
+				netoche.ExpectStatus(http.StatusOK),
+				netoche.ExpectBody(
 					participantsctrl.ConfirmParticipationResponse{Success: true},
 					func(expected, actual *participantsctrl.ConfirmParticipationResponse) error {
 						expected.ParticipantID = actual.ParticipantID
@@ -90,7 +91,7 @@ func TestCreateSecretFriendAndJoin(t *testing.T) {
 		},
 	}
 
-	if err := mr.Run(t); err != nil {
+	if err := engine.Execute(t, mr); err != nil {
 		t.Fatalf("MultiRunner failed: %v", err)
 	}
 }

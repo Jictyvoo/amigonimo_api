@@ -4,12 +4,13 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores"
+	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores/netoche"
+
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/denylistctrl"
 	"github.com/jictyvoo/amigonimo_api/test/integration/stdrunners"
 	"github.com/jictyvoo/amigonimo_api/test/internal/fixtures"
-	"github.com/jictyvoo/amigonimo_api/test/internal/runners"
-	"github.com/jictyvoo/amigonimo_api/test/internal/runners/reqrunner"
 )
 
 func TestDenylistFlowSeeded(t *testing.T) {
@@ -42,33 +43,32 @@ func TestDenylistFlowSeeded(t *testing.T) {
 	secretFriendID, _ := entities.NewHexIDFromBytes(secretFriend.ID)
 	deniedUserID, _ := entities.NewHexIDFromBytes(participant.ID)
 
-	mr := runners.MultiRunner{
-		Runners: []runners.Runner{
+	mr := atores.MultiRunner{
+		Runners: []atores.Runner{
 			stdrunners.LoginRunner(engine.BaseURL(), owner.Email, userPassword),
-			reqrunner.NewHttpRunner(
+			netoche.New(
 				engine.BaseURL(),
-				reqrunner.WithRequest(
+				netoche.WithRequest(
 					http.MethodPost,
 					"/secret-friends/{id}/denylist/",
 					denylistctrl.AddDenyListRequest{TargetUserID: deniedUserID.String()},
 				),
 				stdrunners.WithAuthHeaderFromLogin(),
-				reqrunner.WithPathParam("id", secretFriendID),
-				reqrunner.ExpectStatus(http.StatusOK),
-				reqrunner.ExpectBody(
+				netoche.WithPathParam("id", secretFriendID),
+				netoche.ExpectStatus(http.StatusOK),
+				netoche.ExpectBody(
 					denylistctrl.DeniedUserResponse{
 						UserID: deniedUserID.String(),
-						// Fullname: participant.Fullname, // TODO: Analyze if is really expected to return more info
 					},
 				),
 			),
-			reqrunner.NewHttpRunner(
+			netoche.New(
 				engine.BaseURL(),
-				reqrunner.WithRequest(http.MethodGet, "/secret-friends/{id}/denylist/", struct{}{}),
+				netoche.WithRequest(http.MethodGet, "/secret-friends/{id}/denylist/", struct{}{}),
 				stdrunners.WithAuthHeaderFromLogin(),
-				reqrunner.WithPathParam("id", secretFriendID),
-				reqrunner.ExpectStatus(http.StatusOK),
-				reqrunner.ExpectBody(
+				netoche.WithPathParam("id", secretFriendID),
+				netoche.ExpectStatus(http.StatusOK),
+				netoche.ExpectBody(
 					[]denylistctrl.DeniedUserResponse{
 						{
 							UserID:   deniedUserID.String(),
@@ -77,38 +77,38 @@ func TestDenylistFlowSeeded(t *testing.T) {
 					},
 				),
 			),
-			reqrunner.NewHttpRunner(
+			netoche.New(
 				engine.BaseURL(),
-				reqrunner.WithRequest(
+				netoche.WithRequest(
 					http.MethodDelete,
 					"/secret-friends/{id}/denylist/{deniedUserId}",
 					struct{}{},
 				),
 				stdrunners.WithAuthHeaderFromLogin(),
-				reqrunner.WithPathParam("id", secretFriendID),
-				reqrunner.WithPathParam("deniedUserId", deniedUserID),
-				reqrunner.ExpectStatus(http.StatusOK),
-				reqrunner.ExpectBody(
+				netoche.WithPathParam("id", secretFriendID),
+				netoche.WithPathParam("deniedUserId", deniedUserID),
+				netoche.ExpectStatus(http.StatusOK),
+				netoche.ExpectBody(
 					denylistctrl.RemoveDenyListEntryResponse{
 						Success:   true,
 						DeletedID: deniedUserID.String(),
 					},
 				),
 			),
-			reqrunner.NewHttpRunner(
+			netoche.New(
 				engine.BaseURL(),
-				reqrunner.WithRequest(http.MethodGet, "/secret-friends/{id}/denylist/", struct{}{}),
+				netoche.WithRequest(http.MethodGet, "/secret-friends/{id}/denylist/", struct{}{}),
 				stdrunners.WithAuthHeaderFromLogin(),
-				reqrunner.WithPathParam("id", secretFriendID),
-				reqrunner.ExpectStatus(http.StatusOK),
-				reqrunner.ExpectBody(
+				netoche.WithPathParam("id", secretFriendID),
+				netoche.ExpectStatus(http.StatusOK),
+				netoche.ExpectBody(
 					[]denylistctrl.DeniedUserResponse{},
 				),
 			),
 		},
 	}
 
-	if err := mr.Run(t); err != nil {
+	if err := engine.Execute(t, mr); err != nil {
 		t.Fatalf("MultiRunner failed: %v", err)
 	}
 }

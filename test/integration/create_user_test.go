@@ -4,12 +4,13 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores"
+	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores/bancoche"
+	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores/netoche"
+
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/authctrl/controllers"
 	"github.com/jictyvoo/amigonimo_api/test/integration/stdrunners"
 	"github.com/jictyvoo/amigonimo_api/test/internal/fixtures"
-	"github.com/jictyvoo/amigonimo_api/test/internal/runners"
-	"github.com/jictyvoo/amigonimo_api/test/internal/runners/dbrunner"
-	"github.com/jictyvoo/amigonimo_api/test/internal/runners/reqrunner"
 )
 
 func TestCreateUserSimple(t *testing.T) {
@@ -18,7 +19,9 @@ func TestCreateUserSimple(t *testing.T) {
 	actor := fixtures.NewUser().
 		WithEmail("actor@example.com").
 		Build()
-	engine.Seed(actor)
+	if seedErr := engine.Seed(actor); seedErr != nil {
+		t.Fatalf("seedErr: %v", seedErr.Error())
+	}
 
 	reqBody := controllers.FormUser{
 		Email:    "newuser@example.com",
@@ -26,30 +29,31 @@ func TestCreateUserSimple(t *testing.T) {
 		Password: "securepassword",
 	}
 
-	mr := runners.MultiRunner{
-		Runners: []runners.Runner{
-			reqrunner.NewHttpRunner(
+	mr := atores.MultiRunner{
+		Runners: []atores.Runner{
+			netoche.New(
 				engine.BaseURL(),
-				reqrunner.WithRequest(http.MethodPost, "/auth/sign", reqBody),
-				reqrunner.ExpectStatus(http.StatusCreated),
-				reqrunner.ExpectBody(
+				netoche.WithRequest(http.MethodPost, "/auth/sign", reqBody),
+				netoche.ExpectStatus(http.StatusCreated),
+				netoche.ExpectBody(
 					controllers.SuccessResponse{
 						Success: true,
 						Message: "User created successfully",
 					},
 				),
 			),
-			dbrunner.NewDbRunner(
+			bancoche.New(
 				engine.DB(),
-				dbrunner.WithQuery(
+				bancoche.WithMapQuery(
 					"users", map[string]any{"email": reqBody.Email, "username": reqBody.Username},
 				),
-				dbrunner.ExpectCount(1),
+				bancoche.ExpectCount(1, true),
 			),
 			stdrunners.LoginRunner(engine.BaseURL(), reqBody.Email, reqBody.Password),
 		},
 	}
-	if err := mr.Run(t); err != nil {
+
+	if err := engine.Execute(t, mr); err != nil {
 		t.Fatalf("Unexpected error: %s", err)
 	}
 }
