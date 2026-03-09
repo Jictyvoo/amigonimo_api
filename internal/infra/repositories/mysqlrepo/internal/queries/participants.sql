@@ -18,3 +18,9 @@ WHERE secret_friend_id = ?
 SELECT *
 FROM participants
 WHERE id = ?;
+
+-- name: DeleteParticipantBySFAndUser :exec
+DELETE
+FROM participants
+WHERE secret_friend_id = ?
+  AND user_id = ?;

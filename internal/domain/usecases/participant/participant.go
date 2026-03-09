@@ -7,6 +7,7 @@ import (
 type Repository interface {
 	AddParticipant(sfID, userID entities.HexID) (entities.Participant, error)
 	ListParticipants(sfID entities.HexID) ([]entities.Participant, error)
+	RemoveParticipant(sfID, userID entities.HexID) error
 }
 
 type UseCase struct {

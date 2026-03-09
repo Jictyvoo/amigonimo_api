@@ -25,6 +25,23 @@ func (q *Queries) AddParticipant(ctx context.Context, arg AddParticipantParams) 
 	return q.db.ExecContext(ctx, AddParticipant, arg.ID, arg.SecretFriendID, arg.UserID)
 }
 
+const DeleteParticipantBySFAndUser = `-- name: DeleteParticipantBySFAndUser :exec
+DELETE
+FROM participants
+WHERE secret_friend_id = ?
+  AND user_id = ?
+`
+
+type DeleteParticipantBySFAndUserParams struct {
+	SecretFriendID []byte `db:"secret_friend_id"`
+	UserID         []byte `db:"user_id"`
+}
+
+func (q *Queries) DeleteParticipantBySFAndUser(ctx context.Context, arg DeleteParticipantBySFAndUserParams) error {
+	_, err := q.db.ExecContext(ctx, DeleteParticipantBySFAndUser, arg.SecretFriendID, arg.UserID)
+	return err
+}
+
 const GetParticipantByID = `-- name: GetParticipantByID :one
 SELECT id, created_at, updated_at, joined_at, secret_friend_id, user_id
 FROM participants

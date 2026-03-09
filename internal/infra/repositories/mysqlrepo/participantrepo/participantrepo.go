@@ -36,3 +36,18 @@ func parseAndReturnParticipant(
 
 	return mappers.ToEntityParticipant(dbP), nil
 }
+
+func (r *RepoMySQL) RemoveParticipant(sfID, userID entities.HexID) error {
+	ctx, cancel := r.Ctx()
+	defer cancel()
+	err := r.Queries().DeleteParticipantBySFAndUser(
+		ctx, dbgen.DeleteParticipantBySFAndUserParams{
+			SecretFriendID: sfID[:],
+			UserID:         userID[:],
+		},
+	)
+	if err != nil {
+		return mysqlrepo.WrapError(err, "remove participant")
+	}
+	return nil
+}
