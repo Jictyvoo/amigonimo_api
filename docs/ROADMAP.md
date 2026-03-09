@@ -16,9 +16,14 @@
 - [ ] **Invite Flow**: Complete revisit of the "invite someone to secret-friend" flow:
     - Review invite code mechanisms.
     - Define access controls (public vs. specific people).
-- [ ] **Denylist Control**: Add a missing feature to control/limit the maximum size of a user's denylist.
+- [ ] **Participant Validation (ID Injection)**: Ensure users can only add to their wishlist or denylist if they are
+  confirmed participants of the group. Prevent ID injection where a user could modify another user's lists.
+- [ ] **Denylist Control**: Add a missing feature to control/limit the maximum size of a user's denylist. Prevent users
+  from adding themselves or non-participants to their denylist.
 - [ ] **Wishlist Control**: Add an internal limit for the maximum wishlist size (even if not exposed
   configuration-wise).
+- [ ] **Wait Phase / Status**: Implement a feature for users to explicitly mark their preferences (wishlist/denylist) as
+  finished, allowing the organizer to see who is ready.
 
 ## Data Structure Refactoring
 
