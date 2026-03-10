@@ -30,3 +30,11 @@ func (uc *UseCase) Get(id entities.HexID) (entities.SecretFriend, error) {
 	}
 	return sf, nil
 }
+
+func (uc *UseCase) CheckUserIsOwner(sfID entities.HexID) (bool, error) {
+	sf, err := uc.repo.GetSecretFriendByID(sfID)
+	if err != nil {
+		return false, fmt.Errorf("get secret friend: %w", err)
+	}
+	return sf.OwnerID == uc.associatedUser.ID, nil
+}
