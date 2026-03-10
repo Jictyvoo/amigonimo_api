@@ -17,11 +17,15 @@ func RegisterServices(inj remy.Injector) {
 		inj, remy.Factory[authserv.AuthService], authserv.NewAuthService,
 	)
 
-	// General protected services
 	remy.RegisterConstructor(inj, remy.Factory[drawserv.Service], drawserv.New)
 	remy.RegisterConstructorArgs2(inj, remy.Factory[secretfriend.UseCase], secretfriend.New)
+
+	remy.RegisterConstructorArgs2(
+		inj, remy.Factory[denylist.FacadeProvider], denylist.NewFacadeProvider,
+	)
+
 	remy.RegisterConstructorArgs2(inj, remy.Factory[drawfriends.UseCase], drawfriends.New)
-	remy.RegisterConstructorArgs2(inj, remy.Factory[participant.UseCase], participant.New)
-	remy.RegisterConstructorArgs2(inj, remy.Factory[denylist.UseCase], denylist.New)
-	remy.RegisterConstructorArgs2(inj, remy.Factory[wishlist.UseCase], wishlist.New)
+	remy.RegisterConstructorArgs3(inj, remy.Factory[participant.UseCase], participant.New)
+	remy.RegisterConstructorArgs3(inj, remy.Factory[denylist.UseCase], denylist.New)
+	remy.RegisterConstructorArgs3(inj, remy.Factory[wishlist.UseCase], wishlist.New)
 }
