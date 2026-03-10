@@ -15,9 +15,18 @@ type Repository interface {
 
 type UseCase struct {
 	repo           Repository
+	facProvider    FacadeProvider
 	associatedUser entities.User
 }
 
-func New(associatedUser entities.User, repo Repository) UseCase {
-	return UseCase{associatedUser: associatedUser, repo: repo}
+func New(
+	associatedUser entities.User,
+	repo Repository,
+	provider FacadeProvider,
+) UseCase {
+	return UseCase{
+		associatedUser: associatedUser,
+		repo:           repo,
+		facProvider:    provider,
+	}
 }
