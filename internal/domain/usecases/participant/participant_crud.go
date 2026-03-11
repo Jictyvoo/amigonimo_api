@@ -27,6 +27,23 @@ func (uc *UseCase) ListParticipants(sfID entities.HexID) ([]entities.Participant
 	return uc.repo.ListParticipants(sfID)
 }
 
+func (uc *UseCase) MarkAsReady(sfID entities.HexID) error {
+	currentParticipant, err := uc.repo.GetParticipant(sfID, uc.associatedUser.ID)
+	if err != nil {
+		return fmt.Errorf("participant not found: %w", err)
+	}
+
+	if currentParticipant.IsReady {
+		return nil
+	}
+
+	if err = uc.repo.SetParticipantReady(sfID, uc.associatedUser.ID, true); err != nil {
+		return fmt.Errorf("set participant ready: %w", err)
+	}
+
+	return nil
+}
+
 func (uc *UseCase) CheckParticipantExists(
 	sfID, userID entities.HexID,
 ) (entities.Participant, error) {

@@ -13,6 +13,7 @@ type SecretFriendFacade interface {
 type Repository interface {
 	AddParticipant(sfID, userID entities.HexID) (entities.Participant, error)
 	ListParticipants(sfID entities.HexID) ([]entities.Participant, error)
+	SetParticipantReady(sfID, userID entities.HexID, isReady bool) error
 	GetParticipant(sfID, userID entities.HexID) (entities.Participant, error)
 	RemoveParticipant(sfID, userID entities.HexID) error
 }

@@ -30,6 +30,7 @@ type DenylistConverter interface {
 	// goverter:ignore Timestamp
 	// goverter:ignore DenyList
 	// goverter:ignore Wishlist
+	// goverter:ignore IsReady
 	dbDenyRowToDeniedParticipant(row dbgen.GetDenyListByParticipantRow) entities.Participant
 
 	// goverter:map Denylist.ID ID

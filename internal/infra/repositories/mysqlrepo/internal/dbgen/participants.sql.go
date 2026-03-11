@@ -43,7 +43,7 @@ func (q *Queries) DeleteParticipantBySFAndUser(ctx context.Context, arg DeletePa
 }
 
 const GetParticipantByID = `-- name: GetParticipantByID :one
-SELECT id, created_at, updated_at, joined_at, secret_friend_id, user_id
+SELECT id, created_at, updated_at, joined_at, secret_friend_id, user_id, is_ready
 FROM participants
 WHERE id = ?
 `
@@ -58,12 +58,13 @@ func (q *Queries) GetParticipantByID(ctx context.Context, id []byte) (Participan
 		&i.JoinedAt,
 		&i.SecretFriendID,
 		&i.UserID,
+		&i.IsReady,
 	)
 	return i, err
 }
 
 const GetParticipantBySFAndUser = `-- name: GetParticipantBySFAndUser :one
-SELECT id, created_at, updated_at, joined_at, secret_friend_id, user_id
+SELECT id, created_at, updated_at, joined_at, secret_friend_id, user_id, is_ready
 FROM participants
 WHERE secret_friend_id = ?
   AND user_id = ?
@@ -84,6 +85,7 @@ func (q *Queries) GetParticipantBySFAndUser(ctx context.Context, arg GetParticip
 		&i.JoinedAt,
 		&i.SecretFriendID,
 		&i.UserID,
+		&i.IsReady,
 	)
 	return i, err
 }
@@ -119,6 +121,7 @@ func (q *Queries) ListParticipantsBySecretFriend(ctx context.Context, secretFrie
 			&i.Participant.JoinedAt,
 			&i.Participant.SecretFriendID,
 			&i.Participant.UserID,
+			&i.Participant.IsReady,
 			&i.Fullname,
 			&i.Email,
 			&i.Username,
@@ -135,4 +138,23 @@ func (q *Queries) ListParticipantsBySecretFriend(ctx context.Context, secretFrie
 		return nil, err
 	}
 	return items, nil
+}
+
+const SetParticipantReady = `-- name: SetParticipantReady :exec
+UPDATE participants
+SET is_ready   = ?,
+    updated_at = NOW()
+WHERE secret_friend_id = ?
+  AND user_id = ?
+`
+
+type SetParticipantReadyParams struct {
+	IsReady        bool   `db:"is_ready"`
+	SecretFriendID []byte `db:"secret_friend_id"`
+	UserID         []byte `db:"user_id"`
+}
+
+func (q *Queries) SetParticipantReady(ctx context.Context, arg SetParticipantReadyParams) error {
+	_, err := q.db.ExecContext(ctx, SetParticipantReady, arg.IsReady, arg.SecretFriendID, arg.UserID)
+	return err
 }

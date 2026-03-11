@@ -19,6 +19,13 @@ SELECT *
 FROM participants
 WHERE id = ?;
 
+-- name: SetParticipantReady :exec
+UPDATE participants
+SET is_ready   = ?,
+    updated_at = NOW()
+WHERE secret_friend_id = ?
+  AND user_id = ?;
+
 -- name: DeleteParticipantBySFAndUser :exec
 DELETE
 FROM participants

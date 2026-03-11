@@ -21,6 +21,7 @@ type Participant struct {
 	JoinedAt       time.Time
 	DenyList       []DeniedUser
 	Wishlist       Wishlist
+	IsReady        bool
 }
 
 func NewParticipant(secretFriendID HexID, relatedUser User) Participant {

@@ -43,6 +43,7 @@ type Participant struct {
 	JoinedAt       sql.NullTime `db:"joined_at"`
 	SecretFriendID []byte       `db:"secret_friend_id"`
 	UserID         []byte       `db:"user_id"`
+	IsReady        bool         `db:"is_ready"`
 }
 
 type SecretFriend struct {

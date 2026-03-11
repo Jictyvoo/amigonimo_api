@@ -37,6 +37,24 @@ func parseAndReturnParticipant(
 	return mappers.ToEntityParticipant(dbP), nil
 }
 
+func (r *RepoMySQL) SetParticipantReady(sfID, userID entities.HexID, isReady bool) error {
+	ctx, cancel := r.Ctx()
+	defer cancel()
+
+	err := r.Queries().SetParticipantReady(
+		ctx, dbgen.SetParticipantReadyParams{
+			IsReady:        isReady,
+			SecretFriendID: sfID[:],
+			UserID:         userID[:],
+		},
+	)
+	if err != nil {
+		return mysqlrepo.WrapError(err, "set participant ready")
+	}
+
+	return nil
+}
+
 func (r *RepoMySQL) RemoveParticipant(sfID, userID entities.HexID) error {
 	ctx, cancel := r.Ctx()
 	defer cancel()
