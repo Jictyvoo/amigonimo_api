@@ -75,6 +75,18 @@ type User struct {
 	RecoveryCodeExpiresAt sql.NullTime   `db:"recovery_code_expires_at"`
 }
 
+type UserProfile struct {
+	ID        []byte         `db:"id"`
+	CreatedAt time.Time      `db:"created_at"`
+	UpdatedAt time.Time      `db:"updated_at"`
+	Fullname  sql.NullString `db:"fullname"`
+	Nickname  sql.NullString `db:"nickname"`
+	ImageLink sql.NullString `db:"image_link"`
+	Birthday  sql.NullTime   `db:"birthday"`
+	Address   sql.NullString `db:"address"`
+	UserID    []byte         `db:"user_id"`
+}
+
 type WishlistItem struct {
 	ID            []byte         `db:"id"`
 	CreatedAt     time.Time      `db:"created_at"`

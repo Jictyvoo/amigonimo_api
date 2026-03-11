@@ -9,5 +9,6 @@ type (
 	Participant  = dbgen.Participant
 	SecretFriend = dbgen.SecretFriend
 	User         = dbgen.User
+	UserProfile  = dbgen.UserProfile
 	WishlistItem = dbgen.WishlistItem
 )
