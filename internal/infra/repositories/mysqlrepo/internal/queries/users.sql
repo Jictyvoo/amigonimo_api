@@ -1,6 +1,6 @@
 -- name: CreateUser :execresult
-INSERT INTO users (id, fullname, email, username, password, verification_code, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW());
+INSERT INTO users (id, email, username, password, verification_code, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, NOW(), NOW());
 
 -- name: GetUserByEmail :one
 SELECT *

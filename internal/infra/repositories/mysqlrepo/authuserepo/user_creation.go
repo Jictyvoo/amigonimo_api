@@ -20,7 +20,6 @@ func (r RepoMySQL) CreateUser(user entities.User, token string) error {
 	_, err := r.Queries().CreateUser(
 		ctx, dbgen.CreateUserParams{
 			ID:               user.ID[:],
-			Fullname:         user.FullName,
 			Email:            user.Email,
 			Username:         user.Username,
 			Password:         user.Password,

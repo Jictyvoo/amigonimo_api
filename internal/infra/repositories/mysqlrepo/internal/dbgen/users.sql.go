@@ -11,13 +11,12 @@ import (
 )
 
 const CreateUser = `-- name: CreateUser :execresult
-INSERT INTO users (id, fullname, email, username, password, verification_code, created_at, updated_at)
-VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+INSERT INTO users (id, email, username, password, verification_code, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, NOW(), NOW())
 `
 
 type CreateUserParams struct {
 	ID               []byte         `db:"id"`
-	Fullname         string         `db:"fullname"`
 	Email            string         `db:"email"`
 	Username         string         `db:"username"`
 	Password         string         `db:"password"`
@@ -27,7 +26,6 @@ type CreateUserParams struct {
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (sql.Result, error) {
 	return q.db.ExecContext(ctx, CreateUser,
 		arg.ID,
-		arg.Fullname,
 		arg.Email,
 		arg.Username,
 		arg.Password,
@@ -36,7 +34,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (sql.Res
 }
 
 const GetUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, created_at, updated_at, fullname, email, username, password, verified_at, remember_token, verification_code, recovery_code, recovery_code_expires_at
+SELECT id, created_at, updated_at, email, username, password, verified_at, remember_token, verification_code, recovery_code, recovery_code_expires_at
 FROM users
 WHERE email = ?
 `
@@ -48,7 +46,6 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Fullname,
 		&i.Email,
 		&i.Username,
 		&i.Password,
@@ -62,7 +59,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const GetUserByEmailOrUsername = `-- name: GetUserByEmailOrUsername :one
-SELECT id, created_at, updated_at, fullname, email, username, password, verified_at, remember_token, verification_code, recovery_code, recovery_code_expires_at
+SELECT id, created_at, updated_at, email, username, password, verified_at, remember_token, verification_code, recovery_code, recovery_code_expires_at
 FROM users
 WHERE email = ?
    OR username = ?
@@ -81,7 +78,6 @@ func (q *Queries) GetUserByEmailOrUsername(ctx context.Context, arg GetUserByEma
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Fullname,
 		&i.Email,
 		&i.Username,
 		&i.Password,
@@ -95,7 +91,7 @@ func (q *Queries) GetUserByEmailOrUsername(ctx context.Context, arg GetUserByEma
 }
 
 const GetUserByRecovery = `-- name: GetUserByRecovery :one
-SELECT id, created_at, updated_at, fullname, email, username, password, verified_at, remember_token, verification_code, recovery_code, recovery_code_expires_at
+SELECT id, created_at, updated_at, email, username, password, verified_at, remember_token, verification_code, recovery_code, recovery_code_expires_at
 FROM users
 WHERE email = ?
   AND recovery_code = ?
@@ -115,7 +111,6 @@ func (q *Queries) GetUserByRecovery(ctx context.Context, arg GetUserByRecoveryPa
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Fullname,
 		&i.Email,
 		&i.Username,
 		&i.Password,
@@ -129,7 +124,7 @@ func (q *Queries) GetUserByRecovery(ctx context.Context, arg GetUserByRecoveryPa
 }
 
 const GetUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, created_at, updated_at, fullname, email, username, password, verified_at, remember_token, verification_code, recovery_code, recovery_code_expires_at
+SELECT id, created_at, updated_at, email, username, password, verified_at, remember_token, verification_code, recovery_code, recovery_code_expires_at
 FROM users
 WHERE username = ?
 `
@@ -141,7 +136,6 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Fullname,
 		&i.Email,
 		&i.Username,
 		&i.Password,
@@ -155,7 +149,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 }
 
 const GetUserByVerificationCode = `-- name: GetUserByVerificationCode :one
-SELECT id, created_at, updated_at, fullname, email, username, password, verified_at, remember_token, verification_code, recovery_code, recovery_code_expires_at
+SELECT id, created_at, updated_at, email, username, password, verified_at, remember_token, verification_code, recovery_code, recovery_code_expires_at
 FROM users
 WHERE verification_code = ?
 `
@@ -167,7 +161,6 @@ func (q *Queries) GetUserByVerificationCode(ctx context.Context, verificationCod
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Fullname,
 		&i.Email,
 		&i.Username,
 		&i.Password,

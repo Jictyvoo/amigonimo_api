@@ -53,7 +53,7 @@ func (q *Queries) GetAuthenticationToken(ctx context.Context, userID []byte) (Au
 }
 
 const GetUserByAuthToken = `-- name: GetUserByAuthToken :one
-SELECT u.id, u.created_at, u.updated_at, u.fullname, u.email, u.username, u.password, u.verified_at, u.remember_token, u.verification_code, u.recovery_code, u.recovery_code_expires_at
+SELECT u.id, u.created_at, u.updated_at, u.email, u.username, u.password, u.verified_at, u.remember_token, u.verification_code, u.recovery_code, u.recovery_code_expires_at
 FROM users u
          INNER JOIN auth_tokens at ON u.id = at.user_id
 WHERE at.token = ?
@@ -66,7 +66,6 @@ func (q *Queries) GetUserByAuthToken(ctx context.Context, token string) (User, e
 		&i.ID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.Fullname,
 		&i.Email,
 		&i.Username,
 		&i.Password,

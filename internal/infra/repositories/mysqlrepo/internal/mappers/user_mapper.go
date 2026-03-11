@@ -18,7 +18,7 @@ type UserConverter interface {
 	// Helper method to convert UserBasic fields - will be used to populate embedded UserBasic
 	convertUserBasic(user dbgen.User) entities.UserBasic
 
-	// goverter:map Fullname FullName
+	// goverter:ignore FullName
 	// goverter:map . UserBasic
 	ToEntityUser(user dbgen.User) entities.User
 }

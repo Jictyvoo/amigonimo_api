@@ -12,7 +12,6 @@ func ToEntityUser(source dbgen.User) entities.User {
 	var entitiesUser entities.User
 	entitiesUser.UserBasic = convertUserBasic(source)
 	entitiesUser.ID = HexIDFromBytes(source.ID)
-	entitiesUser.FullName = source.Fullname
 	entitiesUser.VerifiedAt = TimeFromNullTime(source.VerifiedAt)
 	entitiesUser.RememberToken = StringFromNullString(source.RememberToken)
 	return entitiesUser
