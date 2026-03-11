@@ -17,14 +17,16 @@ func TestWishlistFlowSeeded(t *testing.T) {
 	engine := NewEngine(t)
 	const userPassword = "wishlist-flow-password"
 
-	owner := fixtures.NewUser().
+	ownerBuilder := fixtures.NewUser().
 		WithEmail("wishlist-owner@example.com").
-		WithPassword(userPassword).
-		Build()
-	participant := fixtures.NewUser().
+		WithPassword(userPassword)
+	owner := ownerBuilder.Build()
+	ownerProfile := ownerBuilder.BuildProfile()
+	participantBuilder := fixtures.NewUser().
 		WithEmail("wishlist-participant@example.com").
-		WithPassword(userPassword).
-		Build()
+		WithPassword(userPassword)
+	participant := participantBuilder.Build()
+	participantProfile := participantBuilder.BuildProfile()
 	secretFriend := fixtures.NewSecretFriend().
 		WithOwner(owner).
 		WithName("Wishlist Flow Event").
@@ -34,7 +36,14 @@ func TestWishlistFlowSeeded(t *testing.T) {
 		WithSecretFriend(secretFriend).
 		Build()
 
-	engine.Seed(owner, participant, secretFriend, participantEntry)
+	engine.Seed(
+		owner,
+		ownerProfile,
+		participant,
+		participantProfile,
+		secretFriend,
+		participantEntry,
+	)
 
 	secretFriendID, _ := entities.NewHexIDFromBytes(secretFriend.ID)
 	createReq := wishlistctrl.WishlistItemRequest{

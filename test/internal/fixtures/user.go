@@ -1,6 +1,7 @@
 package fixtures
 
 import (
+	"database/sql"
 	"log"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 
 type UserBuilder struct {
 	instance *genmodels.User
+	profile  *genmodels.UserProfile
 }
 
 func NewUser() *UserBuilder {
@@ -19,15 +21,27 @@ func NewUser() *UserBuilder {
 	if err != nil {
 		log.Panicf("failed to generate uuid: %s", err)
 	}
+	profileID, err := uuid.NewV7()
+	if err != nil {
+		log.Panicf("failed to generate profile uuid: %s", err)
+	}
+	now := time.Now()
+	defaultFullname := "Test User " + uid.String()
 
 	newBuilder := &UserBuilder{
 		instance: &genmodels.User{
 			ID:        uid[:],
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-			Fullname:  "Test User " + uid.String(),
+			CreatedAt: now,
+			UpdatedAt: now,
 			Email:     "test-" + uid.String() + "@example.com",
 			Username:  "user-" + uid.String(),
+		},
+		profile: &genmodels.UserProfile{
+			ID:        profileID[:],
+			CreatedAt: now,
+			UpdatedAt: now,
+			UserID:    uid[:],
+			Fullname:  sql.NullString{String: defaultFullname, Valid: true},
 		},
 	}
 
@@ -40,7 +54,7 @@ func (b *UserBuilder) WithEmail(email string) *UserBuilder {
 }
 
 func (b *UserBuilder) WithFullname(fullname string) *UserBuilder {
-	b.instance.Fullname = fullname
+	b.profile.Fullname = sql.NullString{String: fullname, Valid: fullname != ""}
 	return b
 }
 
@@ -58,4 +72,8 @@ func (b *UserBuilder) WithPassword(rawPassword string) *UserBuilder {
 
 func (b *UserBuilder) Build() *genmodels.User {
 	return b.instance
+}
+
+func (b *UserBuilder) BuildProfile() *genmodels.UserProfile {
+	return b.profile
 }

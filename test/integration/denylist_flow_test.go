@@ -17,14 +17,16 @@ func TestDenylistFlowSeeded(t *testing.T) {
 	engine := NewEngine(t)
 	const userPassword = "denylist-flow-password"
 
-	owner := fixtures.NewUser().
+	ownerBuilder := fixtures.NewUser().
 		WithEmail("denylist-owner@example.com").
-		WithPassword(userPassword).
-		Build()
-	participant := fixtures.NewUser().
+		WithPassword(userPassword)
+	owner := ownerBuilder.Build()
+	ownerProfile := ownerBuilder.BuildProfile()
+	participantBuilder := fixtures.NewUser().
 		WithEmail("denylist-participant@example.com").
-		WithPassword(userPassword).
-		Build()
+		WithPassword(userPassword)
+	participant := participantBuilder.Build()
+	participantProfile := participantBuilder.BuildProfile()
 	secretFriend := fixtures.NewSecretFriend().
 		WithOwner(owner).
 		WithName("Denylist Flow Event").
@@ -38,7 +40,15 @@ func TestDenylistFlowSeeded(t *testing.T) {
 		WithSecretFriend(secretFriend).
 		Build()
 
-	engine.Seed(owner, participant, secretFriend, ownerEntry, participantEntry)
+	engine.Seed(
+		owner,
+		ownerProfile,
+		participant,
+		participantProfile,
+		secretFriend,
+		ownerEntry,
+		participantEntry,
+	)
 
 	secretFriendID, _ := entities.NewHexIDFromBytes(secretFriend.ID)
 	deniedUserID, _ := entities.NewHexIDFromBytes(participant.ID)
@@ -72,7 +82,7 @@ func TestDenylistFlowSeeded(t *testing.T) {
 					[]denylistctrl.DeniedUserResponse{
 						{
 							UserID:   deniedUserID.String(),
-							Fullname: participant.Fullname,
+							Fullname: participantProfile.Fullname.String,
 						},
 					},
 				),

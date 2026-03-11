@@ -16,10 +16,11 @@ import (
 func TestCreateUserSimple(t *testing.T) {
 	engine := NewEngine(t)
 
-	actor := fixtures.NewUser().
-		WithEmail("actor@example.com").
-		Build()
-	if seedErr := engine.Seed(actor); seedErr != nil {
+	actorBuilder := fixtures.NewUser().
+		WithEmail("actor@example.com")
+	actor := actorBuilder.Build()
+	actorProfile := actorBuilder.BuildProfile()
+	if seedErr := engine.Seed(actor, actorProfile); seedErr != nil {
 		t.Fatalf("seedErr: %v", seedErr.Error())
 	}
 

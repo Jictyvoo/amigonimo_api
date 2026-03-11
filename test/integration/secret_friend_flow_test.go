@@ -20,17 +20,19 @@ func TestCreateSecretFriendAndJoin(t *testing.T) {
 	const userPassword = "generic@test.password"
 
 	// Users
-	manager := fixtures.NewUser().
+	managerBuilder := fixtures.NewUser().
 		WithUsername("manager").
 		WithEmail("manager@example.com").
-		WithPassword(userPassword).
-		Build()
-	participant := fixtures.NewUser().
+		WithPassword(userPassword)
+	manager := managerBuilder.Build()
+	managerProfile := managerBuilder.BuildProfile()
+	participantBuilder := fixtures.NewUser().
 		WithUsername("participant").
 		WithEmail("participant@example.com").
-		WithPassword(userPassword).
-		Build()
-	engine.Seed(manager, participant)
+		WithPassword(userPassword)
+	participant := participantBuilder.Build()
+	participantProfile := participantBuilder.BuildProfile()
+	engine.Seed(manager, managerProfile, participant, participantProfile)
 
 	mr := atores.MultiRunner{
 		Runners: []atores.Runner{
