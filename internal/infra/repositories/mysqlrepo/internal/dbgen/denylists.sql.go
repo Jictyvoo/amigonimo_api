@@ -15,10 +15,10 @@ INSERT INTO denylists (id, participant_id, denied_user_id, created_at, updated_a
 VALUES (?,
         COALESCE(
                 ?,
-                (SELECT id
-                 FROM participants
-                 WHERE user_id = ?
-                   AND secret_friend_id = ?
+                (SELECT p.id
+                 FROM participants p
+                 WHERE p.user_id = ?
+                   AND p.secret_friend_id = ?
                  LIMIT 1)
         ),
         ?, NOW(), NOW())
@@ -43,15 +43,16 @@ func (q *Queries) AddDenyListEntry(ctx context.Context, arg AddDenyListEntryPara
 }
 
 const GetDenyListByParticipant = `-- name: GetDenyListByParticipant :many
-SELECT d.id, d.created_at, d.updated_at, d.participant_id, d.denied_user_id, u.fullname, u.email, u.username, u.id AS user_id
+SELECT d.id, d.created_at, d.updated_at, d.participant_id, d.denied_user_id, COALESCE(up.fullname, '') AS fullname, u.email, u.username, u.id AS user_id
 FROM denylists d
          JOIN users u ON d.denied_user_id = u.id
+         LEFT JOIN user_profiles up ON up.user_id = u.id
 WHERE d.participant_id = COALESCE(
         ?,
-        (SELECT id
-         FROM participants
-         WHERE user_id = ?
-           AND secret_friend_id = ?
+        (SELECT p.id
+         FROM participants p
+         WHERE p.user_id = ?
+           AND p.secret_friend_id = ?
          LIMIT 1)
                          )
 `
@@ -108,10 +109,10 @@ DELETE
 FROM denylists
 WHERE participant_id = COALESCE(
         ?,
-        (SELECT id
-         FROM participants
-         WHERE user_id = ?
-           AND secret_friend_id = ?
+        (SELECT p.id
+         FROM participants p
+         WHERE p.user_id = ?
+           AND p.secret_friend_id = ?
          LIMIT 1)
                        )
   AND denied_user_id = ?

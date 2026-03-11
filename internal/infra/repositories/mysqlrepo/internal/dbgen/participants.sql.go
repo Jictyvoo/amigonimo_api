@@ -91,9 +91,10 @@ func (q *Queries) GetParticipantBySFAndUser(ctx context.Context, arg GetParticip
 }
 
 const ListParticipantsBySecretFriend = `-- name: ListParticipantsBySecretFriend :many
-SELECT p.id, p.created_at, p.updated_at, p.joined_at, p.secret_friend_id, p.user_id, u.fullname, u.email, u.username, u.id AS user_id
+SELECT p.id, p.created_at, p.updated_at, p.joined_at, p.secret_friend_id, p.user_id, p.is_ready, COALESCE(up.fullname, '') AS fullname, u.email, u.username, u.id AS user_id
 FROM participants p
          JOIN users u ON p.user_id = u.id
+         LEFT JOIN user_profiles up ON up.user_id = u.id
 WHERE p.secret_friend_id = ?
 `
 
