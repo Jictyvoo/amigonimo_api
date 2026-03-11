@@ -23,6 +23,7 @@ func (Participant) Fields() []ent.Field {
 		field.UUID("user_id", uuid.UUID{}),
 		field.UUID("secret_friend_id", uuid.UUID{}),
 		field.Time("joined_at").Default(time.Now),
+		field.Bool("is_ready").Default(false),
 	}
 }
 

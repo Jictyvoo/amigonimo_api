@@ -1,4 +1,5 @@
-h1:ToNNL7pL+I30Fu5Z+DTBiKOjutHAVSnvrkyRfcV82B4=
+h1:0Qe0yWjO6jd0xfRd+81ED/fFugLina4KfjKsOH8MfTI=
 20251204025235_create_user.sql h1:Z0xnSVGZK6Dq+mrxJ2d7DWdMAeztMNKVOEE3UaSX6pQ=
 20251204025518_add_auth_token.sql h1:zQWYl/XUpsUJBpaM9MOgVTq41MZF3Y0RxgXtFzQBELE=
 20260118173823_initial_app_schema.sql h1:4U25xR9dN7nmB4pYUtEw/fCBQAXzG1q8474Xt6YSOWg=
+20260311050148_add_user_profile_and_participant_ready.sql h1:/IxT8QnhMbyR9dW1Cnp1iIZqybx0MDeAwTb0EbzXSvY=

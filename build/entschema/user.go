@@ -16,7 +16,6 @@ type User struct{ ent.Schema }
 // Fields of the User.
 func (User) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("fullname").MaxLen(255),
 		field.String("email").MaxLen(255),
 		field.String("username").Unique().MaxLen(78),
 		field.String("password").MaxLen(76),
@@ -49,6 +48,9 @@ func (User) Edges() []ent.Edge {
 		edge.To("denied_entries", Denylist.Type).
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 		edge.To("auth_token", AuthToken.Type).
+			Annotations(entsql.OnDelete(entsql.Cascade)),
+		edge.To("profile", UserProfile.Type).
+			Unique().
 			Annotations(entsql.OnDelete(entsql.Cascade)),
 	}
 }
