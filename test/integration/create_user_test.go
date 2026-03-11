@@ -50,6 +50,13 @@ func TestCreateUserSimple(t *testing.T) {
 				),
 				bancoche.ExpectCount(1, true),
 			),
+			bancoche.New(
+				engine.DB(),
+				bancoche.WithMapQuery(
+					"user_profiles", map[string]any{},
+				),
+				bancoche.ExpectCount(2, true),
+			),
 			stdrunners.LoginRunner(engine.BaseURL(), reqBody.Email, reqBody.Password),
 		},
 	}

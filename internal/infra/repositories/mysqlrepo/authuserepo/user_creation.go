@@ -17,7 +17,22 @@ func (r RepoMySQL) CreateUser(user entities.User, token string) error {
 		return errors.New("user ID is required")
 	}
 
-	_, err := r.Queries().CreateUser(
+	profileID, err := entities.NewHexID()
+	if err != nil {
+		return err
+	}
+
+	onFinishTx, err := r.BeginTx(ctx, nil)
+	if err != nil {
+		return mysqlrepo.WrapError(err, "begin tx for create user")
+	}
+
+	committed := false
+	defer func() {
+		_ = onFinishTx(committed)
+	}()
+
+	_, err = r.Queries().CreateUser(
 		ctx, dbgen.CreateUserParams{
 			ID:               user.ID[:],
 			Email:            user.Email,
@@ -30,5 +45,21 @@ func (r RepoMySQL) CreateUser(user entities.User, token string) error {
 		return mysqlrepo.WrapError(err, "create user")
 	}
 
+	if _, err = r.Queries().CreateUserProfile(
+			ctx,
+		dbgen.CreateUserProfileParams{
+			ID:        profileID[:],
+			UserID:    user.ID[:],
+			Fullname:  sql.NullString{String: user.FullName, Valid: user.FullName != ""},
+			Nickname:  sql.NullString{},
+			ImageLink: sql.NullString{},
+			Birthday:  sql.NullTime{},
+			Address:   sql.NullString{},
+		},
+	); err != nil {
+		return mysqlrepo.WrapError(err, "create user profile")
+	}
+
+	committed = true
 	return nil
 }
