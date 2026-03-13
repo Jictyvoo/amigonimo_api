@@ -3,13 +3,14 @@ package wishlistrepo
 import (
 	"database/sql"
 
+	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/wishlist"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/internal/dbgen"
 )
 
 func (r *RepoMySQL) AddWishlistItem(
-	participant entities.Participant,
+	participant wishlist.ParticipantRef,
 	wishItem entities.WishlistItem,
 ) (entities.WishlistItem, error) {
 	id, err := entities.NewHexID()

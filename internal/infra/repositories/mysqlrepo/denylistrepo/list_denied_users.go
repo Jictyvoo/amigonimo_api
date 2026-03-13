@@ -1,6 +1,7 @@
 package denylistrepo
 
 import (
+	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/denylist"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/internal/dbgen"
@@ -8,12 +9,12 @@ import (
 )
 
 func (r *RepoMySQL) GetDenyListByParticipant(
-	p entities.Participant,
+	participant denylist.ParticipantRef,
 ) ([]entities.DeniedUser, error) {
 	ctx, cancel := r.Ctx()
 	defer cancel()
 
-	ids := r.queryIDs(p)
+	ids := r.queryIDs(participant)
 	rows, err := r.Queries().GetDenyListByParticipant(
 		ctx, dbgen.GetDenyListByParticipantParams{
 			ParticipantID:  ids.participantID,

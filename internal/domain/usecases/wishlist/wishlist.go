@@ -13,11 +13,17 @@ type ParticipantFacade interface {
 
 type Repository interface {
 	AddWishlistItem(
-		participant entities.Participant,
+		participant ParticipantRef,
 		wishItem entities.WishlistItem,
 	) (entities.WishlistItem, error)
-	RemoveWishlistItem(itemID entities.HexID, participant entities.Participant) error
-	GetWishlistByParticipant(participant entities.Participant) ([]entities.WishlistItem, error)
+	RemoveWishlistItem(itemID entities.HexID, participant ParticipantRef) error
+	GetWishlistByParticipant(participant ParticipantRef) ([]entities.WishlistItem, error)
+}
+
+type ParticipantRef struct {
+	ParticipantID  entities.HexID
+	UserID         entities.HexID
+	SecretFriendID entities.HexID
 }
 
 type UseCase struct {

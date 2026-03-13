@@ -6,11 +6,17 @@ import (
 
 type Repository interface {
 	AddDenyListEntry(
-		p entities.Participant,
+		participant ParticipantRef,
 		deniedUserID entities.HexID,
 	) (entities.DeniedUser, error)
-	RemoveDenyListEntry(p entities.Participant, deniedUserID entities.HexID) error
-	GetDenyListByParticipant(p entities.Participant) ([]entities.DeniedUser, error)
+	RemoveDenyListEntry(participant ParticipantRef, deniedUserID entities.HexID) error
+	GetDenyListByParticipant(participant ParticipantRef) ([]entities.DeniedUser, error)
+}
+
+type ParticipantRef struct {
+	ParticipantID  entities.HexID
+	UserID         entities.HexID
+	SecretFriendID entities.HexID
 }
 
 type UseCase struct {

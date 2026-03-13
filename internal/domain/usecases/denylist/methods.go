@@ -8,7 +8,10 @@ import (
 
 func (uc UseCase) GetDenyList(sfID entities.HexID) ([]entities.DeniedUser, error) {
 	return uc.repo.GetDenyListByParticipant(
-		entities.NewParticipant(sfID, uc.associatedUser),
+		ParticipantRef{
+			UserID:         uc.associatedUser.ID,
+			SecretFriendID: sfID,
+		},
 	)
 }
 
@@ -29,7 +32,13 @@ func (uc UseCase) AddEntry(sfID, deniedUserID entities.HexID) (entities.DeniedUs
 	}
 
 	// Validate capacity
-	currentList, err := uc.repo.GetDenyListByParticipant(participant)
+	participantRef := ParticipantRef{
+		ParticipantID:  participant.ID,
+		UserID:         uc.associatedUser.ID,
+		SecretFriendID: sfID,
+	}
+
+	currentList, err := uc.repo.GetDenyListByParticipant(participantRef)
 	if err != nil {
 		return entities.DeniedUser{}, fmt.Errorf("failed to get current denylist: %w", err)
 	}
@@ -45,11 +54,23 @@ func (uc UseCase) AddEntry(sfID, deniedUserID entities.HexID) (entities.DeniedUs
 		)
 	}
 
-	return uc.repo.AddDenyListEntry(participant, deniedUserID)
+	return uc.repo.AddDenyListEntry(participantRef, deniedUserID)
 }
 
 func (uc UseCase) RemoveEntry(sfID, deniedUserID entities.HexID) error {
+	participant, err := uc.facProvider.participant.CheckParticipantInSecretFriend(
+		sfID, uc.associatedUser.ID,
+	)
+	if err != nil {
+		return fmt.Errorf("user is not a participant: %w", err)
+	}
+
 	return uc.repo.RemoveDenyListEntry(
-		entities.NewParticipant(sfID, uc.associatedUser), deniedUserID,
+		ParticipantRef{
+			ParticipantID:  participant.ID,
+			UserID:         uc.associatedUser.ID,
+			SecretFriendID: sfID,
+		},
+		deniedUserID,
 	)
 }

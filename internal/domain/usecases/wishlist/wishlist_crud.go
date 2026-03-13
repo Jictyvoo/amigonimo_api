@@ -7,8 +7,12 @@ import (
 )
 
 func (uc *UseCase) GetWishlist(sfID entities.HexID) ([]entities.WishlistItem, error) {
-	participant := entities.NewParticipant(sfID, uc.associatedUser)
-	return uc.repo.GetWishlistByParticipant(participant)
+	return uc.repo.GetWishlistByParticipant(
+		ParticipantRef{
+			UserID:         uc.associatedUser.ID,
+			SecretFriendID: sfID,
+		},
+	)
 }
 
 func (uc *UseCase) AddItem(
@@ -21,7 +25,13 @@ func (uc *UseCase) AddItem(
 	}
 
 	// Fetch current wishlist
-	currentList, err := uc.repo.GetWishlistByParticipant(participant)
+	participantRef := ParticipantRef{
+		ParticipantID:  participant.ID,
+		UserID:         uc.associatedUser.ID,
+		SecretFriendID: sfID,
+	}
+
+	currentList, err := uc.repo.GetWishlistByParticipant(participantRef)
 	if err != nil {
 		return entities.WishlistItem{}, fmt.Errorf("could not get current wishlist: %w", err)
 	}
@@ -37,10 +47,21 @@ func (uc *UseCase) AddItem(
 		Label:    label,
 		Comments: comments,
 	}
-	return uc.repo.AddWishlistItem(participant, newWishItem)
+	return uc.repo.AddWishlistItem(participantRef, newWishItem)
 }
 
 func (uc *UseCase) DeleteItem(sfID, itemID entities.HexID) error {
-	participant := entities.NewParticipant(sfID, uc.associatedUser)
-	return uc.repo.RemoveWishlistItem(itemID, participant)
+	participant, err := uc.validator.CheckParticipantInSecretFriend(sfID, uc.associatedUser.ID)
+	if err != nil {
+		return fmt.Errorf("validation failed: %w", err)
+	}
+
+	return uc.repo.RemoveWishlistItem(
+		itemID,
+		ParticipantRef{
+			ParticipantID:  participant.ID,
+			UserID:         uc.associatedUser.ID,
+			SecretFriendID: sfID,
+		},
+	)
 }

@@ -46,7 +46,7 @@ func (r RepoMySQL) CreateUser(user entities.User, token string) error {
 	}
 
 	if _, err = r.Queries().CreateUserProfile(
-			ctx,
+		ctx,
 		dbgen.CreateUserProfileParams{
 			ID:        profileID[:],
 			UserID:    user.ID[:],

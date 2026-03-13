@@ -1,6 +1,7 @@
 package wishlistrepo
 
 import (
+	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/wishlist"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/internal/dbgen"
@@ -8,7 +9,7 @@ import (
 )
 
 func (r *RepoMySQL) GetWishlistByParticipant(
-	participant entities.Participant,
+	participant wishlist.ParticipantRef,
 ) ([]entities.WishlistItem, error) {
 	ctx, cancel := r.Ctx()
 	defer cancel()
