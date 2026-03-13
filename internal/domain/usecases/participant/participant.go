@@ -4,11 +4,15 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
+//go:generate go tool -modfile=../../../../build/tools/go.mod mockgen -destination=secret_friend_facade_mock_test.go -package=participant github.com/jictyvoo/amigonimo_api/internal/domain/usecases/participant SecretFriendFacade
+
 // SecretFriendFacade defines what participant module needs from secretfriend.
 type SecretFriendFacade interface {
 	GetSecretFriendByID(id entities.HexID) (entities.SecretFriend, error)
 	CheckUserIsOwner(sfID entities.HexID) (bool, error)
 }
+
+//go:generate go tool -modfile=../../../../build/tools/go.mod mockgen -destination=repository_mock_test.go -package=participant github.com/jictyvoo/amigonimo_api/internal/domain/usecases/participant Repository
 
 type Repository interface {
 	AddParticipant(sfID, userID entities.HexID) (entities.Participant, error)

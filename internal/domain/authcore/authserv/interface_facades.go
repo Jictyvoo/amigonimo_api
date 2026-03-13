@@ -6,14 +6,14 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
-//go:generate go tool -modfile=../../../../build/tools/go.mod mockgen -destination=../../mocks/auth_mailer_mock.go -package=mocks github.com/jictyvoo/amigonimo_api/internal/domain/authcore/authserv MailerService
+//go:generate go tool -modfile=../../../../build/tools/go.mod mockgen -destination=mailer_service_mock_test.go -package=authserv github.com/jictyvoo/amigonimo_api/internal/domain/authcore/authserv MailerService
 
 type MailerService interface {
 	SendActivationEmail(email string, verificationToken string)
 	SendPasswordRecoveryEmail(email string, recoveryCode string)
 }
 
-//go:generate go tool -modfile=../../../../build/tools/go.mod mockgen -destination=../../mocks/token_repo_mock.go -package=mocks github.com/jictyvoo/amigonimo_api/internal/domain/authcore/authserv TokenRepository
+//go:generate go tool -modfile=../../../../build/tools/go.mod mockgen -destination=token_repository_mock_test.go -package=authserv github.com/jictyvoo/amigonimo_api/internal/domain/authcore/authserv TokenRepository
 
 type (
 	UserRetriever interface {
@@ -27,7 +27,7 @@ type (
 	}
 )
 
-//go:generate go tool -modfile=../../../../build/tools/go.mod mockgen -destination=../../mocks/userauth_repo_mock.go -package=mocks github.com/jictyvoo/amigonimo_api/internal/domain/authcore/authserv UserAuthRepository
+//go:generate go tool -modfile=../../../../build/tools/go.mod mockgen -destination=user_auth_repository_mock_test.go -package=authserv github.com/jictyvoo/amigonimo_api/internal/domain/authcore/authserv UserAuthRepository
 
 type UserAuthRepository interface {
 	GetUserByUsername(username string) (entities.User, error)

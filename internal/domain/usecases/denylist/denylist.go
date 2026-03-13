@@ -4,6 +4,8 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
+//go:generate go tool -modfile=../../../../build/tools/go.mod mockgen -destination=repository_mock_test.go -package=denylist github.com/jictyvoo/amigonimo_api/internal/domain/usecases/denylist Repository
+
 type Repository interface {
 	AddDenyListEntry(
 		participant ParticipantRef,

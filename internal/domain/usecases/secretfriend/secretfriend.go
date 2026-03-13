@@ -6,6 +6,8 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
+//go:generate go tool -modfile=../../../../build/tools/go.mod mockgen -destination=repository_mock_test.go -package=secretfriend github.com/jictyvoo/amigonimo_api/internal/domain/usecases/secretfriend Repository
+
 type Repository interface {
 	CreateSecretFriend(sf *entities.SecretFriend) error
 	GetSecretFriendByID(id entities.HexID) (entities.SecretFriend, error)

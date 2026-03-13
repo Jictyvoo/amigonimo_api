@@ -4,7 +4,7 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
-//go:generate go tool -modfile=../../../../build/tools/go.mod mockgen -destination=../../mocks/useredit_repo_mock.go -package=mocks github.com/jictyvoo/amigonimo_api/internal/domain/authcore/userserv UserEditionRepository
+//go:generate go tool -modfile=../../../../build/tools/go.mod mockgen -destination=user_edition_repository_mock_test.go -package=userserv github.com/jictyvoo/amigonimo_api/internal/domain/authcore/userserv UserEditionRepository
 
 type UserEditionRepository interface {
 	GetUserByAuthCode(authToken string) (entities.User, error)

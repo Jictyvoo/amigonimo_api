@@ -10,6 +10,8 @@ import (
 	"github.com/jictyvoo/amigonimo_api/pkg/dbrock"
 )
 
+//go:generate go tool -modfile=../../../../build/tools/go.mod mockgen -destination=repository_mock_test.go -package=drawfriends github.com/jictyvoo/amigonimo_api/internal/domain/usecases/drawfriends Repository
+
 type Repository interface {
 	dbrock.Transactioner
 
