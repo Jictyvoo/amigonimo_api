@@ -30,17 +30,17 @@ func (h *ParticipantsHandlers) ConfirmParticipation(
 ) (*ConfirmParticipationResponse, error) {
 	sfID, err := h.ParamID(c.Request())
 	if err != nil {
-		return nil, err
+		return nil, h.HandleError(err)
 	}
 
 	uc, err := h.useCaseFactory(c.Context())
 	if err != nil {
-		return nil, err
+		return nil, h.HandleError(err)
 	}
 
 	p, err := uc.ConfirmParticipation(sfID)
 	if err != nil {
-		return nil, err
+		return nil, h.HandleError(err)
 	}
 
 	return &ConfirmParticipationResponse{
@@ -55,17 +55,17 @@ func (h *ParticipantsHandlers) ListParticipants(
 ) ([]ParticipantResponse, error) {
 	sfID, err := h.ParamID(c.Request())
 	if err != nil {
-		return nil, err
+		return nil, h.HandleError(err)
 	}
 
 	uc, err := h.useCaseFactory(c.Context())
 	if err != nil {
-		return nil, err
+		return nil, h.HandleError(err)
 	}
 
 	participants, err := uc.ListParticipants(sfID)
 	if err != nil {
-		return nil, err
+		return nil, h.HandleError(err)
 	}
 
 	resp := make([]ParticipantResponse, len(participants))

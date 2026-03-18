@@ -39,12 +39,12 @@ func (ctrl *Controller) CreateSecretFriend(
 ) (*CreateSecretFriendResponse, error) {
 	req, err := c.Body()
 	if err != nil {
-		return nil, err
+		return nil, ctrl.HandleError(err)
 	}
 
 	sfUC, err := ctrl.sfUseCaseFactory(c.Context())
 	if err != nil {
-		return nil, err
+		return nil, ctrl.HandleError(err)
 	}
 
 	secretFriend, err := sfUC.Create(
@@ -56,7 +56,7 @@ func (ctrl *Controller) CreateSecretFriend(
 		},
 	)
 	if err != nil {
-		return nil, err
+		return nil, ctrl.HandleError(err)
 	}
 
 	return &CreateSecretFriendResponse{
@@ -71,17 +71,17 @@ func (ctrl *Controller) GetSecretFriendList(
 ) (DashboardResponse, error) {
 	user, err := remy.GetWithContext[entities.User](nil, c.Context())
 	if err != nil {
-		return DashboardResponse{}, err
+		return DashboardResponse{}, ctrl.HandleError(err)
 	}
 
 	uc, err := ctrl.sfUseCaseFactory(c.Context())
 	if err != nil {
-		return DashboardResponse{}, err
+		return DashboardResponse{}, ctrl.HandleError(err)
 	}
 
 	result, err := uc.ListUserSecretFriends(user.ID)
 	if err != nil {
-		return DashboardResponse{}, err
+		return DashboardResponse{}, ctrl.HandleError(err)
 	}
 
 	var dashResp DashboardResponse
@@ -99,16 +99,16 @@ func (ctrl *Controller) GetSecretFriend(
 ) (*GetSecretFriendResponse, error) {
 	id, err := ctrl.ParamID(c.Request())
 	if err != nil {
-		return nil, err
+		return nil, ctrl.HandleError(err)
 	}
 
 	sfUC, err := ctrl.sfUseCaseFactory(c.Context())
 	if err != nil {
-		return nil, err
+		return nil, ctrl.HandleError(err)
 	}
 	secretFriend, err := sfUC.Get(id)
 	if err != nil {
-		return nil, err
+		return nil, ctrl.HandleError(err)
 	}
 
 	return &GetSecretFriendResponse{
@@ -128,17 +128,17 @@ func (ctrl *Controller) UpdateSecretFriend(
 ) (UpdateSecretFriendResponse, error) {
 	req, err := c.Body()
 	if err != nil {
-		return UpdateSecretFriendResponse{}, err
+		return UpdateSecretFriendResponse{}, ctrl.HandleError(err)
 	}
 
 	id, err := ctrl.ParamID(c.Request())
 	if err != nil {
-		return UpdateSecretFriendResponse{}, err
+		return UpdateSecretFriendResponse{}, ctrl.HandleError(err)
 	}
 
 	sfUC, err := ctrl.sfUseCaseFactory(c.Context())
 	if err != nil {
-		return UpdateSecretFriendResponse{}, err
+		return UpdateSecretFriendResponse{}, ctrl.HandleError(err)
 	}
 
 	if err = sfUC.Update(
@@ -149,7 +149,7 @@ func (ctrl *Controller) UpdateSecretFriend(
 			Location: req.Location,
 		},
 	); err != nil {
-		return UpdateSecretFriendResponse{}, err
+		return UpdateSecretFriendResponse{}, ctrl.HandleError(err)
 	}
 
 	return UpdateSecretFriendResponse{
@@ -164,12 +164,12 @@ func (ctrl *Controller) DrawSecretFriend(
 ) (*DrawSecretFriendResponse, error) {
 	id, err := ctrl.ParamID(c.Request())
 	if err != nil {
-		return nil, err
+		return nil, ctrl.HandleError(err)
 	}
 
 	drawUC, err := ctrl.drawUseCaseFactory(c.Context())
 	if err != nil {
-		return nil, err
+		return nil, ctrl.HandleError(err)
 	}
 
 	result, err := drawUC.Execute(
@@ -178,7 +178,7 @@ func (ctrl *Controller) DrawSecretFriend(
 		},
 	)
 	if err != nil {
-		return nil, err
+		return nil, ctrl.HandleError(err)
 	}
 
 	return &DrawSecretFriendResponse{
@@ -194,17 +194,17 @@ func (ctrl *Controller) GetDrawResult(
 ) (*DrawResultResponse, error) {
 	id, err := ctrl.ParamID(c.Request())
 	if err != nil {
-		return nil, err
+		return nil, ctrl.HandleError(err)
 	}
 
 	drawUC, err := ctrl.drawUseCaseFactory(c.Context())
 	if err != nil {
-		return nil, err
+		return nil, ctrl.HandleError(err)
 	}
 
 	user, err := remy.GetWithContext[entities.User](nil, c.Context())
 	if err != nil {
-		return nil, err
+		return nil, ctrl.HandleError(err)
 	}
 
 	result, err := drawUC.GetResult(
@@ -214,7 +214,7 @@ func (ctrl *Controller) GetDrawResult(
 		},
 	)
 	if err != nil {
-		return nil, err
+		return nil, ctrl.HandleError(err)
 	}
 
 	wishlist := make([]WishlistItem, len(result.Receiver.Wishlist.Items))
@@ -239,17 +239,17 @@ func (ctrl *Controller) GetInviteByCode(
 ) (*InviteInfoResponse, error) {
 	code := c.PathParam("code")
 	if code == "" {
-		return nil, errors.New("missing invite code")
+		return nil, ctrl.HTTPError(400, errors.New("invite code is required"))
 	}
 
 	uc, err := ctrl.sfUseCaseFactory(c.Context())
 	if err != nil {
-		return nil, err
+		return nil, ctrl.HandleError(err)
 	}
 
 	sf, err := uc.GetInviteInfo(code)
 	if err != nil {
-		return nil, err
+		return nil, ctrl.HandleError(err)
 	}
 
 	return &InviteInfoResponse{

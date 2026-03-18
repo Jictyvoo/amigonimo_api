@@ -29,17 +29,17 @@ func (h *Controller) GetDenyList(
 ) ([]DeniedUserResponse, error) {
 	sfID, err := h.ParamID(c.Request())
 	if err != nil {
-		return nil, err
+		return nil, h.HandleError(err)
 	}
 
 	uc, err := h.useCaseFactory(c.Context())
 	if err != nil {
-		return nil, err
+		return nil, h.HandleError(err)
 	}
 
 	deniedUsers, err := uc.GetDenyList(sfID)
 	if err != nil {
-		return nil, err
+		return nil, h.HandleError(err)
 	}
 
 	result := make([]DeniedUserResponse, len(deniedUsers))
@@ -56,27 +56,27 @@ func (h *Controller) AddDenyListEntry(
 ) (DeniedUserResponse, error) {
 	sfID, err := h.ParamID(c.Request())
 	if err != nil {
-		return DeniedUserResponse{}, err
+		return DeniedUserResponse{}, h.HandleError(err)
 	}
 
 	body, decodeErr := c.Body()
 	if decodeErr != nil {
-		return DeniedUserResponse{}, decodeErr
+		return DeniedUserResponse{}, h.HandleError(decodeErr)
 	}
 
 	var deniedUserID entities.HexID
-	if deniedUserID, err = entities.ParseHexID(body.TargetUserID); err != nil {
-		return DeniedUserResponse{}, err
+	if deniedUserID, err = h.ParseHexID(body.TargetUserID); err != nil {
+		return DeniedUserResponse{}, h.HandleError(err)
 	}
 
 	uc, ucErr := h.useCaseFactory(c.Context())
 	if ucErr != nil {
-		return DeniedUserResponse{}, ucErr
+		return DeniedUserResponse{}, h.HandleError(ucErr)
 	}
 
 	deniedUser, err := uc.AddEntry(sfID, deniedUserID)
 	if err != nil {
-		return DeniedUserResponse{}, err
+		return DeniedUserResponse{}, h.HandleError(err)
 	}
 
 	return parseDeniedUser(deniedUser), nil
@@ -88,21 +88,21 @@ func (h *Controller) RemoveDenyListEntry(
 ) (RemoveDenyListEntryResponse, error) {
 	sfID, err := h.ParamID(c.Request())
 	if err != nil {
-		return RemoveDenyListEntryResponse{}, err
+		return RemoveDenyListEntryResponse{}, h.HandleError(err)
 	}
 
 	var deniedUserID entities.HexID
-	if deniedUserID, err = entities.ParseHexID(c.PathParam("deniedUserId")); err != nil {
-		return RemoveDenyListEntryResponse{}, err
+	if deniedUserID, err = h.ParseHexID(c.PathParam("deniedUserId")); err != nil {
+		return RemoveDenyListEntryResponse{}, h.HandleError(err)
 	}
 
 	uc, err := h.useCaseFactory(c.Context())
 	if err != nil {
-		return RemoveDenyListEntryResponse{}, err
+		return RemoveDenyListEntryResponse{}, h.HandleError(err)
 	}
 
 	if err = uc.RemoveEntry(sfID, deniedUserID); err != nil {
-		return RemoveDenyListEntryResponse{}, err
+		return RemoveDenyListEntryResponse{}, h.HandleError(err)
 	}
 
 	return RemoveDenyListEntryResponse{
