@@ -1,6 +1,6 @@
 module github.com/jictyvoo/amigonimo_api/test
 
-go 1.25
+go 1.26
 
 replace github.com/jictyvoo/amigonimo_api => ..
 
