@@ -86,10 +86,7 @@ func TestWishlistFlowSeeded(t *testing.T) {
 						},
 					},
 					func(expected, actual *[]wishlistctrl.WishlistItemResponse) error {
-						limit := len(*expected)
-						if len(*actual) < limit {
-							limit = len(*actual)
-						}
+						limit := min(len(*actual), len(*expected))
 						for index := 0; index < limit; index++ {
 							(*expected)[index].ItemID = (*actual)[index].ItemID
 							(*expected)[index].AddedAt = (*actual)[index].AddedAt
