@@ -3,8 +3,8 @@ package drawfriends
 import (
 	"context"
 	"errors"
-	"fmt"
 
+	"github.com/jictyvoo/amigonimo_api/internal/domain/apperr"
 	"github.com/jictyvoo/amigonimo_api/internal/domain/services/drawserv"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 	"github.com/jictyvoo/amigonimo_api/pkg/dbrock"
@@ -40,11 +40,19 @@ func New(repo Repository, drawServ drawserv.Service) UseCase {
 func (uc *UseCase) Execute(input ExecuteInput) (output ExecuteOutput, err error) {
 	var sf entities.SecretFriend
 	if sf, err = uc.repo.GetSecretFriendByID(input.SecretFriendID); err != nil {
-		return ExecuteOutput{}, fmt.Errorf("get secret friend: %w", err)
+		return ExecuteOutput{}, apperr.From(
+			"secret_friend_not_found",
+			"secret friend not found",
+			err,
+		)
 	}
 
 	if sf.Status == entities.StatusDrawn || sf.Status == entities.StatusClosed {
-		return ExecuteOutput{}, fmt.Errorf("secret friend already drawn")
+		return ExecuteOutput{}, apperr.Conflict(
+			"secret_friend_already_drawn",
+			"secret friend draw has already been completed",
+			nil,
+		)
 	}
 
 	var drawResult drawserv.DrawOutput
@@ -53,12 +61,20 @@ func (uc *UseCase) Execute(input ExecuteInput) (output ExecuteOutput, err error)
 			Participants: sf.Participants,
 		},
 	); err != nil {
-		return ExecuteOutput{}, fmt.Errorf("execute draw algorithm: %w", err)
+		return ExecuteOutput{}, apperr.InternalError(
+			"draw_execution_failed",
+			"failed to execute draw",
+			err,
+		)
 	}
 
 	onFinishTx, txErr := uc.repo.BeginTx(context.Background(), nil)
 	if txErr != nil {
-		return ExecuteOutput{}, fmt.Errorf("failed to begin tx: %w", txErr)
+		return ExecuteOutput{}, apperr.InternalError(
+			"draw_transaction_start_failed",
+			"failed to start draw transaction",
+			txErr,
+		)
 	}
 
 	defer func() { // Finish transaction
@@ -69,12 +85,20 @@ func (uc *UseCase) Execute(input ExecuteInput) (output ExecuteOutput, err error)
 	}()
 
 	if err = uc.repo.SaveDrawResults(sf.ID, drawResult.Pairs); err != nil {
-		return ExecuteOutput{}, fmt.Errorf("save draw results: %w", err)
+		return ExecuteOutput{}, apperr.From(
+			"draw_result_save_failed",
+			"failed to save draw results",
+			err,
+		)
 	}
 
 	sf.Status = entities.StatusDrawn
 	if err = uc.repo.UpdateSecretFriend(&sf); err != nil {
-		return ExecuteOutput{}, fmt.Errorf("update status after draw: %w", err)
+		return ExecuteOutput{}, apperr.From(
+			"secret_friend_status_update_failed",
+			"failed to update secret friend status",
+			err,
+		)
 	}
 
 	return ExecuteOutput{ParticipantCount: len(sf.Participants)}, nil
@@ -83,7 +107,11 @@ func (uc *UseCase) Execute(input ExecuteInput) (output ExecuteOutput, err error)
 func (uc *UseCase) GetResult(input GetResultInput) (entities.DrawResultItem, error) {
 	result, err := uc.repo.GetDrawResultForUser(input.SecretFriendID, input.UserID)
 	if err != nil {
-		return entities.DrawResultItem{}, fmt.Errorf("get personal draw result: %w", err)
+		return entities.DrawResultItem{}, apperr.From(
+			"draw_result_not_found",
+			"draw result not found",
+			err,
+		)
 	}
 	return result, nil
 }

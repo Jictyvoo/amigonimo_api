@@ -1,8 +1,7 @@
 package participant
 
 import (
-	"fmt"
-
+	"github.com/jictyvoo/amigonimo_api/internal/domain/apperr"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
@@ -10,27 +9,61 @@ func (uc *UseCase) ConfirmParticipation(sfID entities.HexID) (entities.Participa
 	// Validate that the Secret Friend group exists
 	_, err := uc.secretFriendFacade.GetSecretFriendByID(sfID)
 	if err != nil {
-		return entities.Participant{}, fmt.Errorf("invalid secret friend group: %w", err)
+		return entities.Participant{}, apperr.From(
+			"secret_friend_not_found",
+			"secret friend not found",
+			err,
+		)
 	}
 
-	return uc.repo.AddParticipant(sfID, uc.associatedUser.ID)
+	participant, err := uc.repo.AddParticipant(sfID, uc.associatedUser.ID)
+	if err != nil {
+		return entities.Participant{}, apperr.From(
+			"participant_confirm_failed",
+			"failed to confirm participation",
+			err,
+		)
+	}
+
+	return participant, nil
 }
 
 func (uc *UseCase) ListParticipants(sfID entities.HexID) ([]entities.Participant, error) {
 	_, err := uc.repo.GetParticipant(sfID, uc.associatedUser.ID)
 	if err != nil {
 		isOwner, ownerErr := uc.secretFriendFacade.CheckUserIsOwner(sfID)
-		if ownerErr != nil || !isOwner {
-			return nil, fmt.Errorf("unauthorized: you are not a participant or owner of this group")
+		if ownerErr != nil {
+			return nil, ownerErr
+		}
+		if !isOwner {
+			return nil, apperr.Forbidden(
+				"participant_list_forbidden",
+				"you are not allowed to view this participant list",
+				nil,
+			)
 		}
 	}
-	return uc.repo.ListParticipants(sfID)
+
+	participants, err := uc.repo.ListParticipants(sfID)
+	if err != nil {
+		return nil, apperr.From(
+			"participant_list_failed",
+			"failed to list participants",
+			err,
+		)
+	}
+
+	return participants, nil
 }
 
 func (uc *UseCase) MarkAsReady(sfID entities.HexID) error {
 	currentParticipant, err := uc.repo.GetParticipant(sfID, uc.associatedUser.ID)
 	if err != nil {
-		return fmt.Errorf("participant not found: %w", err)
+		return apperr.From(
+			"participant_not_found",
+			"participant not found",
+			err,
+		)
 	}
 
 	if currentParticipant.IsReady {
@@ -38,7 +71,11 @@ func (uc *UseCase) MarkAsReady(sfID entities.HexID) error {
 	}
 
 	if err = uc.repo.SetParticipantReady(sfID, uc.associatedUser.ID, true); err != nil {
-		return fmt.Errorf("set participant ready: %w", err)
+		return apperr.From(
+			"participant_ready_update_failed",
+			"failed to update participant readiness",
+			err,
+		)
 	}
 
 	return nil
@@ -53,7 +90,20 @@ func (uc *UseCase) CheckParticipantExists(
 func (uc *UseCase) RemoveParticipant(sfID entities.HexID) error {
 	_, err := uc.repo.GetParticipant(sfID, uc.associatedUser.ID)
 	if err != nil {
-		return fmt.Errorf("participant not found: %w", err)
+		return apperr.From(
+			"participant_not_found",
+			"participant not found",
+			err,
+		)
 	}
-	return uc.repo.RemoveParticipant(sfID, uc.associatedUser.ID)
+
+	if err = uc.repo.RemoveParticipant(sfID, uc.associatedUser.ID); err != nil {
+		return apperr.From(
+			"participant_remove_failed",
+			"failed to remove participant",
+			err,
+		)
+	}
+
+	return nil
 }

@@ -1,9 +1,9 @@
 package secretfriend
 
 import (
-	"fmt"
 	"time"
 
+	"github.com/jictyvoo/amigonimo_api/internal/domain/apperr"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
@@ -17,11 +17,19 @@ type UpdateInput struct {
 func (uc *UseCase) Update(input UpdateInput) error {
 	sf, err := uc.repo.GetSecretFriendByID(input.ID)
 	if err != nil {
-		return fmt.Errorf("get for update: %w", err)
+		return apperr.From(
+			"secret_friend_not_found",
+			"secret friend not found",
+			err,
+		)
 	}
 
 	if sf.OwnerID != uc.associatedUser.ID { // Must ensure that only the owner can change its info
-		return fmt.Errorf("not owned by %s", uc.associatedUser.ID)
+		return apperr.Forbidden(
+			"secret_friend_update_forbidden",
+			"you are not allowed to update this secret friend",
+			nil,
+		)
 	}
 
 	if input.Name != "" {
@@ -34,7 +42,11 @@ func (uc *UseCase) Update(input UpdateInput) error {
 		sf.Location = input.Location
 	}
 	if err = uc.repo.UpdateSecretFriend(&sf); err != nil {
-		return fmt.Errorf("update secret friend: %w", err)
+		return apperr.From(
+			"secret_friend_update_failed",
+			"failed to update secret friend",
+			err,
+		)
 	}
 
 	return nil

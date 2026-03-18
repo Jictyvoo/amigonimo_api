@@ -1,8 +1,7 @@
 package secretfriend
 
 import (
-	"fmt"
-
+	"github.com/jictyvoo/amigonimo_api/internal/domain/apperr"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
@@ -28,7 +27,11 @@ func New(associatedUser entities.User, repo Repository) UseCase {
 func (uc *UseCase) Get(id entities.HexID) (entities.SecretFriend, error) {
 	sf, err := uc.repo.GetSecretFriendByID(id)
 	if err != nil {
-		return entities.SecretFriend{}, fmt.Errorf("get secret friend: %w", err)
+		return entities.SecretFriend{}, apperr.From(
+			"secret_friend_not_found",
+			"secret friend not found",
+			err,
+		)
 	}
 	return sf, nil
 }
@@ -36,7 +39,11 @@ func (uc *UseCase) Get(id entities.HexID) (entities.SecretFriend, error) {
 func (uc *UseCase) CheckUserIsOwner(sfID entities.HexID) (bool, error) {
 	sf, err := uc.repo.GetSecretFriendByID(sfID)
 	if err != nil {
-		return false, fmt.Errorf("get secret friend: %w", err)
+		return false, apperr.From(
+			"secret_friend_not_found",
+			"secret friend not found",
+			err,
+		)
 	}
 	return sf.OwnerID == uc.associatedUser.ID, nil
 }

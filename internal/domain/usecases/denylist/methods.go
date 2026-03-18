@@ -1,34 +1,54 @@
 package denylist
 
 import (
-	"fmt"
-
+	"github.com/jictyvoo/amigonimo_api/internal/domain/apperr"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
 func (uc UseCase) GetDenyList(sfID entities.HexID) ([]entities.DeniedUser, error) {
-	return uc.repo.GetDenyListByParticipant(
+	deniedUsers, err := uc.repo.GetDenyListByParticipant(
 		ParticipantRef{
 			UserID:         uc.associatedUser.ID,
 			SecretFriendID: sfID,
 		},
 	)
+	if err != nil {
+		return nil, apperr.From(
+			"denylist_lookup_failed",
+			"failed to load denylist",
+			err,
+		)
+	}
+
+	return deniedUsers, nil
 }
 
 func (uc UseCase) AddEntry(sfID, deniedUserID entities.HexID) (entities.DeniedUser, error) {
 	if uc.associatedUser.ID == deniedUserID {
-		return entities.DeniedUser{}, fmt.Errorf("cannot add yourself to the denylist")
+		return entities.DeniedUser{}, apperr.Invalid(
+			"denylist_self_entry",
+			"you cannot add yourself to the denylist",
+			nil,
+		)
 	}
 
 	participant, err := uc.facProvider.participant.CheckParticipantInSecretFriend(
 		sfID, uc.associatedUser.ID,
 	)
 	if err != nil {
-		return entities.DeniedUser{}, fmt.Errorf("user is not a participant: %w", err)
+		return entities.DeniedUser{}, apperr.Forbidden(
+			"denylist_access_forbidden",
+			"you are not a participant in this secret friend",
+			err,
+		)
 	}
 
 	if _, err = uc.facProvider.participant.CheckParticipantInSecretFriend(sfID, deniedUserID); err != nil {
-		return entities.DeniedUser{}, fmt.Errorf("target user is not a participant: %w", err)
+		return entities.DeniedUser{}, apperr.Invalid(
+			"denylist_target_not_participant",
+			"target user is not a participant in this secret friend",
+			err,
+		)
 	}
 
 	// Validate capacity
@@ -40,21 +60,39 @@ func (uc UseCase) AddEntry(sfID, deniedUserID entities.HexID) (entities.DeniedUs
 
 	currentList, err := uc.repo.GetDenyListByParticipant(participantRef)
 	if err != nil {
-		return entities.DeniedUser{}, fmt.Errorf("failed to get current denylist: %w", err)
+		return entities.DeniedUser{}, apperr.From(
+			"denylist_lookup_failed",
+			"failed to load denylist",
+			err,
+		)
 	}
 
 	sf, err := uc.facProvider.secretFriend.GetSecretFriendByID(sfID)
 	if err != nil {
-		return entities.DeniedUser{}, fmt.Errorf("failed to fetch secret-friend config: %w", err)
+		return entities.DeniedUser{}, apperr.From(
+			"secret_friend_not_found",
+			"secret friend not found",
+			err,
+		)
 	}
 	if len(currentList) >= int(sf.MaxDenyListSize) {
-		return entities.DeniedUser{}, fmt.Errorf(
-			"denylist capacity reached: max %d",
-			sf.MaxDenyListSize,
+		return entities.DeniedUser{}, apperr.Conflict(
+			"denylist_capacity_reached",
+			"denylist capacity reached",
+			nil,
 		)
 	}
 
-	return uc.repo.AddDenyListEntry(participantRef, deniedUserID)
+	deniedUser, err := uc.repo.AddDenyListEntry(participantRef, deniedUserID)
+	if err != nil {
+		return entities.DeniedUser{}, apperr.From(
+			"denylist_add_failed",
+			"failed to add denylist entry",
+			err,
+		)
+	}
+
+	return deniedUser, nil
 }
 
 func (uc UseCase) RemoveEntry(sfID, deniedUserID entities.HexID) error {
@@ -62,15 +100,27 @@ func (uc UseCase) RemoveEntry(sfID, deniedUserID entities.HexID) error {
 		sfID, uc.associatedUser.ID,
 	)
 	if err != nil {
-		return fmt.Errorf("user is not a participant: %w", err)
+		return apperr.Forbidden(
+			"denylist_access_forbidden",
+			"you are not a participant in this secret friend",
+			err,
+		)
 	}
 
-	return uc.repo.RemoveDenyListEntry(
+	if err = uc.repo.RemoveDenyListEntry(
 		ParticipantRef{
 			ParticipantID:  participant.ID,
 			UserID:         uc.associatedUser.ID,
 			SecretFriendID: sfID,
 		},
 		deniedUserID,
-	)
+	); err != nil {
+		return apperr.From(
+			"denylist_remove_failed",
+			"failed to remove denylist entry",
+			err,
+		)
+	}
+
+	return nil
 }

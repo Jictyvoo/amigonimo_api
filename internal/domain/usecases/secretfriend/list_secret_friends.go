@@ -3,6 +3,7 @@ package secretfriend
 import (
 	"time"
 
+	"github.com/jictyvoo/amigonimo_api/internal/domain/apperr"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
@@ -19,7 +20,11 @@ type (
 func (uc *UseCase) ListUserSecretFriends(userID entities.HexID) (ActiveInactiveListEvents, error) {
 	rawList, err := uc.repo.ListSecretFriends(userID)
 	if err != nil {
-		return ActiveInactiveListEvents{}, err
+		return ActiveInactiveListEvents{}, apperr.From(
+			"secret_friend_list_failed",
+			"failed to list secret friends",
+			err,
+		)
 	}
 
 	initialCap := len(rawList) >> 2 //nolint:mnd // divide by 4

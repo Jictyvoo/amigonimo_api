@@ -1,18 +1,26 @@
 package wishlist
 
 import (
-	"fmt"
-
+	"github.com/jictyvoo/amigonimo_api/internal/domain/apperr"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
 func (uc *UseCase) GetWishlist(sfID entities.HexID) ([]entities.WishlistItem, error) {
-	return uc.repo.GetWishlistByParticipant(
+	items, err := uc.repo.GetWishlistByParticipant(
 		ParticipantRef{
 			UserID:         uc.associatedUser.ID,
 			SecretFriendID: sfID,
 		},
 	)
+	if err != nil {
+		return nil, apperr.From(
+			"wishlist_lookup_failed",
+			"failed to load wishlist",
+			err,
+		)
+	}
+
+	return items, nil
 }
 
 func (uc *UseCase) AddItem(
@@ -21,7 +29,11 @@ func (uc *UseCase) AddItem(
 ) (entities.WishlistItem, error) {
 	participant, err := uc.validator.CheckParticipantInSecretFriend(sfID, uc.associatedUser.ID)
 	if err != nil {
-		return entities.WishlistItem{}, fmt.Errorf("validation failed: %w", err)
+		return entities.WishlistItem{}, apperr.Forbidden(
+			"wishlist_access_forbidden",
+			"you are not a participant in this secret friend",
+			err,
+		)
 	}
 
 	// Fetch current wishlist
@@ -33,13 +45,19 @@ func (uc *UseCase) AddItem(
 
 	currentList, err := uc.repo.GetWishlistByParticipant(participantRef)
 	if err != nil {
-		return entities.WishlistItem{}, fmt.Errorf("could not get current wishlist: %w", err)
+		return entities.WishlistItem{}, apperr.From(
+			"wishlist_lookup_failed",
+			"failed to load wishlist",
+			err,
+		)
 	}
 
 	// Fetch sf to get config (though MaxWishListSize is not configurable by user, we can set a hardcoded limit here, e.g. 10)
 	if len(currentList) >= int(uc.maxWishListSize) {
-		return entities.WishlistItem{}, fmt.Errorf(
-			"wishlist capacity reached: max %d", uc.maxWishListSize,
+		return entities.WishlistItem{}, apperr.Conflict(
+			"wishlist_capacity_reached",
+			"wishlist capacity reached",
+			nil,
 		)
 	}
 
@@ -47,21 +65,42 @@ func (uc *UseCase) AddItem(
 		Label:    label,
 		Comments: comments,
 	}
-	return uc.repo.AddWishlistItem(participantRef, newWishItem)
+	wishItem, err := uc.repo.AddWishlistItem(participantRef, newWishItem)
+	if err != nil {
+		return entities.WishlistItem{}, apperr.From(
+			"wishlist_add_failed",
+			"failed to add wishlist item",
+			err,
+		)
+	}
+
+	return wishItem, nil
 }
 
 func (uc *UseCase) DeleteItem(sfID, itemID entities.HexID) error {
 	participant, err := uc.validator.CheckParticipantInSecretFriend(sfID, uc.associatedUser.ID)
 	if err != nil {
-		return fmt.Errorf("validation failed: %w", err)
+		return apperr.Forbidden(
+			"wishlist_access_forbidden",
+			"you are not a participant in this secret friend",
+			err,
+		)
 	}
 
-	return uc.repo.RemoveWishlistItem(
+	if err = uc.repo.RemoveWishlistItem(
 		itemID,
 		ParticipantRef{
 			ParticipantID:  participant.ID,
 			UserID:         uc.associatedUser.ID,
 			SecretFriendID: sfID,
 		},
-	)
+	); err != nil {
+		return apperr.From(
+			"wishlist_remove_failed",
+			"failed to remove wishlist item",
+			err,
+		)
+	}
+
+	return nil
 }

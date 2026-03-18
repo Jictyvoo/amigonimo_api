@@ -1,11 +1,11 @@
 package secretfriend
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 
+	"github.com/jictyvoo/amigonimo_api/internal/domain/apperr"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
@@ -33,7 +33,11 @@ func (uc *UseCase) Create(input CreateInput) (entities.SecretFriend, error) {
 	sf.UpdatedAt = sf.CreatedAt
 
 	if err := uc.repo.CreateSecretFriend(&sf); err != nil {
-		return entities.SecretFriend{}, fmt.Errorf("create secret friend: %w", err)
+		return entities.SecretFriend{}, apperr.From(
+			"secret_friend_create_failed",
+			"failed to create secret friend",
+			err,
+		)
 	}
 
 	return sf, nil
