@@ -32,7 +32,9 @@ func TestCreateSecretFriendAndJoin(t *testing.T) {
 		WithPassword(userPassword)
 	participant := participantBuilder.Build()
 	participantProfile := participantBuilder.BuildProfile()
-	engine.Seed(manager, managerProfile, participant, participantProfile)
+	if err := engine.Seed(manager, managerProfile, participant, participantProfile); err != nil {
+		t.Fatalf("seedErr: %v", err)
+	}
 
 	mr := atores.MultiRunner{
 		Runners: []atores.Runner{

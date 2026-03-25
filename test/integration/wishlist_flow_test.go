@@ -36,14 +36,16 @@ func TestWishlistFlowSeeded(t *testing.T) {
 		WithSecretFriend(secretFriend).
 		Build()
 
-	engine.Seed(
+	if err := engine.Seed(
 		owner,
 		ownerProfile,
 		participant,
 		participantProfile,
 		secretFriend,
 		participantEntry,
-	)
+	); err != nil {
+		t.Fatalf("seedErr: %v", err)
+	}
 
 	secretFriendID, _ := entities.NewHexIDFromBytes(secretFriend.ID)
 	createReq := wishlistctrl.WishlistItemRequest{

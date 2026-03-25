@@ -40,7 +40,7 @@ func TestDenylistFlowSeeded(t *testing.T) {
 		WithSecretFriend(secretFriend).
 		Build()
 
-	engine.Seed(
+	if err := engine.Seed(
 		owner,
 		ownerProfile,
 		participant,
@@ -48,7 +48,9 @@ func TestDenylistFlowSeeded(t *testing.T) {
 		secretFriend,
 		ownerEntry,
 		participantEntry,
-	)
+	); err != nil {
+		t.Fatalf("seedErr: %v", err)
+	}
 
 	secretFriendID, _ := entities.NewHexIDFromBytes(secretFriend.ID)
 	deniedUserID, _ := entities.NewHexIDFromBytes(participant.ID)
