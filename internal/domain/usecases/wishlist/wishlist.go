@@ -5,13 +5,17 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
-// ParticipantFacade defines what wishlist module needs from participant.
-type ParticipantFacade interface {
-	ports.Facade
+type participantFacadePort interface {
 	CheckParticipantInSecretFriend(sfID, userID entities.HexID) (entities.Participant, error)
 }
 
-//go:generate go tool -modfile=../../../../build/tools/go.mod mockgen -destination=wishlist_mock_test.go -package=wishlist github.com/jictyvoo/amigonimo_api/internal/domain/usecases/wishlist ParticipantFacade,Repository
+// ParticipantFacade defines what wishlist module needs from participant.
+type ParticipantFacade interface {
+	ports.Facade
+	participantFacadePort
+}
+
+//go:generate go tool -modfile=../../../../build/tools/go.mod mockgen -destination=wishlist_mock_test.go -package=wishlist github.com/jictyvoo/amigonimo_api/internal/domain/usecases/wishlist participantFacadePort,Repository
 
 type Repository interface {
 	AddWishlistItem(

@@ -5,19 +5,29 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
+//go:generate go tool -modfile=../../../../build/tools/go.mod mockgen -destination=facade_provider_mock_test.go -package=denylist github.com/jictyvoo/amigonimo_api/internal/domain/usecases/denylist participantFacadePort,secretFriendFacadePort
+
 // ParticipantFacade defines what denylist needs from participant.
-type ParticipantFacade interface {
-	ports.Facade
-	CheckParticipantInSecretFriend(sfID, userID entities.HexID) (entities.Participant, error)
-}
+type (
+	participantFacadePort interface {
+		CheckParticipantInSecretFriend(sfID, userID entities.HexID) (entities.Participant, error)
+	}
+	ParticipantFacade interface {
+		ports.Facade
+		participantFacadePort
+	}
+)
 
-//go:generate go tool -modfile=../../../../build/tools/go.mod mockgen -destination=facade_provider_mock_test.go -package=denylist github.com/jictyvoo/amigonimo_api/internal/domain/usecases/denylist ParticipantFacade,SecretFriendFacade
-
-// SecretFriendFacade defines what denylist needs from secretfriend.
-type SecretFriendFacade interface {
-	ports.Facade
-	GetSecretFriendByID(id entities.HexID) (entities.SecretFriend, error)
-}
+type (
+	secretFriendFacadePort interface {
+		GetSecretFriendByID(id entities.HexID) (entities.SecretFriend, error)
+	}
+	// SecretFriendFacade defines what denylist needs from secretfriend.
+	SecretFriendFacade interface {
+		ports.Facade
+		secretFriendFacadePort
+	}
+)
 
 type FacadeProvider struct {
 	participant  ParticipantFacade
