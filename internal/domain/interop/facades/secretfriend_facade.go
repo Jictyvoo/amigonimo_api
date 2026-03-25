@@ -15,7 +15,7 @@ var (
 )
 
 type SecretFriendFacade struct {
-	ports.BaseFacade
+	ports.Facade
 	uc secretfriend.UseCase
 }
 

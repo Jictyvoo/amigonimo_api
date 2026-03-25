@@ -17,7 +17,7 @@ var (
 )
 
 type ParticipantFacade struct {
-	ports.BaseFacade
+	ports.Facade
 	participantUC participant.UseCase
 }
 
