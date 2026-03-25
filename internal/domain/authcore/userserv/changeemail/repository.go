@@ -5,9 +5,7 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
-//go:generate go tool -modfile=../../../../../build/tools/go.mod mockgen -destination=user_repository_mock_test.go -package=changeemail github.com/jictyvoo/amigonimo_api/internal/domain/authcore/userserv/changeemail UserRepository
-//go:generate go tool -modfile=../../../../../build/tools/go.mod mockgen -destination=repository_mock_test.go -package=changeemail github.com/jictyvoo/amigonimo_api/internal/domain/authcore/userserv/changeemail Repository
-//go:generate go tool -modfile=../../../../../build/tools/go.mod mockgen -destination=mailer_mock_test.go -package=changeemail github.com/jictyvoo/amigonimo_api/internal/domain/authcore/userserv/changeemail Mailer
+//go:generate go tool -modfile=../../../../../build/tools/go.mod mockgen -destination=repository_mock_test.go -package=changeemail github.com/jictyvoo/amigonimo_api/internal/domain/authcore/userserv/changeemail UserRepository,Repository,Mailer
 
 type UserRepository interface {
 	GetUserByEmail(email string) (entities.User, error)

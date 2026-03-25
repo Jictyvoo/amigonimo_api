@@ -8,10 +8,10 @@ import (
 
 type UseCase struct {
 	passwordRepository Repository
-	sessionRepository  session.Repository
+	sessionRepository  SessionRepository
 }
 
-func New(passwordRepository Repository, sessionRepository session.Repository) UseCase {
+func New(passwordRepository Repository, sessionRepository SessionRepository) UseCase {
 	return UseCase{
 		passwordRepository: passwordRepository,
 		sessionRepository:  sessionRepository,
