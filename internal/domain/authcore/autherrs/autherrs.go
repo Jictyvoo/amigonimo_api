@@ -1,66 +1,70 @@
 package autherrs
 
 import (
-	"errors"
+	"maps"
 	"net/http"
 )
 
-type (
-	errorInterface[T any] interface {
-		*T
-		error
-	}
-	baseErrorWrapper[Self interface{ reason() string }, SelfPtr errorInterface[Self]] struct {
-		Err error
-	}
-)
-
-func (e baseErrorWrapper[Self, SelfPtr]) Is(target error) bool {
-	var asPointer SelfPtr
-	if errors.As(target, &asPointer) {
-		return true
-	}
-
-	_, ok := target.(Self) // Check the raw value directly
-	return ok
+type Error struct {
+	code          string
+	statusCode    int
+	publicMessage string
+	internalErr   error
+	metadata      map[string]any
 }
 
-func (e baseErrorWrapper[Self, SelfPtr]) Unwrap() error {
-	return e.Err
-}
-
-func (e baseErrorWrapper[Self, SelfPtr]) StatusCode() int {
-	return http.StatusInternalServerError
-}
-
-func (e baseErrorWrapper[Self, SelfPtr]) Error() string {
-	var tempErr Self
-	reason := tempErr.reason()
-	if e.Err != nil {
-		reason += ": " + e.Err.Error()
+func newError(
+	code string,
+	statusCode int,
+	publicMessage string,
+	internalErr error,
+	metadata map[string]any,
+) *Error {
+	if statusCode <= 0 {
+		statusCode = http.StatusInternalServerError
+	}
+	if publicMessage == "" {
+		publicMessage = http.StatusText(statusCode)
 	}
 
-	return reason
+	return &Error{
+		code:          code,
+		statusCode:    statusCode,
+		publicMessage: publicMessage,
+		internalErr:   internalErr,
+		metadata:      maps.Clone(metadata),
+	}
 }
 
-func (e baseErrorWrapper[Self, SelfPtr]) DetailMsg() string {
-	var tempErr Self
-	return tempErr.reason()
+func (e *Error) Error() string {
+	return e.publicMessage
 }
 
-// Exported error instances for backward compatibility.
-var (
-	ErrEmailOrUsernameUsed  = &errEmailOrUsernameUsed{}
-	ErrEmailUsed            = &errEmailUsed{}
-	ErrUsernameUsed         = &errUsernameUsed{}
-	ErrPasswordEncryption   = &errPasswordEncryption{}
-	ErrUpdatePassword       = &errUpdatePassword{}
-	ErrUpdateUsername       = &errUpdateUsername{}
-	ErrWrongPassword        = &errWrongPassword{}
-	ErrVerificationCode     = &errVerificationCode{}
-	ErrGenRecoveryCode      = &errGenRecoveryCode{}
-	ErrUserEmailNotFound    = &errUserEmailNotFound{}
-	ErrUserRecoveryNotFound = &errUserRecoveryNotFound{}
-	ErrInvalidAuthToken     = &errInvalidAuthToken{}
-	ErrUpdateAuthToken      = &errUpdateAuthToken{}
-)
+func (e *Error) Unwrap() error {
+	return e.internalErr
+}
+
+func (e *Error) Is(target error) bool {
+	other, ok := target.(*Error)
+	if !ok {
+		return false
+	}
+
+	return e.code != "" && e.code == other.code
+}
+
+func (e *Error) Code() string {
+	return e.code
+}
+
+func (e *Error) StatusCode() int {
+	return e.statusCode
+}
+
+func (e *Error) DetailMsg() string {
+	return e.publicMessage
+}
+
+func (e *Error) Metadata() map[string]any {
+	return maps.Clone(e.metadata)
+}

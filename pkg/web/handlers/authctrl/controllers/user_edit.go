@@ -7,13 +7,15 @@ import (
 
 	"github.com/go-fuego/fuego"
 
-	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/autherrs"
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/authserv"
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/userserv"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
+	"github.com/jictyvoo/amigonimo_api/pkg/web"
 )
 
 type UserEditionController struct {
+	web.DefaultController
+
 	serv userserv.UserEditionService
 }
 
@@ -35,20 +37,20 @@ func (ctrl UserEditionController) EditUserPassword(
 	authHeader := c.Request().Header.Get("Authorization")
 	token := strings.TrimPrefix(authHeader, "Bearer ")
 	if len(token) <= 0 {
-		return nil, NewHTTPError(http.StatusUnauthorized, "missing authorization token")
+		return nil, ctrl.HTTPError(
+			http.StatusUnauthorized,
+			errors.New("missing authorization token"),
+		)
 	}
 
 	req, err := c.Body()
 	if err != nil {
-		return nil, err
+		return nil, ctrl.HandleError(err)
 	}
 
-	// Starting with password change
-	err = ctrl.serv.ChangePassword(
-		token, req.CurrentPassword, req.NewPassword,
-	)
+	err = ctrl.serv.ChangePassword.Execute(token, req.CurrentPassword, req.NewPassword)
 	if err != nil {
-		return nil, ctrl.analyseAndReturnError(err)
+		return nil, ctrl.HandleError(err)
 	}
 
 	return &SuccessResponse{
@@ -63,21 +65,23 @@ func (ctrl UserEditionController) EditUsername(
 	authHeader := c.Request().Header.Get("Authorization")
 	token := strings.TrimPrefix(authHeader, "Bearer ")
 	if len(token) <= 0 {
-		return nil, NewHTTPError(http.StatusUnauthorized, "missing authorization token")
+		return nil, ctrl.HTTPError(
+			http.StatusUnauthorized,
+			errors.New("missing authorization token"),
+		)
 	}
 
 	req, err := c.Body()
 	if err != nil {
-		return nil, err
+		return nil, ctrl.HandleError(err)
 	}
 
-	// Starting with username change
 	userDTO := entities.UserBasic{
 		Username: req.NewUsername,
 		Password: req.CurrentPassword,
 	}
-	if err = ctrl.serv.ChangeUsername(token, userDTO); err != nil {
-		return nil, ctrl.analyseAndReturnError(err)
+	if err = ctrl.serv.ChangeUsername.Execute(token, userDTO); err != nil {
+		return nil, ctrl.HandleError(err)
 	}
 
 	return &SuccessResponse{
@@ -92,36 +96,27 @@ func (ctrl UserEditionController) EditUserEmail(
 	authHeader := c.Request().Header.Get("Authorization")
 	token := strings.TrimPrefix(authHeader, "Bearer ")
 	if len(token) <= 0 {
-		return nil, NewHTTPError(http.StatusUnauthorized, "missing authorization token")
+		return nil, ctrl.HTTPError(
+			http.StatusUnauthorized,
+			errors.New("missing authorization token"),
+		)
 	}
 
 	req, err := c.Body()
 	if err != nil {
-		return nil, err
+		return nil, ctrl.HandleError(err)
 	}
 
-	// Starting with email change
 	userDTO := entities.UserBasic{
 		Email:    req.NewEmail,
 		Password: req.CurrentPassword,
 	}
-	if err = ctrl.serv.ChangeEmail(token, userDTO); err != nil {
-		return nil, ctrl.analyseAndReturnError(err)
+	if err = ctrl.serv.ChangeEmail.Execute(token, userDTO); err != nil {
+		return nil, ctrl.HandleError(err)
 	}
 
 	return &SuccessResponse{
 		Success: true,
 		Message: "Email changed successfully",
 	}, nil
-}
-
-// analyseAndReturnError analyzes the error and returns an appropriate HTTP error.
-func (ctrl UserEditionController) analyseAndReturnError(err error) error {
-	if errors.Is(err, autherrs.ErrUserNotFound) ||
-		errors.Is(err, autherrs.ErrEmailInUse) ||
-		errors.Is(err, autherrs.ErrUsernameInUse) ||
-		errors.Is(err, autherrs.ErrWrongPassword) {
-		return NewHTTPError(http.StatusNotAcceptable, err.Error())
-	}
-	return err
 }
