@@ -2,107 +2,83 @@ package autherrs
 
 import "net/http"
 
-type errEmailOrUsernameUsed struct {
-	baseErrorWrapper[errEmailOrUsernameUsed, *errEmailOrUsernameUsed]
+var (
+	ErrEmailOrUsernameUsed = newError(
+		"auth_email_or_username_used",
+		http.StatusPreconditionFailed,
+		"user already with provided email/username already exists",
+		nil,
+		nil,
+	)
+	ErrEmailUsed = newError(
+		"auth_email_used",
+		http.StatusPreconditionFailed,
+		"email already in use, if don't remember the password, access password recovery",
+		nil,
+		nil,
+	)
+	ErrUsernameUsed = newError(
+		"auth_username_used",
+		http.StatusPreconditionFailed,
+		"username already in use, if don't remember the password, access password recovery",
+		nil,
+		nil,
+	)
+	ErrInvalidCredentials = newError(
+		"auth_invalid_credentials",
+		http.StatusNotAcceptable,
+		"not found user with given email/username and password combination",
+		nil,
+		nil,
+	)
+)
+
+func NewErrSignUpLookup(err error) *Error {
+	return newError(
+		"auth_signup_lookup_failed",
+		http.StatusInternalServerError,
+		"failed to validate user uniqueness",
+		err,
+		nil,
+	)
 }
 
-func (e errEmailOrUsernameUsed) StatusCode() int {
-	return http.StatusPreconditionFailed
+func NewErrLogin(err error) *Error {
+	return newError(
+		"auth_login_failed",
+		http.StatusInternalServerError,
+		"failed to log in",
+		err,
+		nil,
+	)
 }
 
-func (e errEmailOrUsernameUsed) reason() string {
-	return "user already with provided email/username already exists"
+func NewErrRecoveryLookup(err error) *Error {
+	return newError(
+		"auth_recovery_lookup_failed",
+		http.StatusInternalServerError,
+		"failed to look up recovery contact",
+		err,
+		nil,
+	)
 }
 
-// errEmailUsed represents an error when email is already in use.
-type errEmailUsed struct {
-	baseErrorWrapper[errEmailUsed, *errEmailUsed]
+func NewErrPasswordEncryption(err error) *Error {
+	return newError(
+		"auth_password_encryption_failed",
+		http.StatusInternalServerError,
+		"password encryption error",
+		err,
+		nil,
+	)
 }
 
-func (e errEmailUsed) StatusCode() int {
-	return http.StatusPreconditionFailed
-}
-
-func (e errEmailUsed) reason() string {
-	return "email already in use, if don't remember the password, access password recovery"
-}
-
-// errUsernameUsed represents an error when username is already in use.
-type errUsernameUsed struct {
-	baseErrorWrapper[errUsernameUsed, *errUsernameUsed]
-}
-
-func (e errUsernameUsed) StatusCode() int {
-	return http.StatusPreconditionFailed
-}
-
-func (e errUsernameUsed) reason() string {
-	return "username already in use, if don't remember the password, access password recovery"
-}
-
-// errPasswordEncryption represents an error during password encryption.
-type errPasswordEncryption struct {
-	baseErrorWrapper[errPasswordEncryption, *errPasswordEncryption]
-}
-
-func (e errPasswordEncryption) reason() string {
-	return "password encryption error"
-}
-
-// errUpdatePassword represents an error when password update fails.
-type errUpdatePassword struct {
-	baseErrorWrapper[errUpdatePassword, *errUpdatePassword]
-}
-
-func (e errUpdatePassword) reason() string {
-	return "internal error: cannot update the password"
-}
-
-// errUpdateUsername represents an error when username update fails.
-type errUpdateUsername struct {
-	baseErrorWrapper[errUpdateUsername, *errUpdateUsername]
-}
-
-func (e errUpdateUsername) reason() string {
-	return "internal error: cannot update the username"
-}
-
-// ErrUserCreation represents an error when user creation fails.
-type ErrUserCreation struct {
-	baseErrorWrapper[ErrUserCreation, *ErrUserCreation]
-}
-
-func NewErrUserCreation(err error) (newErr ErrUserCreation) {
-	newErr.Err = err
-	return
-}
-
-func (e ErrUserCreation) reason() string {
-	return "user can't be created"
-}
-
-// errWrongPassword represents an error when password is incorrect.
-type errWrongPassword struct {
-	baseErrorWrapper[errWrongPassword, *errWrongPassword]
-}
-
-func (e errWrongPassword) StatusCode() int {
-	return http.StatusNotAcceptable
-}
-
-func (e errWrongPassword) reason() string {
-	return "provided password don't match with password for this user"
-}
-
-// errUserEmailNotFound represents an error when user is not found by email/username.
-type errUserEmailNotFound struct {
-	baseErrorWrapper[errUserEmailNotFound, *errUserEmailNotFound]
-}
-
-func (e errUserEmailNotFound) StatusCode() int {
-	return http.StatusNotAcceptable
-}
-
-func (e errUserEmailNotFound) reason() string {
-	return "not found user with given email/username and password combination"
+func NewErrUserCreation(err error) *Error {
+	return newError(
+		"auth_user_creation_failed",
+		http.StatusInternalServerError,
+		"user can't be created",
+		err,
+		nil,
+	)
 }

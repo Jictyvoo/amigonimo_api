@@ -2,59 +2,97 @@ package autherrs
 
 import "net/http"
 
-// errUserRecoveryNotFound represents an error when user recovery is not found.
-type errUserRecoveryNotFound struct {
-	baseErrorWrapper[errUserRecoveryNotFound, *errUserRecoveryNotFound]
+var (
+	ErrVerificationCode = newError(
+		"auth_verification_code_invalid",
+		http.StatusPreconditionFailed,
+		"cannot find any user with given code",
+		nil,
+		nil,
+	)
+	ErrGenRecoveryCode = newError(
+		"auth_generate_recovery_code_failed",
+		http.StatusInternalServerError,
+		"internal error: cannot generate and save the recovery code",
+		nil,
+		nil,
+	)
+	ErrUserEmailNotFound = newError(
+		"auth_user_email_not_found",
+		http.StatusNotAcceptable,
+		"user not found",
+		nil,
+		nil,
+	)
+	ErrUserRecoveryNotFound = newError(
+		"auth_user_recovery_not_found",
+		http.StatusPreconditionFailed,
+		"cannot find user with given email and recovery code",
+		nil,
+		nil,
+	)
+	ErrInvalidAuthToken = newError(
+		"auth_invalid_token",
+		http.StatusPreconditionFailed,
+		"error token provided is invalid",
+		nil,
+		nil,
+	)
+	ErrUpdateAuthToken = newError(
+		"auth_update_token_failed",
+		http.StatusInternalServerError,
+		"was not possible to update the user authentication token",
+		nil,
+		nil,
+	)
+)
+
+func NewErrTokenLookup(err error) *Error {
+	return newError(
+		"auth_token_lookup_failed",
+		http.StatusInternalServerError,
+		"failed to load authentication token",
+		err,
+		nil,
+	)
 }
 
-func (e errUserRecoveryNotFound) StatusCode() int {
-	return http.StatusPreconditionFailed
+func NewErrTokenRegenerate(err error) *Error {
+	return newError(
+		"auth_token_regenerate_failed",
+		http.StatusInternalServerError,
+		"failed to regenerate authentication token",
+		err,
+		nil,
+	)
 }
 
-func (e errUserRecoveryNotFound) reason() string {
-	return "cannot find user with given email and recovery code"
+func NewErrUpdateAuthToken(err error) *Error {
+	return newError(
+		"auth_update_token_failed",
+		http.StatusInternalServerError,
+		"was not possible to update the user authentication token",
+		err,
+		nil,
+	)
 }
 
-// errInvalidAuthToken represents an error when authentication token is invalid.
-type errInvalidAuthToken struct {
-	baseErrorWrapper[errInvalidAuthToken, *errInvalidAuthToken]
+func NewErrGenRecoveryCode(err error) *Error {
+	return newError(
+		"auth_generate_recovery_code_failed",
+		http.StatusInternalServerError,
+		"internal error: cannot generate and save the recovery code",
+		err,
+		nil,
+	)
 }
 
-func (e errInvalidAuthToken) StatusCode() int {
-	return http.StatusPreconditionFailed
-}
-
-func (e errInvalidAuthToken) reason() string {
-	return "error token provided is invalid"
-}
-
-// errUpdateAuthToken represents an error when auth token update fails.
-type errUpdateAuthToken struct {
-	baseErrorWrapper[errUpdateAuthToken, *errUpdateAuthToken]
-}
-
-func (e errUpdateAuthToken) reason() string {
-	return "was not possible to update the user authentication token"
-}
-
-// errGenRecoveryCode represents an error when recovery code generation fails.
-type errGenRecoveryCode struct {
-	baseErrorWrapper[errGenRecoveryCode, *errGenRecoveryCode]
-}
-
-func (e errGenRecoveryCode) reason() string {
-	return "internal error: cannot generate and save the recovery code"
-}
-
-// errVerificationCode represents an error when verification code is invalid.
-type errVerificationCode struct {
-	baseErrorWrapper[errVerificationCode, *errVerificationCode]
-}
-
-func (e errVerificationCode) StatusCode() int {
-	return http.StatusPreconditionFailed
-}
-
-func (e errVerificationCode) reason() string {
-	return "cannot find any user with given code"
+func NewErrSetVerification(err error) *Error {
+	return newError(
+		"auth_set_verification_failed",
+		http.StatusInternalServerError,
+		"cannot update the verification state",
+		err,
+		nil,
+	)
 }
