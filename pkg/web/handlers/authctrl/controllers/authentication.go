@@ -8,7 +8,6 @@ import (
 
 	"github.com/go-fuego/fuego"
 
-	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/autherrs"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
@@ -17,7 +16,7 @@ func (h *AuthenticationController) SignUp(
 ) (*SuccessResponse, error) {
 	req, err := c.Body()
 	if err != nil {
-		return &SuccessResponse{Message: "Failed to obtain request body"}, err
+		return &SuccessResponse{Message: "Failed to obtain request body"}, h.HandleError(err)
 	}
 
 	userDTO := entities.UserBasic{
@@ -26,11 +25,8 @@ func (h *AuthenticationController) SignUp(
 		Password: req.Password,
 	}
 
-	if _, err = h.authServ.UserSignUp(userDTO); err != nil {
-		if errors.Is(err, autherrs.ErrEmailUsed) {
-			return nil, NewHTTPError(http.StatusPreconditionFailed, err.Error())
-		}
-		return nil, err
+	if _, err = h.authServ.SignUp.Execute(userDTO); err != nil {
+		return nil, h.HandleError(err)
 	}
 
 	c.SetStatus(http.StatusCreated)
@@ -42,7 +38,7 @@ func (h *AuthenticationController) LogIn(
 ) (*LoginResponse, error) {
 	req, err := c.Body()
 	if err != nil {
-		return nil, err
+		return nil, h.HandleError(err)
 	}
 
 	userDTO := entities.UserBasic{
@@ -51,22 +47,15 @@ func (h *AuthenticationController) LogIn(
 		Password: req.Password,
 	}
 
-	authToken, err := h.authServ.UserLogIn(userDTO)
+	authToken, err := h.authServ.LogIn.Execute(userDTO)
 	if err != nil {
-		if errors.Is(err, autherrs.ErrUserEmailNotFound) ||
-			errors.Is(err, autherrs.ErrWrongPassword) {
-			return nil, NewHTTPError(
-				http.StatusNotAcceptable,
-				autherrs.ErrUserEmailNotFound.Error(),
-			)
-		}
-		return nil, err
+		return nil, h.HandleError(err)
 	}
 
 	// Generate JWT from AuthenticationToken
 	jwtToken, err := h.generateJWT(authToken)
 	if err != nil {
-		return nil, err
+		return nil, h.HandleError(err)
 	}
 
 	// Set Authorization header with token
@@ -81,18 +70,15 @@ func (h *AuthenticationController) RegenerateAuthToken(
 	authHeader := c.Request().Header.Get("Authorization")
 	refreshToken := strings.TrimPrefix(authHeader, "Bearer ")
 
-	authToken, err := h.authServ.RegenerateLogin(refreshToken)
+	authToken, err := h.authServ.RegenerateToken.Execute(refreshToken)
 	if err != nil {
-		if errors.Is(err, autherrs.ErrInvalidAuthToken) {
-			return nil, NewHTTPError(http.StatusPreconditionFailed, err.Error())
-		}
-		return nil, err
+		return nil, h.HandleError(err)
 	}
 
 	// Generate JWT from AuthenticationToken
 	jwtToken, err := h.generateJWT(authToken)
 	if err != nil {
-		return nil, err
+		return nil, h.HandleError(err)
 	}
 
 	// Set Authorization header with new token
@@ -106,19 +92,22 @@ func (h *AuthenticationController) VerifyUser(
 ) (*SuccessResponse, error) {
 	verifyCode := c.Request().PathValue("verify_code")
 	if verifyCode == "" {
-		return nil, NewHTTPError(http.StatusPreconditionRequired, "verification code is required")
+		return nil, h.HTTPError(
+			http.StatusPreconditionRequired,
+			errors.New("verification code is required"),
+		)
 	}
 
 	decoded, err := base64.StdEncoding.DecodeString(verifyCode)
 	if err != nil {
-		return nil, NewHTTPError(
+		return nil, h.HTTPError(
 			http.StatusPreconditionRequired,
-			"invalid verification code format",
+			errors.New("invalid verification code format"),
 		)
 	}
 
-	if err = h.authServ.VerifyUserCode(string(decoded)); err != nil {
-		return nil, NewHTTPError(http.StatusPreconditionFailed, err.Error())
+	if err = h.authServ.VerifyUser.Execute(string(decoded)); err != nil {
+		return nil, h.HandleError(err)
 	}
 
 	return &SuccessResponse{
@@ -132,27 +121,24 @@ func (h *AuthenticationController) ForgotPassword(
 ) (*ForgotPasswordResponse, error) {
 	req, err := c.Body()
 	if err != nil {
-		return nil, err
+		return nil, h.HandleError(err)
 	}
 
 	if len(req.Username) > 0 {
-		obfuscated := h.authServ.GetObfuscatedEmail(req.Username)
-		if len(obfuscated) > 0 {
-			c.Response().WriteHeader(http.StatusNonAuthoritativeInfo)
-			return &ForgotPasswordResponse{
-				SuccessResponse: SuccessResponse{Success: true},
-				ObfuscatedEmail: obfuscated,
-			}, nil
+		obfuscated, lookupErr := h.authServ.LookupRecoveryContact.Execute(req.Username)
+		if lookupErr != nil {
+			return nil, h.HandleError(lookupErr)
 		}
-		return nil, NewHTTPError(http.StatusNotAcceptable, "user not found")
+		c.Response().WriteHeader(http.StatusNonAuthoritativeInfo)
+		return &ForgotPasswordResponse{
+			SuccessResponse: SuccessResponse{Success: true},
+			ObfuscatedEmail: obfuscated,
+		}, nil
 	}
 
 	if len(req.Email) > 0 {
-		if err = h.authServ.GeneratePasswordRecovery(req.Email); err != nil {
-			if errors.Is(err, autherrs.ErrUserEmailNotFound) {
-				return nil, NewHTTPError(http.StatusPreconditionFailed, err.Error())
-			}
-			return nil, err
+		if err = h.authServ.RequestPasswordRecovery.Execute(req.Email); err != nil {
+			return nil, h.HandleError(err)
 		}
 		// The client will open a window to put this code, and send a request to server again with new password
 		c.Response().WriteHeader(http.StatusAccepted)
@@ -164,7 +150,7 @@ func (h *AuthenticationController) ForgotPassword(
 		}, nil
 	}
 
-	return nil, NewHTTPError(http.StatusUnprocessableEntity, "no user or email provided")
+	return nil, h.HTTPError(http.StatusUnprocessableEntity, errors.New("no user or email provided"))
 }
 
 func (h *AuthenticationController) CheckRecoveryCode(
@@ -172,14 +158,11 @@ func (h *AuthenticationController) CheckRecoveryCode(
 ) (*SuccessResponse, error) {
 	req, err := c.Body()
 	if err != nil {
-		return nil, err
+		return nil, h.HandleError(err)
 	}
 
-	if _, err = h.authServ.CheckRecoveryCode(req.Email, req.RecoveryCode); err != nil {
-		if errors.Is(err, autherrs.ErrUserRecoveryNotFound) {
-			return nil, NewHTTPError(http.StatusPreconditionFailed, err.Error())
-		}
-		return nil, err
+	if _, err = h.authServ.CheckRecoveryCode.Execute(req.Email, req.RecoveryCode); err != nil {
+		return nil, h.HandleError(err)
 	}
 
 	return &SuccessResponse{
@@ -193,7 +176,7 @@ func (h *AuthenticationController) PasswordReset(
 ) (*SuccessResponse, error) {
 	req, err := c.Body()
 	if err != nil {
-		return nil, err
+		return nil, h.HandleError(err)
 	}
 
 	userDTO := entities.UserBasic{
@@ -201,11 +184,8 @@ func (h *AuthenticationController) PasswordReset(
 		Password: req.NewPassword,
 	}
 
-	if err = h.authServ.ResetPassword(userDTO, req.RecoveryCode); err != nil {
-		if errors.Is(err, autherrs.ErrUserRecoveryNotFound) {
-			return nil, NewHTTPError(http.StatusPreconditionFailed, err.Error())
-		}
-		return nil, err
+	if err = h.authServ.ResetPassword.Execute(userDTO, req.RecoveryCode); err != nil {
+		return nil, h.HandleError(err)
 	}
 
 	c.Response().WriteHeader(http.StatusCreated)
