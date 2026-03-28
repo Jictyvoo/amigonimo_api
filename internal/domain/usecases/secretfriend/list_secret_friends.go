@@ -18,6 +18,9 @@ type (
 )
 
 func (uc *UseCase) ListUserSecretFriends(userID entities.HexID) (ActiveInactiveListEvents, error) {
+	if userID.IsEmpty() {
+		userID = uc.associatedUser.ID
+	}
 	rawList, err := uc.repo.ListSecretFriends(userID)
 	if err != nil {
 		return ActiveInactiveListEvents{}, apperr.From(
