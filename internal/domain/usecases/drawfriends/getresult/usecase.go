@@ -5,10 +5,6 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
-type Repository interface {
-	GetDrawResultForUser(secretFriendID, userID entities.HexID) (entities.DrawResultItem, error)
-}
-
 type Input struct {
 	SecretFriendID entities.HexID
 }

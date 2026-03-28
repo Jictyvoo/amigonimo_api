@@ -17,7 +17,7 @@ func RegisterServices(inj remy.Injector) {
 	)
 
 	remy.RegisterConstructorArgs2(inj, remy.Factory[secretfriend.UseCase], secretfriend.New)
-	remy.RegisterConstructorArgs2(inj, remy.Factory[drawfriends.Service], drawfriends.New)
+	remy.RegisterConstructorArgs3(inj, remy.Factory[drawfriends.Service], drawfriends.New)
 
 	remy.RegisterConstructorArgs2(
 		inj, remy.Factory[denylist.FacadeProvider], denylist.NewFacadeProvider,

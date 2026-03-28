@@ -7,19 +7,26 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
-type Repository interface {
-	execute.Repository
-	getresult.Repository
-}
+type (
+	Repository interface {
+		getresult.Repository
+		execute.Repository
+	}
+	Facades interface {
+		execute.SecretFriendFacade
+	}
+)
 
 type Service struct {
 	executeUseCase   execute.UseCase
 	getResultUseCase getresult.UseCase
 }
 
-func New(associatedUser entities.User, repo Repository) Service {
+func New(
+	associatedUser entities.User, repo Repository, facades Facades,
+) Service {
 	return Service{
-		executeUseCase:   execute.New(repo, drawserv.New()),
+		executeUseCase:   execute.New(repo, facades, drawserv.New()),
 		getResultUseCase: getresult.New(associatedUser, repo),
 	}
 }

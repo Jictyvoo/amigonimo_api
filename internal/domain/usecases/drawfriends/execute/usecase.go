@@ -7,16 +7,7 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/domain/apperr"
 	"github.com/jictyvoo/amigonimo_api/internal/domain/services/drawserv"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
-	"github.com/jictyvoo/amigonimo_api/pkg/dbrock"
 )
-
-type Repository interface {
-	dbrock.Transactioner
-
-	GetSecretFriendByID(id entities.HexID) (entities.SecretFriend, error)
-	UpdateSecretFriend(sf *entities.SecretFriend) error
-	SaveDrawResults(secretFriendID entities.HexID, results []entities.DrawResultItem) error
-}
 
 type Input struct {
 	SecretFriendID entities.HexID
@@ -27,20 +18,22 @@ type Output struct {
 }
 
 type UseCase struct {
-	repo     Repository
-	drawServ drawserv.Service
+	repo               Repository
+	secretFriendFacade SecretFriendFacade
+	drawServ           drawserv.Service
 }
 
-func New(repo Repository, drawServ drawserv.Service) UseCase {
+func New(repo Repository, sfFacade SecretFriendFacade, drawServ drawserv.Service) UseCase {
 	return UseCase{
-		repo:     repo,
-		drawServ: drawServ,
+		repo:               repo,
+		secretFriendFacade: sfFacade,
+		drawServ:           drawServ,
 	}
 }
 
 func (uc UseCase) Execute(input Input) (output Output, err error) {
 	var sf entities.SecretFriend
-	if sf, err = uc.repo.GetSecretFriendByID(input.SecretFriendID); err != nil {
+	if sf, err = uc.secretFriendFacade.GetSecretFriendByID(input.SecretFriendID); err != nil {
 		return Output{}, apperr.From(
 			"secret_friend_not_found",
 			"secret friend not found",
@@ -93,8 +86,7 @@ func (uc UseCase) Execute(input Input) (output Output, err error) {
 		)
 	}
 
-	sf.Status = entities.StatusDrawn
-	if err = uc.repo.UpdateSecretFriend(&sf); err != nil {
+	if err = uc.secretFriendFacade.UpdateStatus(sf.ID, entities.StatusDrawn); err != nil {
 		return Output{}, apperr.From(
 			"secret_friend_status_update_failed",
 			"failed to update secret friend status",

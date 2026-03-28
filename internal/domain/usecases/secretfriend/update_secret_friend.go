@@ -12,16 +12,13 @@ type UpdateInput struct {
 	Name     string
 	Datetime time.Time
 	Location string
+	Status   entities.SecretFriendStatus
 }
 
 func (uc *UseCase) Update(input UpdateInput) error {
-	sf, err := uc.repo.GetSecretFriendByID(input.ID)
+	sf, err := uc.Get(input.ID)
 	if err != nil {
-		return apperr.From(
-			"secret_friend_not_found",
-			"secret friend not found",
-			err,
-		)
+		return err
 	}
 
 	if sf.OwnerID != uc.associatedUser.ID { // Must ensure that only the owner can change its info
@@ -40,6 +37,9 @@ func (uc *UseCase) Update(input UpdateInput) error {
 	}
 	if input.Location != "" {
 		sf.Location = input.Location
+	}
+	if input.Status != "" {
+		sf.Status = input.Status
 	}
 	if err = uc.repo.UpdateSecretFriend(&sf); err != nil {
 		return apperr.From(
