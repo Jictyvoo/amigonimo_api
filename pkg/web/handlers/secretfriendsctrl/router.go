@@ -29,8 +29,8 @@ func (r *Router) RegisterRoutes(server *fuego.Server) error {
 	var sfFac UseCaseFactory[secretfriend.UseCase] = func(ctx context.Context) (secretfriend.UseCase, error) {
 		return remy.GetWithContext[secretfriend.UseCase](r.injector, ctx)
 	}
-	var drawFac UseCaseFactory[drawfriends.UseCase] = func(ctx context.Context) (drawfriends.UseCase, error) {
-		return remy.GetWithContext[drawfriends.UseCase](r.injector, ctx)
+	var drawFac UseCaseFactory[drawfriends.Service] = func(ctx context.Context) (drawfriends.Service, error) {
+		return remy.GetWithContext[drawfriends.Service](r.injector, ctx)
 	}
 
 	ctrl := NewController(sfFac, drawFac)

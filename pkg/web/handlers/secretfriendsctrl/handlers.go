@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/go-fuego/fuego"
-	"github.com/wrapped-owls/goremy-di/remy"
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/drawfriends"
 	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/secretfriend"
@@ -19,13 +18,13 @@ type (
 		web.DefaultController
 
 		sfUseCaseFactory   UseCaseFactory[secretfriend.UseCase]
-		drawUseCaseFactory UseCaseFactory[drawfriends.UseCase]
+		drawUseCaseFactory UseCaseFactory[drawfriends.Service]
 	}
 )
 
 func NewController(
 	sfFac UseCaseFactory[secretfriend.UseCase],
-	drawFac UseCaseFactory[drawfriends.UseCase],
+	drawFac UseCaseFactory[drawfriends.Service],
 ) Controller {
 	return Controller{
 		sfUseCaseFactory:   sfFac,
@@ -69,17 +68,12 @@ func (ctrl *Controller) CreateSecretFriend(
 func (ctrl *Controller) GetSecretFriendList(
 	c fuego.ContextNoBody,
 ) (DashboardResponse, error) {
-	user, err := remy.GetWithContext[entities.User](nil, c.Context())
-	if err != nil {
-		return DashboardResponse{}, ctrl.HandleError(err)
-	}
-
 	uc, err := ctrl.sfUseCaseFactory(c.Context())
 	if err != nil {
 		return DashboardResponse{}, ctrl.HandleError(err)
 	}
 
-	result, err := uc.ListUserSecretFriends(user.ID)
+	result, err := uc.ListUserSecretFriends(entities.HexID{})
 	if err != nil {
 		return DashboardResponse{}, ctrl.HandleError(err)
 	}
@@ -172,11 +166,7 @@ func (ctrl *Controller) DrawSecretFriend(
 		return nil, ctrl.HandleError(err)
 	}
 
-	result, err := drawUC.Execute(
-		drawfriends.ExecuteInput{
-			SecretFriendID: id,
-		},
-	)
+	result, err := drawUC.Execute(id)
 	if err != nil {
 		return nil, ctrl.HandleError(err)
 	}
@@ -184,7 +174,7 @@ func (ctrl *Controller) DrawSecretFriend(
 	return &DrawSecretFriendResponse{
 		SecretFriendID: id.String(),
 		Status:         string(entities.StatusDrawn),
-		ResultCount:    result.ParticipantCount,
+		ResultCount:    result,
 	}, nil
 }
 
@@ -202,17 +192,7 @@ func (ctrl *Controller) GetDrawResult(
 		return nil, ctrl.HandleError(err)
 	}
 
-	user, err := remy.GetWithContext[entities.User](nil, c.Context())
-	if err != nil {
-		return nil, ctrl.HandleError(err)
-	}
-
-	result, err := drawUC.GetResult(
-		drawfriends.GetResultInput{
-			SecretFriendID: id,
-			UserID:         user.ID,
-		},
-	)
+	result, err := drawUC.GetResult(id)
 	if err != nil {
 		return nil, ctrl.HandleError(err)
 	}
