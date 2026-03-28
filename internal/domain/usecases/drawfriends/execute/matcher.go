@@ -1,21 +1,30 @@
-package drawserv
+package execute
 
 import (
-	"math/rand"
+	"math/rand/v2"
 	"time"
 
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
-type Service struct{}
+type DrawFriendMatcher struct{}
 
-func New() Service {
-	return Service{}
+func NewDrawMatcher() DrawFriendMatcher {
+	return DrawFriendMatcher{}
 }
+
+type (
+	DrawInput struct {
+		Participants []entities.Participant
+	}
+	DrawOutput struct {
+		Pairs []entities.DrawResultItem
+	}
+)
 
 // ExecuteDraw generates a valid draw based on participants and their denylist.
 // It uses a simple shuffle and check approach with a limited number of attempts.
-func (s *Service) ExecuteDraw(input DrawInput) (DrawOutput, error) {
+func (s *DrawFriendMatcher) ExecuteDraw(input DrawInput) (DrawOutput, error) {
 	if len(input.Participants) < 3 {
 		return DrawOutput{}, ErrInsufficientPlayers
 	}

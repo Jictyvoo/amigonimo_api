@@ -7,7 +7,6 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/interop/ports"
-	"github.com/jictyvoo/amigonimo_api/internal/domain/services/drawserv"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
@@ -41,7 +40,7 @@ func TestUseCaseExecute(t *testing.T) {
 	p1 := newParticipant(t)
 	p2 := newParticipant(t)
 	p3 := newParticipant(t)
-	drawService := drawserv.New()
+	drawService := New()
 
 	tests := []struct {
 		name       string

@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/apperr"
-	"github.com/jictyvoo/amigonimo_api/internal/domain/services/drawserv"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
@@ -20,14 +19,14 @@ type Output struct {
 type UseCase struct {
 	repo               Repository
 	secretFriendFacade SecretFriendFacade
-	drawServ           drawserv.Service
+	friendMatcher      DrawFriendMatcher
 }
 
-func New(repo Repository, sfFacade SecretFriendFacade, drawServ drawserv.Service) UseCase {
+func New(repo Repository, sfFacade SecretFriendFacade) UseCase {
 	return UseCase{
 		repo:               repo,
 		secretFriendFacade: sfFacade,
-		drawServ:           drawServ,
+		friendMatcher:      NewDrawMatcher(),
 	}
 }
 
@@ -49,11 +48,9 @@ func (uc UseCase) Execute(input Input) (output Output, err error) {
 		)
 	}
 
-	var drawResult drawserv.DrawOutput
-	if drawResult, err = uc.drawServ.ExecuteDraw(
-		drawserv.DrawInput{
-			Participants: sf.Participants,
-		},
+	var drawResult DrawOutput
+	if drawResult, err = uc.friendMatcher.ExecuteDraw(
+		DrawInput{Participants: sf.Participants},
 	); err != nil {
 		return Output{}, apperr.InternalError(
 			"draw_execution_failed",
