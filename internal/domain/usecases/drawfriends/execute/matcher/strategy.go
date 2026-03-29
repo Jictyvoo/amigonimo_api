@@ -27,3 +27,20 @@ var (
 	ErrNoValidDraw         = errors.New("no valid draw found after exhausting all strategies")
 	ErrInsufficientPlayers = errors.New("at least 3 participants are required for a draw")
 )
+
+// baseStrategy is the shared foundation for all search-based draw strategies.
+// Use setup() to validate participants and build the constraint graph.
+type baseStrategy struct{}
+
+// setup validates the participant count and constructs the constraint graph.
+// ascending controls whether the graph sorts participants most- or least-constrained first.
+func (baseStrategy) setup(
+	participants []Participant,
+	ascending bool,
+) (constraintGraph, int, error) {
+	n := len(participants)
+	if n < 3 {
+		return constraintGraph{}, 0, ErrInsufficientPlayers
+	}
+	return newConstraintGraph(participants, ascending), n, nil
+}
