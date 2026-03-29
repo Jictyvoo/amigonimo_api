@@ -6,9 +6,9 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
-	"github.com/google/uuid"
 
 	"github.com/jictyvoo/amigonimo_api/build/entschema/customixins"
+	"github.com/jictyvoo/amigonimo_api/build/entschema/uuidfield"
 )
 
 // AuthToken holds the schema definition for the AuthToken entity.
@@ -17,12 +17,9 @@ type AuthToken struct{ ent.Schema }
 // Fields of the AuthToken.
 func (AuthToken) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("user_id", uuid.UUID{}).Unique(),
+		uuidfield.Unique("user_id"),
 		field.String("token").MaxLen(52),
-		field.UUID("refresh_token", uuid.UUID{}).
-			// This is needed because SQLc doesn't recognize the UUID type on MariaDB dialect
-			SchemaType(customixins.SchemaTypeUUID()).
-			Optional(),
+		uuidfield.Optional("refresh_token"),
 		field.Time("expires_at"),
 	}
 }

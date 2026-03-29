@@ -7,9 +7,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 
-	"github.com/google/uuid"
-
 	"github.com/jictyvoo/amigonimo_api/build/entschema/customixins"
+	"github.com/jictyvoo/amigonimo_api/build/entschema/uuidfield"
 )
 
 // WishlistItem holds the schema definition for the WishlistItem entity.
@@ -18,7 +17,7 @@ type WishlistItem struct{ ent.Schema }
 // Fields of the WishlistItem.
 func (WishlistItem) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("participant_id", uuid.UUID{}),
+		uuidfield.Field("participant_id"),
 		field.String("label"),
 		field.Text("comments").
 			Optional().

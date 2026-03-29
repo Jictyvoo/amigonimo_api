@@ -7,9 +7,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 
-	"github.com/google/uuid"
-
 	"github.com/jictyvoo/amigonimo_api/build/entschema/customixins"
+	"github.com/jictyvoo/amigonimo_api/build/entschema/uuidfield"
 )
 
 // SecretFriend holds the schema definition for the SecretFriend entity.
@@ -21,7 +20,7 @@ func (SecretFriend) Fields() []ent.Field {
 		field.String("name"),
 		field.Time("datetime"),
 		field.String("location").Optional(),
-		field.UUID("owner_id", uuid.UUID{}),
+		uuidfield.Field("owner_id"),
 		field.Uint8("max_deny_list_size").Default(0),
 		field.String("invite_code"),
 		field.String("invite_link").Optional(),

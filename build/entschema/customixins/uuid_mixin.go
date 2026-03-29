@@ -4,9 +4,9 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/entsql"
-	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
-	"github.com/google/uuid"
+
+	"github.com/jictyvoo/amigonimo_api/build/entschema/uuidfield"
 )
 
 // UUIDMixin provides a UUID primary key stored as BINARY(16).
@@ -26,20 +26,6 @@ func (UUIDMixin) Fields() []ent.Field {
 	)
 
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).
-			Unique().
-			Immutable().
-			Default(uuid.New). // generate in Go for SQLite and fallback
-			Annotations(defaultExpr).
-			SchemaType(SchemaTypeUUID()),
-	}
-}
-
-func SchemaTypeUUID() map[string]string {
-	return map[string]string{
-		dialect.MySQL: "BINARY(16)", // MySQL
-		// dialect.MySQL:    "UUID", // MariaDB
-		dialect.Postgres: "uuid",
-		dialect.SQLite:   "blob",
+		uuidfield.ID(defaultExpr),
 	}
 }

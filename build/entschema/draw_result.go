@@ -4,12 +4,10 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
-	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 
-	"github.com/google/uuid"
-
 	"github.com/jictyvoo/amigonimo_api/build/entschema/customixins"
+	"github.com/jictyvoo/amigonimo_api/build/entschema/uuidfield"
 )
 
 // DrawResult holds the schema definition for the DrawResult entity.
@@ -18,9 +16,9 @@ type DrawResult struct{ ent.Schema }
 // Fields of the DrawResult.
 func (DrawResult) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("secret_friend_id", uuid.UUID{}),
-		field.UUID("giver_participant_id", uuid.UUID{}),
-		field.UUID("receiver_participant_id", uuid.UUID{}),
+		uuidfield.Field("secret_friend_id"),
+		uuidfield.Field("giver_participant_id"),
+		uuidfield.Field("receiver_participant_id"),
 	}
 }
 

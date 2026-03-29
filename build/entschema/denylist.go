@@ -4,12 +4,10 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema/edge"
-	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 
-	"github.com/google/uuid"
-
 	"github.com/jictyvoo/amigonimo_api/build/entschema/customixins"
+	"github.com/jictyvoo/amigonimo_api/build/entschema/uuidfield"
 )
 
 // Denylist holds the schema definition for the Denylist entity.
@@ -18,8 +16,8 @@ type Denylist struct{ ent.Schema }
 // Fields of the Denylist.
 func (Denylist) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("participant_id", uuid.UUID{}),
-		field.UUID("denied_user_id", uuid.UUID{}),
+		uuidfield.Field("participant_id"),
+		uuidfield.Field("denied_user_id"),
 	}
 }
 

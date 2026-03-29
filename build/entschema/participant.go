@@ -9,9 +9,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 
-	"github.com/google/uuid"
-
 	"github.com/jictyvoo/amigonimo_api/build/entschema/customixins"
+	"github.com/jictyvoo/amigonimo_api/build/entschema/uuidfield"
 )
 
 // Participant holds the schema definition for the Participant entity.
@@ -20,8 +19,8 @@ type Participant struct{ ent.Schema }
 // Fields of the Participant.
 func (Participant) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("user_id", uuid.UUID{}),
-		field.UUID("secret_friend_id", uuid.UUID{}),
+		uuidfield.Field("user_id"),
+		uuidfield.Field("secret_friend_id"),
 		field.Time("joined_at").Default(time.Now),
 		field.Bool("is_ready").Default(false),
 	}

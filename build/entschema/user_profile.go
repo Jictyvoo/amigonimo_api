@@ -7,9 +7,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 
-	"github.com/google/uuid"
-
 	"github.com/jictyvoo/amigonimo_api/build/entschema/customixins"
+	"github.com/jictyvoo/amigonimo_api/build/entschema/uuidfield"
 )
 
 // UserProfile holds the schema definition for user profile data.
@@ -18,7 +17,7 @@ type UserProfile struct{ ent.Schema }
 // Fields of the UserProfile.
 func (UserProfile) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("user_id", uuid.UUID{}),
+		uuidfield.Field("user_id"),
 		field.String("fullname").MaxLen(255).Optional(),
 		field.String("nickname").MaxLen(120).Optional(),
 		field.String("image_link").MaxLen(2048).Optional(),
