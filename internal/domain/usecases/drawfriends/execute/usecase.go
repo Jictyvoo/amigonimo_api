@@ -20,14 +20,14 @@ type Output struct {
 type UseCase struct {
 	repo               Repository
 	secretFriendFacade SecretFriendFacade
-	drawStrategy       matcher.DrawStrategy
+	drawMatcher        *matcher.Orchestrator
 }
 
-func New(repo Repository, sfFacade SecretFriendFacade, strategy matcher.DrawStrategy) UseCase {
+func New(repo Repository, sfFacade SecretFriendFacade) UseCase {
 	return UseCase{
 		repo:               repo,
 		secretFriendFacade: sfFacade,
-		drawStrategy:       strategy,
+		drawMatcher:        matcher.NewOrchestrator(),
 	}
 }
 
@@ -50,7 +50,7 @@ func (uc UseCase) Execute(input Input) (output Output, err error) {
 	}
 
 	matcherParticipants := toMatcherParticipants(sf.Participants)
-	pairings, drawErr := uc.drawStrategy.Execute(matcherParticipants)
+	pairings, drawErr := uc.drawMatcher.Execute(matcherParticipants)
 	if drawErr != nil {
 		return Output{}, apperr.InternalError(
 			"draw_execution_failed",

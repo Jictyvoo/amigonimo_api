@@ -2,7 +2,6 @@ package drawfriends
 
 import (
 	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/drawfriends/execute"
-	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/drawfriends/execute/matcher"
 	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/drawfriends/getresult"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
@@ -26,7 +25,7 @@ func New(
 	associatedUser entities.User, repo Repository, facades Facades,
 ) Service {
 	return Service{
-		executeUseCase:   execute.New(repo, facades, matcher.NewOrchestrator()),
+		executeUseCase:   execute.New(repo, facades),
 		getResultUseCase: getresult.New(associatedUser, repo),
 	}
 }
