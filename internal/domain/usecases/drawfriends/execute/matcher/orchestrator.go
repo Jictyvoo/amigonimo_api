@@ -16,6 +16,7 @@ func NewOrchestrator() *Orchestrator {
 	return &Orchestrator{
 		strategies: []DrawStrategy{
 			GreedyStrategy{},
+			ReverseGreedyStrategy{},
 			ChainCloseStrategy{},
 		},
 	}
