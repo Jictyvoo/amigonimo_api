@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/apperr"
+	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/drawfriends/execute/matcher"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
@@ -19,14 +20,14 @@ type Output struct {
 type UseCase struct {
 	repo               Repository
 	secretFriendFacade SecretFriendFacade
-	friendMatcher      DrawFriendMatcher
+	drawStrategy       matcher.DrawStrategy
 }
 
-func New(repo Repository, sfFacade SecretFriendFacade) UseCase {
+func New(repo Repository, sfFacade SecretFriendFacade, strategy matcher.DrawStrategy) UseCase {
 	return UseCase{
 		repo:               repo,
 		secretFriendFacade: sfFacade,
-		friendMatcher:      NewDrawMatcher(),
+		drawStrategy:       strategy,
 	}
 }
 
@@ -48,16 +49,17 @@ func (uc UseCase) Execute(input Input) (output Output, err error) {
 		)
 	}
 
-	var drawResult DrawOutput
-	if drawResult, err = uc.friendMatcher.ExecuteDraw(
-		DrawInput{Participants: sf.Participants},
-	); err != nil {
+	matcherParticipants := toMatcherParticipants(sf.Participants)
+	pairings, drawErr := uc.drawStrategy.Execute(matcherParticipants)
+	if drawErr != nil {
 		return Output{}, apperr.InternalError(
 			"draw_execution_failed",
 			"failed to execute draw",
-			err,
+			drawErr,
 		)
 	}
+
+	drawResults := toPairingResults(pairings, sf.Participants)
 
 	onFinishTx, txErr := uc.repo.BeginTx(context.Background(), nil)
 	if txErr != nil {
@@ -75,7 +77,7 @@ func (uc UseCase) Execute(input Input) (output Output, err error) {
 		}
 	}()
 
-	if err = uc.repo.SaveDrawResults(sf.ID, drawResult.Pairs); err != nil {
+	if err = uc.repo.SaveDrawResults(sf.ID, drawResults); err != nil {
 		return Output{}, apperr.From(
 			"draw_result_save_failed",
 			"failed to save draw results",
