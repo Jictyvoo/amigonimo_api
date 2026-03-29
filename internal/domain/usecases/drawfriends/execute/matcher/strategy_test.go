@@ -186,6 +186,7 @@ func TestStrategyPriorities(t *testing.T) {
 		want     Priority
 	}{
 		{GreedyStrategy{}, PriorityGreedy},
+		{ChainCloseStrategy{}, PriorityChainClose},
 	}
 
 	for _, tt := range tests {

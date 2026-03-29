@@ -58,3 +58,17 @@ func (g *constraintGraph) assignmentToPairings(assignment []int) []Pairing {
 	}
 	return pairs
 }
+
+// chainToPairings converts a chain of participant indices into Pairing structs.
+// chain[i] gives to chain[i+1], and the last participant gives to chain[0].
+func (g *constraintGraph) chainToPairings(chain []int) []Pairing {
+	n := len(chain)
+	pairs := make([]Pairing, n)
+	for i := range n {
+		pairs[i] = Pairing{
+			GiverID:    g.sorted[chain[i]].ID,
+			ReceiverID: g.sorted[chain[(i+1)%n]].ID,
+		}
+	}
+	return pairs
+}

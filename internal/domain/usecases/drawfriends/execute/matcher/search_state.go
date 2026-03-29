@@ -82,3 +82,55 @@ func (as *assignmentSearch) retreat() bool {
 
 func (as *assignmentSearch) isComplete(n int) bool { return as.step == n }
 func (as *assignmentSearch) active(n int) bool     { return as.step >= 0 && as.step < n }
+
+// chainSearch manages state for chain-based strategies (ChainClose).
+// It tracks a growing path of participant indices and which are already in the chain.
+type chainSearch struct {
+	searchState
+	chain  []int
+	used   []bool
+	depth_ int
+}
+
+func newChainSearch(n, startIdx int) chainSearch {
+	chain := make([]int, n)
+	used := make([]bool, n)
+	chain[0] = startIdx
+	used[startIdx] = true
+	return chainSearch{
+		searchState: searchState{
+			candidatePos:  make([]int, n),
+			maxBacktracks: n * 2,
+		},
+		chain:  chain,
+		used:   used,
+		depth_: 1,
+	}
+}
+
+func (cs *chainSearch) depth() int      { return cs.depth_ }
+func (cs *chainSearch) active() bool    { return cs.depth_ > 0 }
+func (cs *chainSearch) currentIdx() int { return cs.chain[cs.depth_-1] }
+
+func (cs *chainSearch) advance(nextIdx int) {
+	cs.chain[cs.depth_] = nextIdx
+	cs.used[nextIdx] = true
+	cs.depth_++
+}
+
+// retreat removes the last participant from the chain and resets its candidate cursor.
+// Returns false when the search is exhausted (depth reaches zero or budget exceeded).
+func (cs *chainSearch) retreat() bool {
+	step := cs.depth_ - 1
+	cs.resetCandidates(step)
+	cs.used[cs.chain[step]] = false
+	cs.depth_--
+	if cs.depth_ <= 0 {
+		return false
+	}
+	if !cs.recordBacktrack() {
+		cs.depth_ = 0 // force active() = false so the loop exits
+		return false
+	}
+	return true
+}
