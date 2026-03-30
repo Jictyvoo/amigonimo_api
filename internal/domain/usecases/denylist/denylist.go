@@ -10,9 +10,9 @@ type Repository interface {
 	AddDenyListEntry(
 		participant ParticipantRef,
 		deniedUserID entities.HexID,
-	) (entities.DeniedUser, error)
+	) (DeniedEntry, error)
 	RemoveDenyListEntry(participant ParticipantRef, deniedUserID entities.HexID) error
-	GetDenyListByParticipant(participant ParticipantRef) ([]entities.DeniedUser, error)
+	GetDenyListByParticipant(participant ParticipantRef) ([]DeniedEntry, error)
 }
 
 type ParticipantRef struct {

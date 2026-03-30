@@ -54,7 +54,7 @@ func TestDenylistUseCase(t *testing.T) {
 			)
 			repo.EXPECT().
 				GetDenyListByParticipant(ParticipantRef{UserID: userID, SecretFriendID: sfID}).
-				Return([]entities.DeniedUser{{ID: mustHexID(t)}}, nil)
+				Return([]DeniedEntry{{ID: mustHexID(t)}}, nil)
 			uc := New(associatedUser, repo, provider)
 			items, err := uc.GetDenyList(sfID)
 			if err != nil || len(items) != 1 {
@@ -88,7 +88,7 @@ func TestDenylistUseCase(t *testing.T) {
 							Return(entities.Participant{ID: mustHexID(t)}, nil)
 						repo.EXPECT().
 							GetDenyListByParticipant(ref).
-							Return([]entities.DeniedUser{{ID: mustHexID(t)}, {ID: mustHexID(t)}}, nil)
+							Return([]DeniedEntry{{ID: mustHexID(t)}, {ID: mustHexID(t)}}, nil)
 						sf.EXPECT().
 							GetSecretFriendByID(sfID).
 							Return(entities.SecretFriend{ID: sfID, MaxDenyListSize: 2}, nil)
@@ -111,7 +111,7 @@ func TestDenylistUseCase(t *testing.T) {
 							Return(entities.SecretFriend{ID: sfID, MaxDenyListSize: 2}, nil)
 						repo.EXPECT().
 							AddDenyListEntry(ref, targetID).
-							Return(entities.DeniedUser{ID: mustHexID(t)}, nil)
+							Return(DeniedEntry{ID: mustHexID(t)}, nil)
 					},
 				},
 			}

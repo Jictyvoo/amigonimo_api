@@ -41,10 +41,10 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 }
 
 // AddDenyListEntry mocks base method.
-func (m *MockRepository) AddDenyListEntry(participant ParticipantRef, deniedUserID entities.HexID) (entities.DeniedUser, error) {
+func (m *MockRepository) AddDenyListEntry(participant ParticipantRef, deniedUserID entities.HexID) (DeniedEntry, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddDenyListEntry", participant, deniedUserID)
-	ret0, _ := ret[0].(entities.DeniedUser)
+	ret0, _ := ret[0].(DeniedEntry)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -56,10 +56,10 @@ func (mr *MockRepositoryMockRecorder) AddDenyListEntry(participant, deniedUserID
 }
 
 // GetDenyListByParticipant mocks base method.
-func (m *MockRepository) GetDenyListByParticipant(participant ParticipantRef) ([]entities.DeniedUser, error) {
+func (m *MockRepository) GetDenyListByParticipant(participant ParticipantRef) ([]DeniedEntry, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDenyListByParticipant", participant)
-	ret0, _ := ret[0].([]entities.DeniedUser)
+	ret0, _ := ret[0].([]DeniedEntry)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

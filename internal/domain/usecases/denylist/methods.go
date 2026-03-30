@@ -5,7 +5,7 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
-func (uc UseCase) GetDenyList(sfID entities.HexID) ([]entities.DeniedUser, error) {
+func (uc UseCase) GetDenyList(sfID entities.HexID) ([]DeniedEntry, error) {
 	deniedUsers, err := uc.repo.GetDenyListByParticipant(
 		ParticipantRef{
 			UserID:         uc.associatedUser.ID,
@@ -23,9 +23,9 @@ func (uc UseCase) GetDenyList(sfID entities.HexID) ([]entities.DeniedUser, error
 	return deniedUsers, nil
 }
 
-func (uc UseCase) AddEntry(sfID, deniedUserID entities.HexID) (entities.DeniedUser, error) {
+func (uc UseCase) AddEntry(sfID, deniedUserID entities.HexID) (DeniedEntry, error) {
 	if uc.associatedUser.ID == deniedUserID {
-		return entities.DeniedUser{}, apperr.Invalid(
+		return DeniedEntry{}, apperr.Invalid(
 			"denylist_self_entry",
 			"you cannot add yourself to the denylist",
 			nil,
@@ -36,7 +36,7 @@ func (uc UseCase) AddEntry(sfID, deniedUserID entities.HexID) (entities.DeniedUs
 		sfID, uc.associatedUser.ID,
 	)
 	if err != nil {
-		return entities.DeniedUser{}, apperr.Forbidden(
+		return DeniedEntry{}, apperr.Forbidden(
 			"denylist_access_forbidden",
 			"you are not a participant in this secret friend",
 			err,
@@ -44,7 +44,7 @@ func (uc UseCase) AddEntry(sfID, deniedUserID entities.HexID) (entities.DeniedUs
 	}
 
 	if _, err = uc.facProvider.participant.CheckParticipantInSecretFriend(sfID, deniedUserID); err != nil {
-		return entities.DeniedUser{}, apperr.Invalid(
+		return DeniedEntry{}, apperr.Invalid(
 			"denylist_target_not_participant",
 			"target user is not a participant in this secret friend",
 			err,
@@ -60,7 +60,7 @@ func (uc UseCase) AddEntry(sfID, deniedUserID entities.HexID) (entities.DeniedUs
 
 	currentList, err := uc.repo.GetDenyListByParticipant(participantRef)
 	if err != nil {
-		return entities.DeniedUser{}, apperr.From(
+		return DeniedEntry{}, apperr.From(
 			"denylist_lookup_failed",
 			"failed to load denylist",
 			err,
@@ -69,7 +69,7 @@ func (uc UseCase) AddEntry(sfID, deniedUserID entities.HexID) (entities.DeniedUs
 
 	sf, err := uc.facProvider.secretFriend.GetSecretFriendByID(sfID)
 	if err != nil {
-		return entities.DeniedUser{}, apperr.From(
+		return DeniedEntry{}, apperr.From(
 			"secret_friend_not_found",
 			"secret friend not found",
 			err,
@@ -86,7 +86,7 @@ func (uc UseCase) AddEntry(sfID, deniedUserID entities.HexID) (entities.DeniedUs
 		}
 	}
 	if effectiveMax > 0 && len(currentList) >= effectiveMax {
-		return entities.DeniedUser{}, apperr.Conflict(
+		return DeniedEntry{}, apperr.Conflict(
 			"denylist_capacity_reached",
 			"denylist capacity reached",
 			nil,
@@ -95,7 +95,7 @@ func (uc UseCase) AddEntry(sfID, deniedUserID entities.HexID) (entities.DeniedUs
 
 	deniedUser, err := uc.repo.AddDenyListEntry(participantRef, deniedUserID)
 	if err != nil {
-		return entities.DeniedUser{}, apperr.From(
+		return DeniedEntry{}, apperr.From(
 			"denylist_add_failed",
 			"failed to add denylist entry",
 			err,
