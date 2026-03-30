@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/drawfriends"
+	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/drawfriends/drawdto"
 	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/secretfriend"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo"
@@ -123,7 +124,7 @@ func (r *RepoMySQL) ListParticipants(
 
 func (r *RepoMySQL) GetDrawResultForUser(
 	secretFriendID, userID entities.HexID,
-) (entities.DrawResultItem, error) {
+) (drawdto.DrawResultItem, error) {
 	ctx, cancel := r.Ctx()
 	defer cancel()
 
@@ -135,44 +136,27 @@ func (r *RepoMySQL) GetDrawResultForUser(
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return entities.DrawResultItem{}, dberrs.NewErrDatabaseNotFound(
+			return drawdto.DrawResultItem{}, dberrs.NewErrDatabaseNotFound(
 				"draw_result",
 				userID.String(),
 				err,
 			)
 		}
-		return entities.DrawResultItem{}, mysqlrepo.WrapError(err, "get draw result for user")
+		return drawdto.DrawResultItem{}, mysqlrepo.WrapError(err, "get draw result for user")
 	}
 
-	return entities.DrawResultItem{
-		Timestamp: entities.Timestamp{
-			CreatedAt: row.CreatedAt,
-			UpdatedAt: row.UpdatedAt,
-		},
-		Giver: entities.Participant{
-			ID: mappers.HexIDFromBytes(row.GiverParticipantID),
-			RelatedUser: entities.User{
-				ID: mappers.HexIDFromBytes(row.GiverUserID),
-			},
-		},
-		Receiver: entities.Participant{
-			ID: mappers.HexIDFromBytes(row.ReceiverParticipantID),
-			RelatedUser: entities.User{
-				ID: mappers.HexIDFromBytes(row.ReceiverUserID),
-				UserBasic: entities.UserBasic{
-					Email: row.ReceiverEmail,
-				},
-			},
-			Profile: entities.UserProfile{
-				FullName: row.ReceiverFullname,
-			},
-		},
+	return drawdto.DrawResultItem{
+		GiverParticipantID:    mappers.HexIDFromBytes(row.GiverParticipantID),
+		ReceiverParticipantID: mappers.HexIDFromBytes(row.ReceiverParticipantID),
+		ReceiverUserID:        mappers.HexIDFromBytes(row.ReceiverUserID),
+		ReceiverEmail:         row.ReceiverEmail,
+		ReceiverFullName:      row.ReceiverFullname,
 	}, nil
 }
 
 func (r *RepoMySQL) SaveDrawResults(
 	secretFriendID entities.HexID,
-	results []entities.DrawResultItem,
+	results []drawdto.DrawResultItem,
 ) error {
 	ctx, cancel := r.Ctx()
 	defer cancel()
@@ -189,15 +173,15 @@ func (r *RepoMySQL) SaveDrawResults(
 	for _, result := range results {
 		_, err = r.Queries().SaveDrawResult(
 			ctx, dbgen.SaveDrawResultParams{
-				GiverParticipantID:    result.Giver.ID[:],
-				ReceiverParticipantID: result.Receiver.ID[:],
+				GiverParticipantID:    result.GiverParticipantID[:],
+				ReceiverParticipantID: result.ReceiverParticipantID[:],
 				SecretFriendID:        secretFriendID[:],
 			},
 		)
 		if err != nil {
 			return mysqlrepo.WrapError(
 				err,
-				fmt.Sprintf("save draw result for giver %s", result.Giver.ID.String()),
+				fmt.Sprintf("save draw result for giver %s", result.GiverParticipantID.String()),
 			)
 		}
 	}

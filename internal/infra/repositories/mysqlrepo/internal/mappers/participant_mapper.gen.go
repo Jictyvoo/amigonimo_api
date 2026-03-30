@@ -17,7 +17,6 @@ func MapParticipantRow(source dbgen.ListParticipantsBySecretFriendRow) entities.
 	entitiesParticipant.SecretFriendID = HexIDFromBytes(source.Participant.SecretFriendID)
 	entitiesParticipant.JoinedAt = TimeFromNullTime(source.Participant.JoinedAt)
 	entitiesParticipant.IsReady = source.Participant.IsReady
-	entitiesParticipant.Profile = UserProfileFromFullName(source.Fullname)
 	return entitiesParticipant
 }
 func ToEntityParticipant(source dbgen.Participant) entities.Participant {

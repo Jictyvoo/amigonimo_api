@@ -20,7 +20,6 @@ type SecretFriendConverter interface {
 	// goverter:map Status | StatusToEntity
 	// goverter:map . Timestamp
 	// goverter:ignore Participants
-	// goverter:ignore DrawResult
 	ToEntitySecretFriend(sf dbgen.SecretFriend) entities.SecretFriend
 }
 

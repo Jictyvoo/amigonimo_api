@@ -11,10 +11,10 @@ import (
 
 func (r *RepoMySQL) AddDenyListEntry(
 	participant denylist.ParticipantRef, deniedUserID entities.HexID,
-) (entities.DeniedUser, error) {
+) (denylist.DeniedEntry, error) {
 	id, err := entities.NewHexID()
 	if err != nil {
-		return entities.DeniedUser{}, err
+		return denylist.DeniedEntry{}, err
 	}
 
 	ctx, cancel := r.Ctx()
@@ -31,15 +31,15 @@ func (r *RepoMySQL) AddDenyListEntry(
 		},
 	)
 	if err != nil {
-		return entities.DeniedUser{}, mysqlrepo.WrapError(err, "add denylist entry")
+		return denylist.DeniedEntry{}, mysqlrepo.WrapError(err, "add denylist entry")
 	}
 
-	return entities.DeniedUser{
+	return denylist.DeniedEntry{
 		ID: id,
 		Timestamp: entities.Timestamp{
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 		},
-		InnerParticipant: entities.Participant{RelatedUser: entities.User{ID: deniedUserID}},
+		DeniedUserID: deniedUserID,
 	}, nil
 }

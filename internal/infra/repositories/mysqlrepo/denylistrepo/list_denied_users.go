@@ -2,7 +2,6 @@ package denylistrepo
 
 import (
 	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/denylist"
-	"github.com/jictyvoo/amigonimo_api/internal/entities"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/internal/dbgen"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/internal/mappers"
@@ -10,7 +9,7 @@ import (
 
 func (r *RepoMySQL) GetDenyListByParticipant(
 	participant denylist.ParticipantRef,
-) ([]entities.DeniedUser, error) {
+) ([]denylist.DeniedEntry, error) {
 	ctx, cancel := r.Ctx()
 	defer cancel()
 
@@ -26,10 +25,10 @@ func (r *RepoMySQL) GetDenyListByParticipant(
 		return nil, mysqlrepo.WrapError(err, "get denylist by participant")
 	}
 
-	deniedUsers := make([]entities.DeniedUser, len(rows))
+	entries := make([]denylist.DeniedEntry, len(rows))
 	for i, row := range rows {
-		deniedUsers[i] = mappers.ToEntityDeniedUser(row)
+		entries[i] = mappers.ToDeniedEntry(row)
 	}
 
-	return deniedUsers, nil
+	return entries, nil
 }

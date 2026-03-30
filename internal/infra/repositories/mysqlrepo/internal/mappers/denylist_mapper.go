@@ -1,41 +1,24 @@
 package mappers
 
 import (
+	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/denylist"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/internal/dbgen"
 )
 
-// DenylistConverter is the converter for the entities.DeniedUser type.
+// DenylistConverter maps denylist query rows to the denylist.DeniedEntry DTO.
 //
 // goverter:converter
 // goverter:output:file @cwd/denylist_mapper.gen.go
 // goverter:output:format function
 // goverter:extend HexIDFromBytes
 // goverter:extend CopyTime
-// goverter:extend UserProfileFromFullName
 type DenylistConverter interface {
-	// goverter:ignore Password
-	dbDenyRowToBasicDeniedUserData(row dbgen.GetDenyListByParticipantRow) entities.UserBasic
-
-	// goverter:map . UserBasic
-	// goverter:map Denylist.DeniedUserID ID
-	// goverter:ignore VerifiedAt
-	// goverter:ignore RememberToken
-	dbDenyRowToDeniedUser(row dbgen.GetDenyListByParticipantRow) entities.User
-
-	// goverter:map Denylist.ParticipantID ID
-	// goverter:map Denylist.CreatedAt JoinedAt
-	// goverter:map . RelatedUser
-	// goverter:map Fullname Profile
-	// goverter:ignore SecretFriendID
-	// goverter:ignore Timestamp
-	// goverter:ignore DenyList
-	// goverter:ignore Wishlist
-	// goverter:ignore IsReady
-	dbDenyRowToDeniedParticipant(row dbgen.GetDenyListByParticipantRow) entities.Participant
+	dbDenylistToTimestamp(d dbgen.Denylist) entities.Timestamp
 
 	// goverter:map Denylist.ID ID
+	// goverter:map Denylist.DeniedUserID DeniedUserID
 	// goverter:map Denylist Timestamp
-	// goverter:map . InnerParticipant
-	ToEntityDeniedUser(row dbgen.GetDenyListByParticipantRow) entities.DeniedUser
+	// goverter:map Fullname FullName
+	ToDeniedEntry(row dbgen.GetDenyListByParticipantRow) denylist.DeniedEntry
 }

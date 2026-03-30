@@ -4,39 +4,22 @@
 package mappers
 
 import (
+	denylist "github.com/jictyvoo/amigonimo_api/internal/domain/usecases/denylist"
 	entities "github.com/jictyvoo/amigonimo_api/internal/entities"
-	authvalues "github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 	dbgen "github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/internal/dbgen"
 )
 
-func ToEntityDeniedUser(source dbgen.GetDenyListByParticipantRow) entities.DeniedUser {
-	var entitiesDeniedUser entities.DeniedUser
-	entitiesDeniedUser.Timestamp = dbgenDenylistToEntitiesTimestamp(source.Denylist)
-	entitiesDeniedUser.ID = HexIDFromBytes(source.Denylist.ID)
-	entitiesDeniedUser.InnerParticipant = dbDenyRowToDeniedParticipant(source)
-	return entitiesDeniedUser
+func ToDeniedEntry(source dbgen.GetDenyListByParticipantRow) denylist.DeniedEntry {
+	var denylistDeniedEntry denylist.DeniedEntry
+	denylistDeniedEntry.Timestamp = dbDenylistToTimestamp(source.Denylist)
+	denylistDeniedEntry.ID = HexIDFromBytes(source.Denylist.ID)
+	denylistDeniedEntry.DeniedUserID = HexIDFromBytes(source.Denylist.DeniedUserID)
+	denylistDeniedEntry.Username = source.Username
+	denylistDeniedEntry.Email = source.Email
+	denylistDeniedEntry.FullName = source.Fullname
+	return denylistDeniedEntry
 }
-func dbDenyRowToBasicDeniedUserData(source dbgen.GetDenyListByParticipantRow) authvalues.UserBasic {
-	var authvaluesUserBasic authvalues.UserBasic
-	authvaluesUserBasic.Username = source.Username
-	authvaluesUserBasic.Email = source.Email
-	return authvaluesUserBasic
-}
-func dbDenyRowToDeniedParticipant(source dbgen.GetDenyListByParticipantRow) entities.Participant {
-	var entitiesParticipant entities.Participant
-	entitiesParticipant.ID = HexIDFromBytes(source.Denylist.ParticipantID)
-	entitiesParticipant.RelatedUser = dbDenyRowToDeniedUser(source)
-	entitiesParticipant.JoinedAt = CopyTime(source.Denylist.CreatedAt)
-	entitiesParticipant.Profile = UserProfileFromFullName(source.Fullname)
-	return entitiesParticipant
-}
-func dbDenyRowToDeniedUser(source dbgen.GetDenyListByParticipantRow) entities.User {
-	var entitiesUser entities.User
-	entitiesUser.UserBasic = dbDenyRowToBasicDeniedUserData(source)
-	entitiesUser.ID = HexIDFromBytes(source.Denylist.DeniedUserID)
-	return entitiesUser
-}
-func dbgenDenylistToEntitiesTimestamp(source dbgen.Denylist) entities.Timestamp {
+func dbDenylistToTimestamp(source dbgen.Denylist) entities.Timestamp {
 	var entitiesTimestamp entities.Timestamp
 	entitiesTimestamp.CreatedAt = CopyTime(source.CreatedAt)
 	entitiesTimestamp.UpdatedAt = CopyTime(source.UpdatedAt)

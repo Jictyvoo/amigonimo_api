@@ -14,7 +14,6 @@ import (
 // goverter:extend TimeFromNullTime
 // goverter:extend CopyTime
 // goverter:extend StringFromNullString
-// goverter:extend UserProfileFromFullName
 type ParticipantConverter interface {
 	dbParticipantTimestampToEntity(p dbgen.Participant) entities.Timestamp
 
@@ -26,9 +25,6 @@ type ParticipantConverter interface {
 
 	// goverter:map . Timestamp
 	// goverter:map . RelatedUser
-	// goverter:ignore DenyList
-	// goverter:ignore Wishlist
-	// goverter:ignore Profile
 	ToEntityParticipant(p dbgen.Participant) entities.Participant
 
 	// goverter:ignore Password
@@ -47,8 +43,5 @@ type ParticipantConverter interface {
 	// goverter:autoMap Participant
 	// goverter:map Participant Timestamp
 	// goverter:map . RelatedUser
-	// goverter:map Fullname Profile
-	// goverter:ignore DenyList
-	// goverter:ignore Wishlist
 	MapParticipantRow(p dbgen.ListParticipantsBySecretFriendRow) entities.Participant
 }
