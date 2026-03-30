@@ -124,19 +124,19 @@ func (mr *MockRepositoryMockRecorder) GetParticipant(sfID, userID any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParticipant", reflect.TypeOf((*MockRepository)(nil).GetParticipant), sfID, userID)
 }
 
-// ListParticipants mocks base method.
-func (m *MockRepository) ListParticipants(sfID entities.HexID) ([]entities.Participant, error) {
+// ListParticipantSummaries mocks base method.
+func (m *MockRepository) ListParticipantSummaries(sfID entities.HexID) ([]Summary, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListParticipants", sfID)
-	ret0, _ := ret[0].([]entities.Participant)
+	ret := m.ctrl.Call(m, "ListParticipantSummaries", sfID)
+	ret0, _ := ret[0].([]Summary)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListParticipants indicates an expected call of ListParticipants.
-func (mr *MockRepositoryMockRecorder) ListParticipants(sfID any) *gomock.Call {
+// ListParticipantSummaries indicates an expected call of ListParticipantSummaries.
+func (mr *MockRepositoryMockRecorder) ListParticipantSummaries(sfID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListParticipants", reflect.TypeOf((*MockRepository)(nil).ListParticipants), sfID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListParticipantSummaries", reflect.TypeOf((*MockRepository)(nil).ListParticipantSummaries), sfID)
 }
 
 // RemoveParticipant mocks base method.

@@ -112,8 +112,8 @@ func TestParticipantUseCase(t *testing.T) {
 						Return(entities.Participant{}, errors.New("missing"))
 					sf.EXPECT().CheckUserIsOwner(sfID).Return(true, nil)
 					repo.EXPECT().
-						ListParticipants(sfID).
-						Return([]entities.Participant{participantEntity}, nil)
+						ListParticipantSummaries(sfID).
+						Return([]Summary{{Participant: entities.Participant{ID: participantID}}}, nil)
 				},
 			},
 		}
@@ -124,13 +124,13 @@ func TestParticipantUseCase(t *testing.T) {
 				sf := NewMockSecretFriendFacade(ctrl)
 				tt.setup(repo, sf)
 				uc := New(associatedUser, repo, sf)
-				_, err := uc.ListParticipants(sfID)
+				_, err := uc.ListSummaries(sfID)
 				if tt.wantErr != nil {
 					requireAppErrorCode(t, err, "participant_list_forbidden")
 					return
 				}
 				if err != nil {
-					t.Fatalf("ListParticipants() error = %v, want nil", err)
+					t.Fatalf("ListSummaries() error = %v, want nil", err)
 				}
 			})
 		}

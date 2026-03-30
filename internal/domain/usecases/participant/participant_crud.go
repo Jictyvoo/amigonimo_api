@@ -28,7 +28,7 @@ func (uc *UseCase) ConfirmParticipation(sfID entities.HexID) (entities.Participa
 	return participant, nil
 }
 
-func (uc *UseCase) ListParticipants(sfID entities.HexID) ([]entities.Participant, error) {
+func (uc *UseCase) ListSummaries(sfID entities.HexID) ([]Summary, error) {
 	_, err := uc.repo.GetParticipant(sfID, uc.associatedUser.ID)
 	if err != nil {
 		isOwner, ownerErr := uc.secretFriendFacade.CheckUserIsOwner(sfID)
@@ -44,7 +44,7 @@ func (uc *UseCase) ListParticipants(sfID entities.HexID) ([]entities.Participant
 		}
 	}
 
-	participants, err := uc.repo.ListParticipants(sfID)
+	summaries, err := uc.repo.ListParticipantSummaries(sfID)
 	if err != nil {
 		return nil, apperr.From(
 			"participant_list_failed",
@@ -53,7 +53,7 @@ func (uc *UseCase) ListParticipants(sfID entities.HexID) ([]entities.Participant
 		)
 	}
 
-	return participants, nil
+	return summaries, nil
 }
 
 func (uc *UseCase) MarkAsReady(sfID entities.HexID) error {
