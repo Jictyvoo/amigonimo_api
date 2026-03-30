@@ -105,34 +105,6 @@ func TestLoginWrongPassword(t *testing.T) {
 	}
 }
 
-func TestSignupDuplicateEmail(t *testing.T) {
-	engine := NewEngine(t)
-
-	existing := fixturesets.NewUser("duplicate@example.com", "password-xyz", "")
-	if err := engine.Seed(existing.User, existing.Profile); err != nil {
-		t.Fatalf("seedErr: %v", err)
-	}
-
-	mr := atores.MultiRunner{
-		Runners: []atores.Runner{
-			authrunner.FailedSignUp(
-				engine.BaseURL(),
-				controllers.FormUser{
-					Email:    existing.User.Email,
-					Username: "other-username",
-					Password: "another-password",
-				},
-				http.StatusPreconditionFailed,
-				"user already with provided email/username already exists",
-			),
-		},
-	}
-
-	if err := engine.Execute(t, mr); err != nil {
-		t.Fatalf("MultiRunner failed: %v", err)
-	}
-}
-
 func TestRecoveryCodeExpired(t *testing.T) {
 	engine := NewEngine(t)
 	const password = "expired-recovery-pass"

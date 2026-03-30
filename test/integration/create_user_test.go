@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"net/http"
 	"testing"
 
 	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores"
@@ -46,5 +47,56 @@ func TestCreateUserSimple(t *testing.T) {
 
 	if err := engine.Execute(t, mr); err != nil {
 		t.Fatalf("Unexpected error: %s", err)
+	}
+}
+
+func TestSignupDuplicateEmail(t *testing.T) {
+	engine := NewEngine(t)
+
+	existing := fixturesets.NewUser("duplicate@example.com", "password-xyz", "")
+	if err := engine.Seed(existing.User, existing.Profile); err != nil {
+		t.Fatalf("seedErr: %v", err)
+	}
+
+	mr := atores.MultiRunner{
+		Runners: []atores.Runner{
+			authrunner.FailedSignUp(
+				engine.BaseURL(),
+				controllers.FormUser{
+					Email:    existing.User.Email,
+					Username: "other-username",
+					Password: "another-password",
+				},
+				http.StatusPreconditionFailed,
+				"user already with provided email/username already exists",
+			),
+		},
+	}
+
+	if err := engine.Execute(t, mr); err != nil {
+		t.Fatalf("MultiRunner failed: %v", err)
+	}
+}
+
+func TestSignupEmptyPassword(t *testing.T) {
+	engine := NewEngine(t)
+
+	mr := atores.MultiRunner{
+		Runners: []atores.Runner{
+			authrunner.FailedSignUp(
+				engine.BaseURL(),
+				controllers.FormUser{
+					Email:    "empty-pass@example.com",
+					Username: "emptypassuser",
+					Password: "",
+				},
+				http.StatusBadRequest,
+				"",
+			),
+		},
+	}
+
+	if err := engine.Execute(t, mr); err != nil {
+		t.Fatalf("MultiRunner failed: %v", err)
 	}
 }
