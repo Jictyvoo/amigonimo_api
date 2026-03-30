@@ -73,7 +73,7 @@ func (h *ParticipantsHandlers) ListParticipants(
 		resp[i] = ParticipantResponse{
 			ParticipantID: p.ID.String(),
 			UserID:        p.RelatedUser.ID.String(),
-			Fullname:      p.RelatedUser.FullName,
+			Fullname:      p.Profile.FullName,
 		}
 	}
 

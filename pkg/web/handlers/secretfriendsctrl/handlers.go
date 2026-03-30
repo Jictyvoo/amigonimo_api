@@ -197,8 +197,8 @@ func (ctrl *Controller) GetDrawResult(
 		return nil, ctrl.HandleError(err)
 	}
 
-	wishlist := make([]WishlistItem, len(result.Receiver.Wishlist.Items))
-	for i, item := range result.Receiver.Wishlist.Items {
+	wishlist := make([]WishlistItem, len(result.Receiver.Wishlist))
+	for i, item := range result.Receiver.Wishlist {
 		wishlist[i] = WishlistItem{
 			ItemID:   item.ID.String(),
 			Label:    item.Label,
@@ -208,7 +208,7 @@ func (ctrl *Controller) GetDrawResult(
 
 	return &DrawResultResponse{
 		TargetUserID: result.Receiver.RelatedUser.ID.String(),
-		TargetName:   result.Receiver.RelatedUser.FullName,
+		TargetName:   result.Receiver.Profile.FullName,
 		Wishlist:     wishlist,
 	}, nil
 }
