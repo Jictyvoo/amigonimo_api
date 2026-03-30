@@ -7,47 +7,24 @@ import (
 	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores"
 	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores/netoche"
 
-	"github.com/jictyvoo/amigonimo_api/internal/entities"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/wishlistctrl"
-	"github.com/jictyvoo/amigonimo_api/test/integration/stdrunners"
-	"github.com/jictyvoo/amigonimo_api/test/internal/fixtures"
+	authrunner "github.com/jictyvoo/amigonimo_api/test/integration/runners/auth"
+	wishlistrunner "github.com/jictyvoo/amigonimo_api/test/integration/runners/wishlist"
+	"github.com/jictyvoo/amigonimo_api/test/internal/fixturesets"
 )
 
 func TestWishlistFlowSeeded(t *testing.T) {
 	engine := NewEngine(t)
 	const userPassword = "wishlist-flow-password"
 
-	ownerBuilder := fixtures.NewUser().
-		WithEmail("wishlist-owner@example.com").
-		WithPassword(userPassword)
-	owner := ownerBuilder.Build()
-	ownerProfile := ownerBuilder.BuildProfile()
-	participantBuilder := fixtures.NewUser().
-		WithEmail("wishlist-participant@example.com").
-		WithPassword(userPassword)
-	participant := participantBuilder.Build()
-	participantProfile := participantBuilder.BuildProfile()
-	secretFriend := fixtures.NewSecretFriend().
-		WithOwner(owner).
-		WithName("Wishlist Flow Event").
-		Build()
-	participantEntry := fixtures.NewParticipant().
-		WithUser(participant).
-		WithSecretFriend(secretFriend).
-		Build()
+	owner := fixturesets.NewUser("wishlist-owner@example.com", userPassword, "")
+	participant := fixturesets.NewUser("wishlist-participant@example.com", userPassword, "")
+	eventSet := fixturesets.NewOwnerParticipant(owner, participant, "Wishlist Flow Event")
 
-	if err := engine.Seed(
-		owner,
-		ownerProfile,
-		participant,
-		participantProfile,
-		secretFriend,
-		participantEntry,
-	); err != nil {
+	if err := engine.Seed(eventSet.Seedables()...); err != nil {
 		t.Fatalf("seedErr: %v", err)
 	}
 
-	secretFriendID, _ := entities.NewHexIDFromBytes(secretFriend.ID)
 	createReq := wishlistctrl.WishlistItemRequest{
 		Label:    "Board game gift card",
 		Comments: "No socks, please.",
@@ -55,70 +32,80 @@ func TestWishlistFlowSeeded(t *testing.T) {
 
 	mr := atores.MultiRunner{
 		Runners: []atores.Runner{
-			stdrunners.LoginRunner(engine.BaseURL(), participant.Email, userPassword),
-			netoche.New(
+			authrunner.Login(engine.BaseURL(), participant.User.Email, userPassword),
+			wishlistrunner.CreateItem(
 				engine.BaseURL(),
-				netoche.WithRequest(http.MethodPost, "/secret-friends/{id}/wishlist/", createReq),
-				netoche.WithPathParam("id", secretFriendID),
-				stdrunners.WithAuthHeaderFromLogin(),
+				eventSet.SecretFriendID(),
+				createReq,
 				netoche.ExpectStatus(http.StatusOK),
-				netoche.ExpectBody(
+				wishlistrunner.ExpectCreatedItem(
 					wishlistctrl.WishlistItemResponse{
 						Label:    createReq.Label,
 						Comments: createReq.Comments,
 					},
-					func(expected, actual *wishlistctrl.WishlistItemResponse) error {
-						expected.ItemID = actual.ItemID
-						expected.AddedAt = actual.AddedAt
-						return nil
-					},
 				),
 			),
-			netoche.New(
+			wishlistrunner.ListItems(
 				engine.BaseURL(),
-				netoche.WithRequest(http.MethodGet, "/secret-friends/{id}/wishlist/", struct{}{}),
-				netoche.WithPathParam("id", secretFriendID),
-				stdrunners.WithAuthHeaderFromLogin(),
+				eventSet.SecretFriendID(),
 				netoche.ExpectStatus(http.StatusOK),
-				netoche.ExpectBody(
+				wishlistrunner.ExpectItems(
 					[]wishlistctrl.WishlistItemResponse{
 						{
 							Label:    createReq.Label,
 							Comments: createReq.Comments,
 						},
 					},
-					func(expected, actual *[]wishlistctrl.WishlistItemResponse) error {
-						limit := min(len(*actual), len(*expected))
-						for index := 0; index < limit; index++ {
-							(*expected)[index].ItemID = (*actual)[index].ItemID
-							(*expected)[index].AddedAt = (*actual)[index].AddedAt
-						}
-						return nil
-					},
 				),
 			),
-			netoche.New(
+			wishlistrunner.DeleteItem(
 				engine.BaseURL(),
-				netoche.WithRequest(
-					http.MethodDelete, "/secret-friends/{id}/wishlist/{itemId}", struct{}{},
-				),
-				netoche.WithPathParam("id", secretFriendID),
+				eventSet.SecretFriendID(),
 				netoche.WithPathParamFromCtx(
 					"itemId",
 					func(item wishlistctrl.WishlistItemResponse) string { return item.ItemID },
 				),
-				stdrunners.WithAuthHeaderFromLogin(),
 				netoche.ExpectStatus(http.StatusOK),
 			),
-			netoche.New(
+			wishlistrunner.ListItems(
 				engine.BaseURL(),
-				netoche.WithRequest(http.MethodGet, "/secret-friends/{id}/wishlist/", struct{}{}),
-				netoche.WithPathParam("id", secretFriendID),
-				stdrunners.WithAuthHeaderFromLogin(),
+				eventSet.SecretFriendID(),
 				netoche.ExpectStatus(http.StatusOK),
-				netoche.ExpectBody(
-					[]wishlistctrl.WishlistItemResponse{},
-				),
+				wishlistrunner.ExpectItems([]wishlistctrl.WishlistItemResponse{}),
+			),
+		},
+	}
+
+	if err := engine.Execute(t, mr); err != nil {
+		t.Fatalf("MultiRunner failed: %v", err)
+	}
+}
+
+// TestWishlistNonParticipantForbidden verifies that a user who is not a participant
+// of the event cannot add items to the wishlist.
+func TestWishlistNonParticipantForbidden(t *testing.T) {
+	engine := NewEngine(t)
+	const userPassword = "wishlist-forbidden-password"
+
+	owner := fixturesets.NewUser("wishlist-forbidden-owner@example.com", userPassword, "")
+	member := fixturesets.NewUser("wishlist-forbidden-member@example.com", userPassword, "")
+	outsider := fixturesets.NewUser("wishlist-forbidden-outsider@example.com", userPassword, "")
+	eventSet := fixturesets.NewOwnerParticipant(owner, member, "Forbidden Wishlist Event")
+
+	if err := engine.Seed(
+		append(eventSet.Seedables(), outsider.User, outsider.Profile)...,
+	); err != nil {
+		t.Fatalf("seedErr: %v", err)
+	}
+
+	mr := atores.MultiRunner{
+		Runners: []atores.Runner{
+			authrunner.Login(engine.BaseURL(), outsider.User.Email, userPassword),
+			wishlistrunner.CreateItem(
+				engine.BaseURL(),
+				eventSet.SecretFriendID(),
+				wishlistctrl.WishlistItemRequest{Label: "Sneaky item"},
+				netoche.ExpectStatus(http.StatusForbidden),
 			),
 		},
 	}
