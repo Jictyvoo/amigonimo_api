@@ -1,27 +1,22 @@
 package integration
 
 import (
-	"net/http"
 	"testing"
 
 	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores"
 	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores/bancoche"
-	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores/netoche"
 
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/authctrl/controllers"
-	"github.com/jictyvoo/amigonimo_api/test/integration/stdrunners"
-	"github.com/jictyvoo/amigonimo_api/test/internal/fixtures"
+	authrunner "github.com/jictyvoo/amigonimo_api/test/integration/runners/auth"
+	"github.com/jictyvoo/amigonimo_api/test/internal/fixturesets"
 )
 
 func TestCreateUserSimple(t *testing.T) {
 	engine := NewEngine(t)
 
-	actorBuilder := fixtures.NewUser().
-		WithEmail("actor@example.com")
-	actor := actorBuilder.Build()
-	actorProfile := actorBuilder.BuildProfile()
-	if seedErr := engine.Seed(actor, actorProfile); seedErr != nil {
-		t.Fatalf("seedErr: %v", seedErr.Error())
+	actor := fixturesets.NewUser("actor@example.com", "password", "")
+	if err := engine.Seed(actor.User, actor.Profile); err != nil {
+		t.Fatalf("seedErr: %v", err)
 	}
 
 	reqBody := controllers.FormUser{
@@ -32,17 +27,7 @@ func TestCreateUserSimple(t *testing.T) {
 
 	mr := atores.MultiRunner{
 		Runners: []atores.Runner{
-			netoche.New(
-				engine.BaseURL(),
-				netoche.WithRequest(http.MethodPost, "/auth/sign", reqBody),
-				netoche.ExpectStatus(http.StatusCreated),
-				netoche.ExpectBody(
-					controllers.SuccessResponse{
-						Success: true,
-						Message: "User created successfully",
-					},
-				),
-			),
+			authrunner.SignUp(engine.BaseURL(), reqBody),
 			bancoche.New(
 				engine.DB(),
 				bancoche.WithMapQuery(
@@ -52,12 +37,10 @@ func TestCreateUserSimple(t *testing.T) {
 			),
 			bancoche.New(
 				engine.DB(),
-				bancoche.WithMapQuery(
-					"user_profiles", map[string]any{},
-				),
+				bancoche.WithMapQuery("user_profiles", map[string]any{}),
 				bancoche.ExpectCount(2, true),
 			),
-			stdrunners.LoginRunner(engine.BaseURL(), reqBody.Email, reqBody.Password),
+			authrunner.Login(engine.BaseURL(), reqBody.Email, reqBody.Password),
 		},
 	}
 

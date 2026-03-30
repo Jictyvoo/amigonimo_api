@@ -1,7 +1,6 @@
 package integration
 
 import (
-	"database/sql"
 	"net/http"
 	"testing"
 	"time"
@@ -10,8 +9,8 @@ import (
 	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores/netoche"
 
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/authctrl/controllers"
-	"github.com/jictyvoo/amigonimo_api/test/integration/stdrunners"
-	"github.com/jictyvoo/amigonimo_api/test/internal/fixtures"
+	authrunner "github.com/jictyvoo/amigonimo_api/test/integration/runners/auth"
+	"github.com/jictyvoo/amigonimo_api/test/internal/fixturesets"
 )
 
 func TestAuthRecoveryRoutes(t *testing.T) {
@@ -23,61 +22,31 @@ func TestAuthRecoveryRoutes(t *testing.T) {
 		recoveryCode = "recover-123"
 	)
 
-	userBuilder := fixtures.NewUser().
-		WithEmail("recovery-user@example.com").
-		WithPassword(oldPassword)
-	user := userBuilder.Build()
-	user.RecoveryCode = sql.NullString{String: recoveryCode, Valid: true}
-	user.RecoveryCodeExpiresAt = sql.NullTime{
-		Time:  time.Now().Add(2 * time.Hour),
-		Valid: true,
-	}
-	userProfile := userBuilder.BuildProfile()
+	user := fixturesets.NewUser("recovery-user@example.com", oldPassword, "").
+		WithRecoveryCode(recoveryCode, time.Now().Add(2*time.Hour))
 
-	if err := engine.Seed(user, userProfile); err != nil {
+	if err := engine.Seed(user.User, user.Profile); err != nil {
 		t.Fatalf("seedErr: %v", err)
 	}
 
 	mr := atores.MultiRunner{
 		Runners: []atores.Runner{
-			netoche.New(
+			authrunner.CheckRecoveryCode(
 				engine.BaseURL(),
-				netoche.WithRequest(
-					http.MethodPatch,
-					"/auth/password/check-recovery",
-					controllers.FormRecoveryCode{
-						Email:        user.Email,
-						RecoveryCode: recoveryCode,
-					},
-				),
-				netoche.ExpectStatus(http.StatusOK),
-				netoche.ExpectBody(
-					controllers.SuccessResponse{
-						Success: true,
-						Message: "sent recovery-code is valid",
-					},
-				),
+				controllers.FormRecoveryCode{
+					Email:        user.User.Email,
+					RecoveryCode: recoveryCode,
+				},
 			),
-			netoche.New(
+			authrunner.ResetPassword(
 				engine.BaseURL(),
-				netoche.WithRequest(
-					http.MethodPut,
-					"/auth/password/reset",
-					controllers.FormResetPassword{
-						Email:        user.Email,
-						RecoveryCode: recoveryCode,
-						NewPassword:  newPassword,
-					},
-				),
-				netoche.ExpectStatus(http.StatusCreated),
-				netoche.ExpectBody(
-					controllers.SuccessResponse{
-						Success: true,
-						Message: "password changed",
-					},
-				),
+				controllers.FormResetPassword{
+					Email:        user.User.Email,
+					RecoveryCode: recoveryCode,
+					NewPassword:  newPassword,
+				},
 			),
-			stdrunners.LoginRunner(engine.BaseURL(), user.Email, newPassword),
+			authrunner.Login(engine.BaseURL(), user.User.Email, newPassword),
 		},
 	}
 
@@ -90,24 +59,101 @@ func TestRegenerateRouteRejectsBearerJWT(t *testing.T) {
 	engine := NewEngine(t)
 	const userPassword = "regenerate-password"
 
-	userBuilder := fixtures.NewUser().
-		WithEmail("regenerate-user@example.com").
-		WithPassword(userPassword)
-	user := userBuilder.Build()
-	userProfile := userBuilder.BuildProfile()
-
-	if err := engine.Seed(user, userProfile); err != nil {
+	user := fixturesets.NewUser("regenerate-user@example.com", userPassword, "")
+	if err := engine.Seed(user.User, user.Profile); err != nil {
 		t.Fatalf("seedErr: %v", err)
 	}
 
 	mr := atores.MultiRunner{
 		Runners: []atores.Runner{
-			stdrunners.LoginRunner(engine.BaseURL(), user.Email, userPassword),
-			netoche.New(
+			authrunner.Login(engine.BaseURL(), user.User.Email, userPassword),
+			authrunner.RegenerateToken(
 				engine.BaseURL(),
-				netoche.WithRequest(http.MethodPatch, "/auth/regenerate", struct{}{}),
-				stdrunners.WithAuthHeaderFromLogin(),
 				netoche.ExpectStatus(http.StatusPreconditionFailed),
+			),
+		},
+	}
+
+	if err := engine.Execute(t, mr); err != nil {
+		t.Fatalf("MultiRunner failed: %v", err)
+	}
+}
+
+func TestLoginWrongPassword(t *testing.T) {
+	engine := NewEngine(t)
+	const correctPassword = "correct-password-456"
+
+	user := fixturesets.NewUser("wrong-pass-user@example.com", correctPassword, "")
+	if err := engine.Seed(user.User, user.Profile); err != nil {
+		t.Fatalf("seedErr: %v", err)
+	}
+
+	mr := atores.MultiRunner{
+		Runners: []atores.Runner{
+			authrunner.FailedLogin(
+				engine.BaseURL(),
+				user.User.Email,
+				"wrong-password",
+				http.StatusNotAcceptable,
+				"not found user with given email/username and password combination",
+			),
+		},
+	}
+
+	if err := engine.Execute(t, mr); err != nil {
+		t.Fatalf("MultiRunner failed: %v", err)
+	}
+}
+
+func TestSignupDuplicateEmail(t *testing.T) {
+	engine := NewEngine(t)
+
+	existing := fixturesets.NewUser("duplicate@example.com", "password-xyz", "")
+	if err := engine.Seed(existing.User, existing.Profile); err != nil {
+		t.Fatalf("seedErr: %v", err)
+	}
+
+	mr := atores.MultiRunner{
+		Runners: []atores.Runner{
+			authrunner.FailedSignUp(
+				engine.BaseURL(),
+				controllers.FormUser{
+					Email:    existing.User.Email,
+					Username: "other-username",
+					Password: "another-password",
+				},
+				http.StatusPreconditionFailed,
+				"user already with provided email/username already exists",
+			),
+		},
+	}
+
+	if err := engine.Execute(t, mr); err != nil {
+		t.Fatalf("MultiRunner failed: %v", err)
+	}
+}
+
+func TestRecoveryCodeExpired(t *testing.T) {
+	engine := NewEngine(t)
+	const password = "expired-recovery-pass"
+
+	user := fixturesets.NewUser("expired-recovery@example.com", password, "").
+		WithRecoveryCode("expired-code", time.Now().Add(-1*time.Hour)) // already expired
+
+	if err := engine.Seed(user.User, user.Profile); err != nil {
+		t.Fatalf("seedErr: %v", err)
+	}
+
+	mr := atores.MultiRunner{
+		Runners: []atores.Runner{
+			authrunner.FailedCheckRecoveryCode(
+				engine.BaseURL(),
+				controllers.FormRecoveryCode{
+					Email:        user.User.Email,
+					RecoveryCode: "expired-code",
+				},
+				http.StatusPreconditionFailed,
+				"cannot find user with given email and recovery code",
 			),
 		},
 	}
