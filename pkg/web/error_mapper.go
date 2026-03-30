@@ -27,6 +27,10 @@ func MapError(err error) error {
 		return httpErr
 	}
 
+	if httpErr, ok := errors.AsType[fuego.HTTPError](err); ok {
+		return &httpErr
+	}
+
 	if appErr, ok := errors.AsType[apperr.Contract](err); ok {
 		return mapDomainError(appErr)
 	}

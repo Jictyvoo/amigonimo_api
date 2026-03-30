@@ -40,7 +40,7 @@ type FormRecoveryCode struct {
 type FormUser struct {
 	Username string `json:"username"`
 	Email    string `json:"email"    validate:"required,email"`
-	Password string `json:"password"`
+	Password string `json:"password" validate:"required"`
 }
 
 // FormResetPassword represents the request to reset password.
