@@ -5,13 +5,6 @@ import (
 	"time"
 )
 
-type DeniedUser struct {
-	Timestamp
-
-	ID               HexID
-	InnerParticipant Participant
-}
-
 type Participant struct {
 	Timestamp
 
@@ -19,10 +12,7 @@ type Participant struct {
 	RelatedUser    User
 	SecretFriendID HexID
 	JoinedAt       time.Time
-	DenyList       []DeniedUser
-	Wishlist       []WishlistItem
 	IsReady        bool
-	Profile        UserProfile
 }
 
 func NewParticipant(secretFriendID HexID, relatedUser User) Participant {

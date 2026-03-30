@@ -13,18 +13,6 @@ const (
 	StatusClosed SecretFriendStatus = "closed"
 )
 
-type (
-	DrawResultItem struct {
-		Timestamp
-
-		Giver    Participant
-		Receiver Participant
-	}
-	DrawResult struct {
-		GiverReceivers []DrawResultItem
-	}
-)
-
 type SecretFriend struct {
 	Timestamp
 
@@ -37,7 +25,6 @@ type SecretFriend struct {
 	MaxDenyListSize uint8
 	Status          SecretFriendStatus
 	Participants    []Participant
-	DrawResult      *DrawResult
 }
 
 func (sf *SecretFriend) Normalize() {
