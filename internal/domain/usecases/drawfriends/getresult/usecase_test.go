@@ -6,23 +6,25 @@ import (
 
 	"go.uber.org/mock/gomock"
 
+	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/drawfriends/drawdto"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
 func TestUseCaseExecute(t *testing.T) {
 	sfID := mustHexID(t)
 	userID := mustHexID(t)
+	giverParticipantID := mustHexID(t)
 
-	expected := entities.DrawResultItem{
-		Giver: entities.Participant{RelatedUser: entities.User{ID: userID}},
+	expected := drawdto.DrawResultItem{
+		GiverParticipantID: giverParticipantID,
 	}
 
 	tests := []struct {
 		name     string
-		repoItem entities.DrawResultItem
+		repoItem drawdto.DrawResultItem
 		repoErr  error
 		wantErr  bool
-		check    func(t *testing.T, got entities.DrawResultItem)
+		check    func(t *testing.T, got drawdto.DrawResultItem)
 	}{
 		{
 			name:    "maps repository errors",
@@ -32,13 +34,13 @@ func TestUseCaseExecute(t *testing.T) {
 		{
 			name:     "returns repository value",
 			repoItem: expected,
-			check: func(t *testing.T, got entities.DrawResultItem) {
+			check: func(t *testing.T, got drawdto.DrawResultItem) {
 				t.Helper()
-				if got.Giver.RelatedUser.ID != expected.Giver.RelatedUser.ID {
+				if got.GiverParticipantID != expected.GiverParticipantID {
 					t.Fatalf(
-						"got giver user = %s, want %s",
-						got.Giver.RelatedUser.ID,
-						expected.Giver.RelatedUser.ID,
+						"got giver participant id = %s, want %s",
+						got.GiverParticipantID,
+						expected.GiverParticipantID,
 					)
 				}
 			},

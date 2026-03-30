@@ -2,6 +2,7 @@ package getresult
 
 import (
 	"github.com/jictyvoo/amigonimo_api/internal/domain/apperr"
+	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/drawfriends/drawdto"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
@@ -9,7 +10,7 @@ type Input struct {
 	SecretFriendID entities.HexID
 }
 
-type Output = entities.DrawResultItem
+type Output = drawdto.DrawResultItem
 
 type UseCase struct {
 	repo           Repository

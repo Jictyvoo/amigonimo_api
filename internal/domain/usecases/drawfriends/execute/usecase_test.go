@@ -7,6 +7,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/interop/ports"
+	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/drawfriends/drawdto"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
@@ -89,7 +90,7 @@ func TestUseCaseExecute(t *testing.T) {
 				repo.EXPECT().
 					SaveDrawResults(sfID, gomock.Any()).
 					DoAndReturn(
-						func(_ entities.HexID, pairs []entities.DrawResultItem) error {
+						func(_ entities.HexID, pairs []drawdto.DrawResultItem) error {
 							if len(pairs) != 3 {
 								t.Fatalf("SaveDrawResults() pairs = %d, want 3", len(pairs))
 							}

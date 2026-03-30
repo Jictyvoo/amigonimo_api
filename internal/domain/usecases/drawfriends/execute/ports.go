@@ -2,6 +2,7 @@ package execute
 
 import (
 	"github.com/jictyvoo/amigonimo_api/internal/domain/interop/ports"
+	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/drawfriends/drawdto"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 	"github.com/jictyvoo/amigonimo_api/pkg/dbrock"
 )
@@ -11,7 +12,7 @@ import (
 type Repository interface {
 	dbrock.Transactioner
 
-	SaveDrawResults(secretFriendID entities.HexID, results []entities.DrawResultItem) error
+	SaveDrawResults(secretFriendID entities.HexID, results []drawdto.DrawResultItem) error
 }
 
 type secretFriendFacadePort interface {

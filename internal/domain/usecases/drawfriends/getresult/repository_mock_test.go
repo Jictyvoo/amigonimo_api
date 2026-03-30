@@ -12,6 +12,7 @@ package getresult
 import (
 	reflect "reflect"
 
+	drawdto "github.com/jictyvoo/amigonimo_api/internal/domain/usecases/drawfriends/drawdto"
 	entities "github.com/jictyvoo/amigonimo_api/internal/entities"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -41,10 +42,10 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 }
 
 // GetDrawResultForUser mocks base method.
-func (m *MockRepository) GetDrawResultForUser(secretFriendID, userID entities.HexID) (entities.DrawResultItem, error) {
+func (m *MockRepository) GetDrawResultForUser(secretFriendID, userID entities.HexID) (drawdto.DrawResultItem, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetDrawResultForUser", secretFriendID, userID)
-	ret0, _ := ret[0].(entities.DrawResultItem)
+	ret0, _ := ret[0].(drawdto.DrawResultItem)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
