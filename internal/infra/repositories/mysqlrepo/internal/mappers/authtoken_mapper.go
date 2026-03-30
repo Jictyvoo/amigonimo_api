@@ -25,7 +25,6 @@ type AuthTokenConverter interface {
 	convertBasicAuthToken(source dbgen.AuthToken) entities.BasicAuthToken
 
 	// goverter:map UserID ID
-	// goverter:ignore FullName
 	// goverter:ignore VerifiedAt
 	// goverter:ignore RememberToken
 	// goverter:ignore UserBasic

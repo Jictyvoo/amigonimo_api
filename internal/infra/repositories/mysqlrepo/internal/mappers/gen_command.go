@@ -57,3 +57,7 @@ func UUIDFromNullString(ns sql.NullString) uuid.NullUUID {
 func CopyTime(from time.Time) time.Time {
 	return from
 }
+
+func UserProfileFromFullName(fullname string) entities.UserProfile {
+	return entities.UserProfile{FullName: fullname}
+}

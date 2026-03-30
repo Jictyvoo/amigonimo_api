@@ -14,12 +14,12 @@ import (
 // goverter:extend TimeFromNullTime
 // goverter:extend CopyTime
 // goverter:extend StringFromNullString
+// goverter:extend UserProfileFromFullName
 type ParticipantConverter interface {
 	dbParticipantTimestampToEntity(p dbgen.Participant) entities.Timestamp
 
 	// goverter:map UserID ID | HexIDFromBytes
 	// goverter:ignore UserBasic
-	// goverter:ignore FullName
 	// goverter:ignore VerifiedAt
 	// goverter:ignore RememberToken
 	dbParticipantToRelatedUser(p dbgen.Participant) entities.User
@@ -28,6 +28,7 @@ type ParticipantConverter interface {
 	// goverter:map . RelatedUser
 	// goverter:ignore DenyList
 	// goverter:ignore Wishlist
+	// goverter:ignore Profile
 	ToEntityParticipant(p dbgen.Participant) entities.Participant
 
 	// goverter:ignore Password
@@ -35,7 +36,6 @@ type ParticipantConverter interface {
 		p dbgen.ListParticipantsBySecretFriendRow,
 	) entities.UserBasic
 
-	// goverter:map Fullname FullName
 	// goverter:map UserID ID
 	// goverter:map . UserBasic
 	// goverter:ignore VerifiedAt
@@ -47,6 +47,7 @@ type ParticipantConverter interface {
 	// goverter:autoMap Participant
 	// goverter:map Participant Timestamp
 	// goverter:map . RelatedUser
+	// goverter:map Fullname Profile
 	// goverter:ignore DenyList
 	// goverter:ignore Wishlist
 	MapParticipantRow(p dbgen.ListParticipantsBySecretFriendRow) entities.Participant

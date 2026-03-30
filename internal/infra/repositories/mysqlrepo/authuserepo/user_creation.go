@@ -50,7 +50,7 @@ func (r RepoMySQL) CreateUser(user entities.User, token string) error {
 		dbgen.CreateUserProfileParams{
 			ID:        profileID[:],
 			UserID:    user.ID[:],
-			Fullname:  sql.NullString{String: user.FullName, Valid: user.FullName != ""},
+			Fullname:  sql.NullString{},
 			Nickname:  sql.NullString{},
 			ImageLink: sql.NullString{},
 			Birthday:  sql.NullTime{},

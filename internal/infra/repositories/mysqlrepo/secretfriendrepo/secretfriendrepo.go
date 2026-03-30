@@ -158,11 +158,13 @@ func (r *RepoMySQL) GetDrawResultForUser(
 		Receiver: entities.Participant{
 			ID: mappers.HexIDFromBytes(row.ReceiverParticipantID),
 			RelatedUser: entities.User{
-				ID:       mappers.HexIDFromBytes(row.ReceiverUserID),
-				FullName: row.ReceiverFullname,
+				ID: mappers.HexIDFromBytes(row.ReceiverUserID),
 				UserBasic: entities.UserBasic{
 					Email: row.ReceiverEmail,
 				},
+			},
+			Profile: entities.UserProfile{
+				FullName: row.ReceiverFullname,
 			},
 		},
 	}, nil

@@ -5,6 +5,7 @@ package mappers
 
 import (
 	entities "github.com/jictyvoo/amigonimo_api/internal/entities"
+	authvalues "github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 	dbgen "github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/internal/dbgen"
 )
 
@@ -15,12 +16,12 @@ func ToEntityAuthenticationToken(source dbgen.AuthToken) entities.Authentication
 	entitiesAuthenticationToken.User = convertTokenUserToEntityUser(source)
 	return entitiesAuthenticationToken
 }
-func convertBasicAuthToken(source dbgen.AuthToken) entities.BasicAuthToken {
-	var entitiesBasicAuthToken entities.BasicAuthToken
-	entitiesBasicAuthToken.AuthToken = source.Token
-	entitiesBasicAuthToken.ExpiresAt = TimeFromNullTime(source.ExpiresAt)
-	entitiesBasicAuthToken.RefreshToken = UUIDFromNullString(source.RefreshToken)
-	return entitiesBasicAuthToken
+func convertBasicAuthToken(source dbgen.AuthToken) authvalues.BasicAuthToken {
+	var authvaluesBasicAuthToken authvalues.BasicAuthToken
+	authvaluesBasicAuthToken.AuthToken = source.Token
+	authvaluesBasicAuthToken.ExpiresAt = TimeFromNullTime(source.ExpiresAt)
+	authvaluesBasicAuthToken.RefreshToken = UUIDFromNullString(source.RefreshToken)
+	return authvaluesBasicAuthToken
 }
 func convertTokenUserToEntityUser(source dbgen.AuthToken) entities.User {
 	var entitiesUser entities.User

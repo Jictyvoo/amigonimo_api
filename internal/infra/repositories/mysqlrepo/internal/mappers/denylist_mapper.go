@@ -12,11 +12,11 @@ import (
 // goverter:output:format function
 // goverter:extend HexIDFromBytes
 // goverter:extend CopyTime
+// goverter:extend UserProfileFromFullName
 type DenylistConverter interface {
 	// goverter:ignore Password
 	dbDenyRowToBasicDeniedUserData(row dbgen.GetDenyListByParticipantRow) entities.UserBasic
 
-	// goverter:map Fullname FullName
 	// goverter:map . UserBasic
 	// goverter:map Denylist.DeniedUserID ID
 	// goverter:ignore VerifiedAt
@@ -26,6 +26,7 @@ type DenylistConverter interface {
 	// goverter:map Denylist.ParticipantID ID
 	// goverter:map Denylist.CreatedAt JoinedAt
 	// goverter:map . RelatedUser
+	// goverter:map Fullname Profile
 	// goverter:ignore SecretFriendID
 	// goverter:ignore Timestamp
 	// goverter:ignore DenyList

@@ -5,6 +5,7 @@ package mappers
 
 import (
 	entities "github.com/jictyvoo/amigonimo_api/internal/entities"
+	authvalues "github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 	dbgen "github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/internal/dbgen"
 )
 
@@ -15,24 +16,24 @@ func ToEntityDeniedUser(source dbgen.GetDenyListByParticipantRow) entities.Denie
 	entitiesDeniedUser.InnerParticipant = dbDenyRowToDeniedParticipant(source)
 	return entitiesDeniedUser
 }
-func dbDenyRowToBasicDeniedUserData(source dbgen.GetDenyListByParticipantRow) entities.UserBasic {
-	var entitiesUserBasic entities.UserBasic
-	entitiesUserBasic.Username = source.Username
-	entitiesUserBasic.Email = source.Email
-	return entitiesUserBasic
+func dbDenyRowToBasicDeniedUserData(source dbgen.GetDenyListByParticipantRow) authvalues.UserBasic {
+	var authvaluesUserBasic authvalues.UserBasic
+	authvaluesUserBasic.Username = source.Username
+	authvaluesUserBasic.Email = source.Email
+	return authvaluesUserBasic
 }
 func dbDenyRowToDeniedParticipant(source dbgen.GetDenyListByParticipantRow) entities.Participant {
 	var entitiesParticipant entities.Participant
 	entitiesParticipant.ID = HexIDFromBytes(source.Denylist.ParticipantID)
 	entitiesParticipant.RelatedUser = dbDenyRowToDeniedUser(source)
 	entitiesParticipant.JoinedAt = CopyTime(source.Denylist.CreatedAt)
+	entitiesParticipant.Profile = UserProfileFromFullName(source.Fullname)
 	return entitiesParticipant
 }
 func dbDenyRowToDeniedUser(source dbgen.GetDenyListByParticipantRow) entities.User {
 	var entitiesUser entities.User
 	entitiesUser.UserBasic = dbDenyRowToBasicDeniedUserData(source)
 	entitiesUser.ID = HexIDFromBytes(source.Denylist.DeniedUserID)
-	entitiesUser.FullName = source.Fullname
 	return entitiesUser
 }
 func dbgenDenylistToEntitiesTimestamp(source dbgen.Denylist) entities.Timestamp {

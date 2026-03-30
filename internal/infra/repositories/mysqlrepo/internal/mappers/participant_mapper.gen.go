@@ -5,6 +5,7 @@ package mappers
 
 import (
 	entities "github.com/jictyvoo/amigonimo_api/internal/entities"
+	authvalues "github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 	dbgen "github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/internal/dbgen"
 )
 
@@ -16,6 +17,7 @@ func MapParticipantRow(source dbgen.ListParticipantsBySecretFriendRow) entities.
 	entitiesParticipant.SecretFriendID = HexIDFromBytes(source.Participant.SecretFriendID)
 	entitiesParticipant.JoinedAt = TimeFromNullTime(source.Participant.JoinedAt)
 	entitiesParticipant.IsReady = source.Participant.IsReady
+	entitiesParticipant.Profile = UserProfileFromFullName(source.Fullname)
 	return entitiesParticipant
 }
 func ToEntityParticipant(source dbgen.Participant) entities.Participant {
@@ -28,17 +30,16 @@ func ToEntityParticipant(source dbgen.Participant) entities.Participant {
 	entitiesParticipant.IsReady = source.IsReady
 	return entitiesParticipant
 }
-func dbListParticipantsBySecretFriendRowToBasicUser(source dbgen.ListParticipantsBySecretFriendRow) entities.UserBasic {
-	var entitiesUserBasic entities.UserBasic
-	entitiesUserBasic.Username = source.Username
-	entitiesUserBasic.Email = source.Email
-	return entitiesUserBasic
+func dbListParticipantsBySecretFriendRowToBasicUser(source dbgen.ListParticipantsBySecretFriendRow) authvalues.UserBasic {
+	var authvaluesUserBasic authvalues.UserBasic
+	authvaluesUserBasic.Username = source.Username
+	authvaluesUserBasic.Email = source.Email
+	return authvaluesUserBasic
 }
 func dbListParticipantsBySecretFriendRowToRelatedUser(source dbgen.ListParticipantsBySecretFriendRow) entities.User {
 	var entitiesUser entities.User
 	entitiesUser.UserBasic = dbListParticipantsBySecretFriendRowToBasicUser(source)
 	entitiesUser.ID = HexIDFromBytes(source.UserID)
-	entitiesUser.FullName = source.Fullname
 	return entitiesUser
 }
 func dbParticipantTimestampToEntity(source dbgen.Participant) entities.Timestamp {
