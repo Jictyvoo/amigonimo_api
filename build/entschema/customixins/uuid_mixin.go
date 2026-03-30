@@ -15,11 +15,10 @@ type UUIDMixin struct {
 }
 
 func (UUIDMixin) Fields() []ent.Field {
-	// Default expression for MariaDB/MySQL: use UUID_v7() for time-ordered UUIDs (MariaDB 11.7+)
+	// MariaDB's UUID_v7() returns the textual UUID form, so convert it to 16 bytes for BINARY(16).
 	defaultExpr := entsql.DefaultExprs(
 		map[string]string{
-			// dialect.MySQL:    "UUID_TO_BIN(UUID())", // native MySQL function to generate BINARY(16)
-			dialect.MySQL:    "UUID_v7()",         // MariaDB 11.7+ UUIDv7 function for optimal performance
+			dialect.MySQL:    "UNHEX(REPLACE(UUID_v7(), '-', ''))",
 			dialect.Postgres: "gen_random_uuid()", // requires pgcrypto extension
 			dialect.SQLite:   "",                  // handled in Go with uuid.New
 		},

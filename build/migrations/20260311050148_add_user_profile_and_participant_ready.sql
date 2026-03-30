@@ -4,7 +4,7 @@ ALTER TABLE `participants` ADD COLUMN `is_ready` bool NOT NULL DEFAULT 0 AFTER `
 ALTER TABLE `users` DROP COLUMN `fullname`;
 -- Create "user_profiles" table
 CREATE TABLE `user_profiles` (
-  `id` binary(16) NOT NULL DEFAULT (uuid_v7()),
+  `id` binary(16) NOT NULL DEFAULT (unhex(replace(uuid_v7(), '-', ''))),
   `created_at` timestamp NOT NULL DEFAULT (current_timestamp()),
   `updated_at` timestamp NOT NULL DEFAULT (current_timestamp()),
   `fullname` varchar(255) NULL,

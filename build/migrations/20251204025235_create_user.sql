@@ -1,6 +1,6 @@
 -- Create "users" table
 CREATE TABLE `users` (
-  `id` binary(16) NOT NULL DEFAULT (uuid_v7()),
+  `id` binary(16) NOT NULL DEFAULT (unhex(replace(uuid_v7(), '-', ''))),
   `created_at` timestamp NOT NULL DEFAULT (current_timestamp()),
   `updated_at` timestamp NOT NULL DEFAULT (current_timestamp()),
   `fullname` varchar(255) NOT NULL,

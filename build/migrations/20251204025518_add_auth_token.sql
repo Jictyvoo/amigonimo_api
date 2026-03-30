@@ -1,6 +1,6 @@
 -- Create "auth_tokens" table
 CREATE TABLE `auth_tokens` (
-  `id` binary(16) NOT NULL DEFAULT (uuid_v7()),
+  `id` binary(16) NOT NULL DEFAULT (unhex(replace(uuid_v7(), '-', ''))),
   `created_at` timestamp NOT NULL DEFAULT (current_timestamp()),
   `updated_at` timestamp NOT NULL DEFAULT (current_timestamp()),
   `token` varchar(52) NOT NULL,

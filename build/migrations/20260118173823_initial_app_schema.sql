@@ -1,6 +1,6 @@
 -- Create "secret_friends" table
 CREATE TABLE `secret_friends` (
-  `id` binary(16) NOT NULL DEFAULT (uuid_v7()),
+  `id` binary(16) NOT NULL DEFAULT (unhex(replace(uuid_v7(), '-', ''))),
   `created_at` timestamp NOT NULL DEFAULT (current_timestamp()),
   `updated_at` timestamp NOT NULL DEFAULT (current_timestamp()),
   `name` varchar(255) NOT NULL,
@@ -19,7 +19,7 @@ CREATE TABLE `secret_friends` (
 ) CHARSET utf8mb4 COLLATE utf8mb4_bin;
 -- Create "participants" table
 CREATE TABLE `participants` (
-  `id` binary(16) NOT NULL DEFAULT (uuid_v7()),
+  `id` binary(16) NOT NULL DEFAULT (unhex(replace(uuid_v7(), '-', ''))),
   `created_at` timestamp NOT NULL DEFAULT (current_timestamp()),
   `updated_at` timestamp NOT NULL DEFAULT (current_timestamp()),
   `joined_at` timestamp NULL,
@@ -35,7 +35,7 @@ CREATE TABLE `participants` (
 ) CHARSET utf8mb4 COLLATE utf8mb4_bin;
 -- Create "denylists" table
 CREATE TABLE `denylists` (
-  `id` binary(16) NOT NULL DEFAULT (uuid_v7()),
+  `id` binary(16) NOT NULL DEFAULT (unhex(replace(uuid_v7(), '-', ''))),
   `created_at` timestamp NOT NULL DEFAULT (current_timestamp()),
   `updated_at` timestamp NOT NULL DEFAULT (current_timestamp()),
   `participant_id` binary(16) NOT NULL,
@@ -50,7 +50,7 @@ CREATE TABLE `denylists` (
 ) CHARSET utf8mb4 COLLATE utf8mb4_bin;
 -- Create "draw_results" table
 CREATE TABLE `draw_results` (
-  `id` binary(16) NOT NULL DEFAULT (uuid_v7()),
+  `id` binary(16) NOT NULL DEFAULT (unhex(replace(uuid_v7(), '-', ''))),
   `created_at` timestamp NOT NULL DEFAULT (current_timestamp()),
   `updated_at` timestamp NOT NULL DEFAULT (current_timestamp()),
   `giver_participant_id` binary(16) NOT NULL,
@@ -69,7 +69,7 @@ CREATE TABLE `draw_results` (
 ) CHARSET utf8mb4 COLLATE utf8mb4_bin;
 -- Create "wishlist_items" table
 CREATE TABLE `wishlist_items` (
-  `id` binary(16) NOT NULL DEFAULT (uuid_v7()),
+  `id` binary(16) NOT NULL DEFAULT (unhex(replace(uuid_v7(), '-', ''))),
   `created_at` timestamp NOT NULL DEFAULT (current_timestamp()),
   `updated_at` timestamp NOT NULL DEFAULT (current_timestamp()),
   `label` varchar(255) NOT NULL,
