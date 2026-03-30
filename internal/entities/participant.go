@@ -20,27 +20,22 @@ type Participant struct {
 	SecretFriendID HexID
 	JoinedAt       time.Time
 	DenyList       []DeniedUser
-	Wishlist       Wishlist
+	Wishlist       []WishlistItem
 	IsReady        bool
+	Profile        UserProfile
 }
 
 func NewParticipant(secretFriendID HexID, relatedUser User) Participant {
 	return Participant{SecretFriendID: secretFriendID, RelatedUser: relatedUser}
 }
 
-type (
-	WishlistItem struct {
-		Timestamp
+type WishlistItem struct {
+	Timestamp
 
-		ID       HexID
-		Label    string
-		Comments string
-	}
-
-	Wishlist struct {
-		Items []WishlistItem
-	}
-)
+	ID       HexID
+	Label    string
+	Comments string
+}
 
 func (wi *WishlistItem) Normalize() {
 	wi.Comments = strings.TrimSpace(wi.Comments)
