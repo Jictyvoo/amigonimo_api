@@ -75,7 +75,17 @@ func (uc UseCase) AddEntry(sfID, deniedUserID entities.HexID) (entities.DeniedUs
 			err,
 		)
 	}
-	if len(currentList) >= int(sf.MaxDenyListSize) {
+
+	// Hard cap: denylist cannot exceed 50% of participants to guarantee a valid draw.
+	// If MaxDenyListSize is also set, use the more restrictive limit.
+	effectiveMax := int(sf.MaxDenyListSize)
+	if participantCount := len(sf.Participants); participantCount > 1 {
+		half := participantCount / 2
+		if effectiveMax == 0 || effectiveMax > half {
+			effectiveMax = half
+		}
+	}
+	if effectiveMax > 0 && len(currentList) >= effectiveMax {
 		return entities.DeniedUser{}, apperr.Conflict(
 			"denylist_capacity_reached",
 			"denylist capacity reached",
