@@ -6,179 +6,66 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores"
 	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores/netoche"
 
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
-	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/genmodels"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/participantsctrl"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/secretfriendsctrl"
-	"github.com/jictyvoo/amigonimo_api/test/integration/stdrunners"
+	authrunner "github.com/jictyvoo/amigonimo_api/test/integration/runners/auth"
+	participantsrunner "github.com/jictyvoo/amigonimo_api/test/integration/runners/participants"
+	secretfriendsrunner "github.com/jictyvoo/amigonimo_api/test/integration/runners/secretfriends"
 	"github.com/jictyvoo/amigonimo_api/test/internal/fixtures"
+	"github.com/jictyvoo/amigonimo_api/test/internal/fixturesets"
 )
 
 func TestSecretFriendMountedRoutes(t *testing.T) {
 	engine := NewEngine(t)
 	const ownerPassword = "owner-routes-password"
 
-	ownerBuilder := fixtures.NewUser().
-		WithEmail("routes-owner@example.com").
-		WithFullname("Routes Owner").
-		WithPassword(ownerPassword)
-	owner := ownerBuilder.Build()
-	ownerProfile := ownerBuilder.BuildProfile()
+	owner := fixturesets.NewUser("routes-owner@example.com", ownerPassword, "Routes Owner")
+	target := fixturesets.NewUser("routes-target@example.com", ownerPassword, "Target Person")
+	other := fixturesets.NewUser("routes-other@example.com", ownerPassword, "Other Person")
+	routeSet := fixturesets.NewSecretFriendRoutes(owner, target, other)
 
-	targetBuilder := fixtures.NewUser().
-		WithEmail("routes-target@example.com").
-		WithFullname("Target Person").
-		WithPassword(ownerPassword)
-	targetUser := targetBuilder.Build()
-	targetProfile := targetBuilder.BuildProfile()
-
-	otherBuilder := fixtures.NewUser().
-		WithEmail("routes-other@example.com").
-		WithFullname("Other Person").
-		WithPassword(ownerPassword)
-	otherUser := otherBuilder.Build()
-	otherProfile := otherBuilder.BuildProfile()
-
-	openEvent := fixtures.NewSecretFriend().
-		WithOwner(owner).
-		WithName("Open Routes Event").
-		Build()
-	openEvent.InviteCode = "openrt01"
-	openEvent.Location = sql.NullString{String: "Original Place", Valid: true}
-	openEvent.Datetime = sql.NullTime{Time: time.Now().Add(48 * time.Hour), Valid: true}
-
-	drawnEvent := fixtures.NewSecretFriend().
-		WithOwner(owner).
-		WithName("Drawn Routes Event").
-		Build()
-	drawnEvent.InviteCode = "drawrt01"
-	drawnEvent.Location = sql.NullString{String: "Drawn Place", Valid: true}
-	drawnEvent.Datetime = sql.NullTime{Time: time.Now().Add(72 * time.Hour), Valid: true}
-	drawnEvent.Status = string(entities.StatusDrawn)
-
-	openOwnerParticipant := fixtures.NewParticipant().
-		WithUser(owner).
-		WithSecretFriend(openEvent).
-		Build()
-	openTargetParticipant := fixtures.NewParticipant().
-		WithUser(targetUser).
-		WithSecretFriend(openEvent).
-		Build()
-	openOtherParticipant := fixtures.NewParticipant().
-		WithUser(otherUser).
-		WithSecretFriend(openEvent).
-		Build()
-
-	drawnOwnerParticipant := fixtures.NewParticipant().
-		WithUser(owner).
-		WithSecretFriend(drawnEvent).
-		Build()
-	drawnTargetParticipant := fixtures.NewParticipant().
-		WithUser(targetUser).
-		WithSecretFriend(drawnEvent).
-		Build()
-	drawnOtherParticipant := fixtures.NewParticipant().
-		WithUser(otherUser).
-		WithSecretFriend(drawnEvent).
-		Build()
-
-	drawResultID := uuid.Must(uuid.NewV7())
-	drawResult := &genmodels.DrawResult{
-		ID:                    drawResultID[:],
-		CreatedAt:             time.Now(),
-		UpdatedAt:             time.Now(),
-		GiverParticipantID:    drawnOwnerParticipant.ID,
-		ReceiverParticipantID: drawnTargetParticipant.ID,
-		SecretFriendID:        drawnEvent.ID,
-	}
-
-	wishlistID := uuid.Must(uuid.NewV7())
-	wishlistItem := &genmodels.WishlistItem{
-		ID:            wishlistID[:],
-		CreatedAt:     time.Now(),
-		UpdatedAt:     time.Now(),
-		Label:         "Coffee voucher",
-		Comments:      sql.NullString{String: "Medium roast", Valid: true},
-		ParticipantID: drawnTargetParticipant.ID,
-	}
-
-	if err := engine.Seed(
-		owner,
-		ownerProfile,
-		targetUser,
-		targetProfile,
-		otherUser,
-		otherProfile,
-		openEvent,
-		drawnEvent,
-		openOwnerParticipant,
-		openTargetParticipant,
-		openOtherParticipant,
-		drawnOwnerParticipant,
-		drawnTargetParticipant,
-		drawnOtherParticipant,
-		drawResult,
-		wishlistItem,
-	); err != nil {
+	if err := engine.Seed(routeSet.Seedables()...); err != nil {
 		t.Fatalf("seedErr: %v", err)
 	}
 
-	openEventID, _ := entities.NewHexIDFromBytes(openEvent.ID)
-	drawnEventID, _ := entities.NewHexIDFromBytes(drawnEvent.ID)
-	ownerID, _ := entities.NewHexIDFromBytes(owner.ID)
-	openOwnerParticipantID, _ := entities.NewHexIDFromBytes(openOwnerParticipant.ID)
-	openTargetParticipantID, _ := entities.NewHexIDFromBytes(openTargetParticipant.ID)
-	openOtherParticipantID, _ := entities.NewHexIDFromBytes(openOtherParticipant.ID)
-	targetUserID, _ := entities.NewHexIDFromBytes(targetUser.ID)
-	otherUserID, _ := entities.NewHexIDFromBytes(otherUser.ID)
+	openEventID := routeSet.OpenEventID()
+	ownerID := routeSet.Owner.ID()
+	targetUserID := routeSet.Target.ID()
+	otherUserID := routeSet.Other.ID()
 
 	updatedName := "Updated Open Routes Event"
 	updatedLocation := "Updated Place"
 
 	mr := atores.MultiRunner{
 		Runners: []atores.Runner{
-			stdrunners.LoginRunner(engine.BaseURL(), owner.Email, ownerPassword),
-			netoche.New(
+			authrunner.Login(engine.BaseURL(), routeSet.Owner.User.Email, ownerPassword),
+			secretfriendsrunner.InviteInfo(
 				engine.BaseURL(),
-				netoche.WithRequest(http.MethodGet, "/secret-friends/", struct{}{}),
-				stdrunners.WithAuthHeaderFromLogin(),
-				netoche.ExpectStatus(http.StatusInternalServerError),
-			),
-			netoche.New(
-				engine.BaseURL(),
-				netoche.WithRequest(
-					http.MethodGet,
-					"/secret-friends/invites/description/{code}",
-					struct{}{},
-				),
-				stdrunners.WithAuthHeaderFromLogin(),
-				netoche.WithPathParam("code", openEvent.InviteCode),
+				routeSet.OpenEvent.InviteCode,
 				netoche.ExpectStatus(http.StatusOK),
 				netoche.ExpectBody(
 					secretfriendsctrl.InviteInfoResponse{
 						SecretFriendID: openEventID.String(),
-						Name:           openEvent.Name,
+						Name:           routeSet.OpenEvent.Name,
 					},
 				),
 			),
-			netoche.New(
+			secretfriendsrunner.Get(
 				engine.BaseURL(),
-				netoche.WithRequest(http.MethodGet, "/secret-friends/{id}", struct{}{}),
-				stdrunners.WithAuthHeaderFromLogin(),
-				netoche.WithPathParam("id", openEventID),
+				openEventID,
 				netoche.ExpectStatus(http.StatusOK),
 				netoche.ExpectBody(
 					secretfriendsctrl.GetSecretFriendResponse{
 						ID:                openEventID.String(),
-						Name:              openEvent.Name,
-						Location:          openEvent.Location.String,
+						Name:              routeSet.OpenEvent.Name,
+						Location:          routeSet.OpenEvent.Location.String,
 						OwnerID:           ownerID.String(),
 						ParticipantsCount: 3,
-						Status:            openEvent.Status,
+						Status:            routeSet.OpenEvent.Status,
 					},
 					func(expected, actual *secretfriendsctrl.GetSecretFriendResponse) error {
 						expected.Datetime = actual.Datetime
@@ -186,18 +73,13 @@ func TestSecretFriendMountedRoutes(t *testing.T) {
 					},
 				),
 			),
-			netoche.New(
+			secretfriendsrunner.Update(
 				engine.BaseURL(),
-				netoche.WithRequest(
-					http.MethodPatch,
-					"/secret-friends/{id}",
-					secretfriendsctrl.UpdateSecretFriendRequest{
-						Name:     updatedName,
-						Location: updatedLocation,
-					},
-				),
-				stdrunners.WithAuthHeaderFromLogin(),
-				netoche.WithPathParam("id", openEventID),
+				openEventID,
+				secretfriendsctrl.UpdateSecretFriendRequest{
+					Name:     updatedName,
+					Location: updatedLocation,
+				},
 				netoche.ExpectStatus(http.StatusOK),
 				netoche.ExpectBody(
 					secretfriendsctrl.UpdateSecretFriendResponse{
@@ -206,11 +88,9 @@ func TestSecretFriendMountedRoutes(t *testing.T) {
 					},
 				),
 			),
-			netoche.New(
+			secretfriendsrunner.Get(
 				engine.BaseURL(),
-				netoche.WithRequest(http.MethodGet, "/secret-friends/{id}", struct{}{}),
-				stdrunners.WithAuthHeaderFromLogin(),
-				netoche.WithPathParam("id", openEventID),
+				openEventID,
 				netoche.ExpectStatus(http.StatusOK),
 				netoche.ExpectBody(
 					secretfriendsctrl.GetSecretFriendResponse{
@@ -219,7 +99,7 @@ func TestSecretFriendMountedRoutes(t *testing.T) {
 						Location:          updatedLocation,
 						OwnerID:           ownerID.String(),
 						ParticipantsCount: 3,
-						Status:            openEvent.Status,
+						Status:            routeSet.OpenEvent.Status,
 					},
 					func(expected, actual *secretfriendsctrl.GetSecretFriendResponse) error {
 						expected.Datetime = actual.Datetime
@@ -227,49 +107,66 @@ func TestSecretFriendMountedRoutes(t *testing.T) {
 					},
 				),
 			),
-			netoche.New(
+			participantsrunner.List(
 				engine.BaseURL(),
-				netoche.WithRequest(
-					http.MethodGet,
-					"/secret-friends/{id}/participants/",
-					struct{}{},
-				),
-				stdrunners.WithAuthHeaderFromLogin(),
-				netoche.WithPathParam("id", openEventID),
+				openEventID,
 				netoche.ExpectStatus(http.StatusOK),
-				netoche.ExpectBody(
+				participantsrunner.ExpectList(
 					[]participantsctrl.ParticipantResponse{
 						{
-							ParticipantID: openOwnerParticipantID.String(),
+							ParticipantID: routeSet.OpenOwnerEntryID().String(),
 							UserID:        ownerID.String(),
-							Fullname:      ownerProfile.Fullname.String,
+							Fullname:      routeSet.Owner.Profile.Fullname.String,
 						},
 						{
-							ParticipantID: openTargetParticipantID.String(),
+							ParticipantID: routeSet.OpenTargetEntryID().String(),
 							UserID:        targetUserID.String(),
-							Fullname:      targetProfile.Fullname.String,
+							Fullname:      routeSet.Target.Profile.Fullname.String,
 						},
 						{
-							ParticipantID: openOtherParticipantID.String(),
+							ParticipantID: routeSet.OpenOtherEntryID().String(),
 							UserID:        otherUserID.String(),
-							Fullname:      otherProfile.Fullname.String,
+							Fullname:      routeSet.Other.Profile.Fullname.String,
 						},
 					},
 				),
 			),
-			netoche.New(
-				engine.BaseURL(),
-				netoche.WithRequest(http.MethodGet, "/secret-friends/{id}/draw-result", struct{}{}),
-				stdrunners.WithAuthHeaderFromLogin(),
-				netoche.WithPathParam("id", drawnEventID),
-				netoche.ExpectStatus(http.StatusInternalServerError),
-			),
+			// Invalid UUID returns 400
 			netoche.New(
 				engine.BaseURL(),
 				netoche.WithRequest(http.MethodGet, "/secret-friends/{id}", struct{}{}),
-				stdrunners.WithAuthHeaderFromLogin(),
+				authrunner.WithAuthHeaderFromLogin(),
 				netoche.WithPathParam("id", "not-a-uuid"),
 				netoche.ExpectStatus(http.StatusBadRequest),
+			),
+		},
+	}
+
+	if err := engine.Execute(t, mr); err != nil {
+		t.Fatalf("MultiRunner failed: %v", err)
+	}
+}
+
+func TestListSecretFriends(t *testing.T) {
+	engine := NewEngine(t)
+	const ownerPassword = "list-events-password"
+
+	owner := fixturesets.NewUser("list-owner@example.com", ownerPassword, "List Owner")
+	other := fixturesets.NewUser("list-other@example.com", ownerPassword, "Other User")
+	eventSet := fixturesets.NewOwnerParticipant(owner, other, "Listed Event")
+
+	if err := engine.Seed(eventSet.Seedables()...); err != nil {
+		t.Fatalf("seedErr: %v", err)
+	}
+
+	mr := atores.MultiRunner{
+		Runners: []atores.Runner{
+			authrunner.Login(engine.BaseURL(), owner.User.Email, ownerPassword),
+			netoche.New(
+				engine.BaseURL(),
+				netoche.WithRequest(http.MethodGet, "/secret-friends/", struct{}{}),
+				authrunner.WithAuthHeaderFromLogin(),
+				netoche.ExpectStatus(http.StatusOK),
 			),
 		},
 	}
@@ -283,51 +180,37 @@ func TestDrawSecretFriendRoute(t *testing.T) {
 	engine := NewEngine(t)
 	const ownerPassword = "draw-routes-password"
 
-	ownerBuilder := fixtures.NewUser().
-		WithEmail("draw-owner@example.com").
-		WithPassword(ownerPassword)
-	owner := ownerBuilder.Build()
-	ownerProfile := ownerBuilder.BuildProfile()
-
-	userTwoBuilder := fixtures.NewUser().
-		WithEmail("draw-user-two@example.com").
-		WithPassword(ownerPassword)
-	userTwo := userTwoBuilder.Build()
-	userTwoProfile := userTwoBuilder.BuildProfile()
-
-	userThreeBuilder := fixtures.NewUser().
-		WithEmail("draw-user-three@example.com").
-		WithPassword(ownerPassword)
-	userThree := userThreeBuilder.Build()
-	userThreeProfile := userThreeBuilder.BuildProfile()
+	owner := fixturesets.NewUser("draw-owner@example.com", ownerPassword, "Draw Owner")
+	userTwo := fixturesets.NewUser("draw-user-two@example.com", ownerPassword, "User Two")
+	userThree := fixturesets.NewUser("draw-user-three@example.com", ownerPassword, "User Three")
 
 	drawEvent := fixtures.NewSecretFriend().
-		WithOwner(owner).
+		WithOwner(owner.User).
 		WithName("Draw Execution Event").
 		Build()
 	drawEvent.Status = string(entities.StatusOpen)
 	drawEvent.Datetime = sql.NullTime{Time: time.Now().Add(24 * time.Hour), Valid: true}
 
 	ownerParticipant := fixtures.NewParticipant().
-		WithUser(owner).
+		WithUser(owner.User).
 		WithSecretFriend(drawEvent).
 		Build()
 	userTwoParticipant := fixtures.NewParticipant().
-		WithUser(userTwo).
+		WithUser(userTwo.User).
 		WithSecretFriend(drawEvent).
 		Build()
 	userThreeParticipant := fixtures.NewParticipant().
-		WithUser(userThree).
+		WithUser(userThree.User).
 		WithSecretFriend(drawEvent).
 		Build()
 
 	if err := engine.Seed(
-		owner,
-		ownerProfile,
-		userTwo,
-		userTwoProfile,
-		userThree,
-		userThreeProfile,
+		owner.User,
+		owner.Profile,
+		userTwo.User,
+		userTwo.Profile,
+		userThree.User,
+		userThree.Profile,
 		drawEvent,
 		ownerParticipant,
 		userTwoParticipant,
@@ -340,13 +223,67 @@ func TestDrawSecretFriendRoute(t *testing.T) {
 
 	mr := atores.MultiRunner{
 		Runners: []atores.Runner{
-			stdrunners.LoginRunner(engine.BaseURL(), owner.Email, ownerPassword),
-			netoche.New(
+			authrunner.Login(engine.BaseURL(), owner.User.Email, ownerPassword),
+			secretfriendsrunner.Draw(
 				engine.BaseURL(),
-				netoche.WithRequest(http.MethodPost, "/secret-friends/{id}/draw", struct{}{}),
-				stdrunners.WithAuthHeaderFromLogin(),
-				netoche.WithPathParam("id", drawEventID),
-				netoche.ExpectStatus(http.StatusInternalServerError),
+				drawEventID,
+				netoche.ExpectStatus(http.StatusOK),
+			),
+		},
+	}
+
+	if err := engine.Execute(t, mr); err != nil {
+		t.Fatalf("MultiRunner failed: %v", err)
+	}
+}
+
+func TestGetSecretFriendNotFound(t *testing.T) {
+	engine := NewEngine(t)
+	const ownerPassword = "notfound-password"
+
+	user := fixturesets.NewUser("notfound-user@example.com", ownerPassword, "")
+	if err := engine.Seed(user.User, user.Profile); err != nil {
+		t.Fatalf("seedErr: %v", err)
+	}
+
+	nonExistentID, _ := entities.NewHexID()
+
+	mr := atores.MultiRunner{
+		Runners: []atores.Runner{
+			authrunner.Login(engine.BaseURL(), user.User.Email, ownerPassword),
+			secretfriendsrunner.Get(
+				engine.BaseURL(),
+				nonExistentID,
+				netoche.ExpectStatus(http.StatusNotFound),
+			),
+		},
+	}
+
+	if err := engine.Execute(t, mr); err != nil {
+		t.Fatalf("MultiRunner failed: %v", err)
+	}
+}
+
+func TestUpdateSecretFriendByNonOwner(t *testing.T) {
+	engine := NewEngine(t)
+	const password = "nonowner-update-password"
+
+	owner := fixturesets.NewUser("nonowner-event-owner@example.com", password, "Event Owner")
+	participant := fixturesets.NewUser("nonowner-participant@example.com", password, "Participant")
+	eventSet := fixturesets.NewOwnerParticipant(owner, participant, "Non-owner Update Event")
+
+	if err := engine.Seed(eventSet.Seedables()...); err != nil {
+		t.Fatalf("seedErr: %v", err)
+	}
+
+	mr := atores.MultiRunner{
+		Runners: []atores.Runner{
+			authrunner.Login(engine.BaseURL(), participant.User.Email, password),
+			secretfriendsrunner.Update(
+				engine.BaseURL(),
+				eventSet.SecretFriendID(),
+				secretfriendsctrl.UpdateSecretFriendRequest{Name: "Hijacked Name"},
+				netoche.ExpectStatus(http.StatusForbidden),
 			),
 		},
 	}
