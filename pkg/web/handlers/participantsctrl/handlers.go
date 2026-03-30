@@ -63,17 +63,17 @@ func (h *ParticipantsHandlers) ListParticipants(
 		return nil, h.HandleError(err)
 	}
 
-	participants, err := uc.ListParticipants(sfID)
+	summaries, err := uc.ListSummaries(sfID)
 	if err != nil {
 		return nil, h.HandleError(err)
 	}
 
-	resp := make([]ParticipantResponse, len(participants))
-	for i, p := range participants {
+	resp := make([]ParticipantResponse, len(summaries))
+	for i, s := range summaries {
 		resp[i] = ParticipantResponse{
-			ParticipantID: p.ID.String(),
-			UserID:        p.RelatedUser.ID.String(),
-			Fullname:      p.Profile.FullName,
+			ParticipantID: s.ID.String(),
+			UserID:        s.RelatedUser.ID.String(),
+			Fullname:      s.FullName,
 		}
 	}
 

@@ -1,10 +1,10 @@
 package denylistctrl
 
-import "github.com/jictyvoo/amigonimo_api/internal/entities"
+import "github.com/jictyvoo/amigonimo_api/internal/domain/usecases/denylist"
 
-func parseDeniedUser(item entities.DeniedUser) DeniedUserResponse {
+func parseDeniedUser(item denylist.DeniedEntry) DeniedUserResponse {
 	return DeniedUserResponse{
-		UserID:   item.InnerParticipant.RelatedUser.ID.String(),
-		Fullname: item.InnerParticipant.Profile.FullName,
+		UserID:   item.DeniedUserID.String(),
+		Fullname: item.FullName,
 	}
 }
