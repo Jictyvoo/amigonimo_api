@@ -7,115 +7,162 @@ import (
 	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores"
 	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores/netoche"
 
-	"github.com/jictyvoo/amigonimo_api/internal/entities"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/denylistctrl"
-	"github.com/jictyvoo/amigonimo_api/test/integration/stdrunners"
+	authrunner "github.com/jictyvoo/amigonimo_api/test/integration/runners/auth"
+	denylistrunner "github.com/jictyvoo/amigonimo_api/test/integration/runners/denylist"
 	"github.com/jictyvoo/amigonimo_api/test/internal/fixtures"
+	"github.com/jictyvoo/amigonimo_api/test/internal/fixturesets"
 )
 
 func TestDenylistFlowSeeded(t *testing.T) {
 	engine := NewEngine(t)
 	const userPassword = "denylist-flow-password"
 
-	ownerBuilder := fixtures.NewUser().
-		WithEmail("denylist-owner@example.com").
-		WithPassword(userPassword)
-	owner := ownerBuilder.Build()
-	ownerProfile := ownerBuilder.BuildProfile()
-	participantBuilder := fixtures.NewUser().
-		WithEmail("denylist-participant@example.com").
-		WithPassword(userPassword)
-	participant := participantBuilder.Build()
-	participantProfile := participantBuilder.BuildProfile()
-	secretFriend := fixtures.NewSecretFriend().
-		WithOwner(owner).
-		WithName("Denylist Flow Event").
-		Build()
-	ownerEntry := fixtures.NewParticipant().
-		WithUser(owner).
-		WithSecretFriend(secretFriend).
-		Build()
-	participantEntry := fixtures.NewParticipant().
-		WithUser(participant).
-		WithSecretFriend(secretFriend).
-		Build()
+	owner := fixturesets.NewUser("denylist-owner@example.com", userPassword, "")
+	participant := fixturesets.NewUser("denylist-participant@example.com", userPassword, "")
+	eventSet := fixturesets.NewOwnerParticipant(owner, participant, "Denylist Flow Event")
 
-	if err := engine.Seed(
-		owner,
-		ownerProfile,
-		participant,
-		participantProfile,
-		secretFriend,
-		ownerEntry,
-		participantEntry,
-	); err != nil {
+	if err := engine.Seed(eventSet.Seedables()...); err != nil {
 		t.Fatalf("seedErr: %v", err)
 	}
 
-	secretFriendID, _ := entities.NewHexIDFromBytes(secretFriend.ID)
-	deniedUserID, _ := entities.NewHexIDFromBytes(participant.ID)
-
 	mr := atores.MultiRunner{
 		Runners: []atores.Runner{
-			stdrunners.LoginRunner(engine.BaseURL(), owner.Email, userPassword),
-			netoche.New(
+			authrunner.Login(engine.BaseURL(), owner.User.Email, userPassword),
+			denylistrunner.AddEntry(
 				engine.BaseURL(),
-				netoche.WithRequest(
-					http.MethodPost,
-					"/secret-friends/{id}/denylist/",
-					denylistctrl.AddDenyListRequest{TargetUserID: deniedUserID.String()},
-				),
-				stdrunners.WithAuthHeaderFromLogin(),
-				netoche.WithPathParam("id", secretFriendID),
+				eventSet.SecretFriendID(),
+				denylistctrl.AddDenyListRequest{TargetUserID: participant.ID().String()},
 				netoche.ExpectStatus(http.StatusOK),
 				netoche.ExpectBody(
 					denylistctrl.DeniedUserResponse{
-						UserID: deniedUserID.String(),
+						UserID: participant.ID().String(),
 					},
 				),
 			),
-			netoche.New(
+			denylistrunner.ListEntries(
 				engine.BaseURL(),
-				netoche.WithRequest(http.MethodGet, "/secret-friends/{id}/denylist/", struct{}{}),
-				stdrunners.WithAuthHeaderFromLogin(),
-				netoche.WithPathParam("id", secretFriendID),
+				eventSet.SecretFriendID(),
 				netoche.ExpectStatus(http.StatusOK),
-				netoche.ExpectBody(
+				denylistrunner.ExpectEntries(
 					[]denylistctrl.DeniedUserResponse{
 						{
-							UserID:   deniedUserID.String(),
-							Fullname: participantProfile.Fullname.String,
+							UserID:   participant.ID().String(),
+							Fullname: participant.Profile.Fullname.String,
 						},
 					},
 				),
 			),
-			netoche.New(
+			denylistrunner.RemoveEntry(
 				engine.BaseURL(),
-				netoche.WithRequest(
-					http.MethodDelete,
-					"/secret-friends/{id}/denylist/{deniedUserId}",
-					struct{}{},
-				),
-				stdrunners.WithAuthHeaderFromLogin(),
-				netoche.WithPathParam("id", secretFriendID),
-				netoche.WithPathParam("deniedUserId", deniedUserID),
+				eventSet.SecretFriendID(),
+				participant.ID(),
 				netoche.ExpectStatus(http.StatusOK),
 				netoche.ExpectBody(
 					denylistctrl.RemoveDenyListEntryResponse{
 						Success:   true,
-						DeletedID: deniedUserID.String(),
+						DeletedID: participant.ID().String(),
 					},
 				),
 			),
-			netoche.New(
+			denylistrunner.ListEntries(
 				engine.BaseURL(),
-				netoche.WithRequest(http.MethodGet, "/secret-friends/{id}/denylist/", struct{}{}),
-				stdrunners.WithAuthHeaderFromLogin(),
-				netoche.WithPathParam("id", secretFriendID),
+				eventSet.SecretFriendID(),
 				netoche.ExpectStatus(http.StatusOK),
-				netoche.ExpectBody(
-					[]denylistctrl.DeniedUserResponse{},
-				),
+				denylistrunner.ExpectEntries([]denylistctrl.DeniedUserResponse{}),
+			),
+		},
+	}
+
+	if err := engine.Execute(t, mr); err != nil {
+		t.Fatalf("MultiRunner failed: %v", err)
+	}
+}
+
+func TestDenylistSelfEntry(t *testing.T) {
+	engine := NewEngine(t)
+	const userPassword = "denylist-self-password"
+
+	owner := fixturesets.NewUser("denylist-self-owner@example.com", userPassword, "")
+	other := fixturesets.NewUser("denylist-self-other@example.com", userPassword, "")
+	eventSet := fixturesets.NewOwnerParticipant(owner, other, "Self Denylist Event")
+
+	if err := engine.Seed(eventSet.Seedables()...); err != nil {
+		t.Fatalf("seedErr: %v", err)
+	}
+
+	mr := atores.MultiRunner{
+		Runners: []atores.Runner{
+			authrunner.Login(engine.BaseURL(), owner.User.Email, userPassword),
+			denylistrunner.FailedAddEntry(
+				engine.BaseURL(),
+				eventSet.SecretFriendID(),
+				denylistctrl.AddDenyListRequest{TargetUserID: owner.ID().String()},
+				http.StatusBadRequest,
+				"you cannot add yourself to the denylist",
+			),
+		},
+	}
+
+	if err := engine.Execute(t, mr); err != nil {
+		t.Fatalf("MultiRunner failed: %v", err)
+	}
+}
+
+// TestDenylistCapacityExceeded seeds 4 participants with MaxDenyListSize=4.
+// The 50% cap limits the effective max to 2, so the 3rd AddEntry must be rejected.
+func TestDenylistCapacityExceeded(t *testing.T) {
+	engine := NewEngine(t)
+	const userPassword = "denylist-cap-password"
+
+	owner := fixturesets.NewUser("denylist-cap-owner@example.com", userPassword, "")
+	p1 := fixturesets.NewUser("denylist-cap-p1@example.com", userPassword, "")
+	p2 := fixturesets.NewUser("denylist-cap-p2@example.com", userPassword, "")
+	p3 := fixturesets.NewUser("denylist-cap-p3@example.com", userPassword, "")
+
+	// 4 participants, MaxDenyListSize=4 → effective limit = 4/2 = 2
+	eventSet := fixturesets.NewOwnerParticipant(owner, p1, "Cap Event").
+		WithMaxDenyListSize(4)
+
+	p2Entry := fixtures.NewParticipant().
+		WithUser(p2.User).
+		WithSecretFriend(eventSet.SecretFriend).
+		Build()
+	p3Entry := fixtures.NewParticipant().
+		WithUser(p3.User).
+		WithSecretFriend(eventSet.SecretFriend).
+		Build()
+
+	seedables := append(
+		eventSet.Seedables(),
+		p2.User, p2.Profile, p2Entry,
+		p3.User, p3.Profile, p3Entry,
+	)
+	if err := engine.Seed(seedables...); err != nil {
+		t.Fatalf("seedErr: %v", err)
+	}
+
+	mr := atores.MultiRunner{
+		Runners: []atores.Runner{
+			authrunner.Login(engine.BaseURL(), owner.User.Email, userPassword),
+			denylistrunner.AddEntry(
+				engine.BaseURL(),
+				eventSet.SecretFriendID(),
+				denylistctrl.AddDenyListRequest{TargetUserID: p1.ID().String()},
+				netoche.ExpectStatus(http.StatusOK),
+			),
+			denylistrunner.AddEntry(
+				engine.BaseURL(),
+				eventSet.SecretFriendID(),
+				denylistctrl.AddDenyListRequest{TargetUserID: p2.ID().String()},
+				netoche.ExpectStatus(http.StatusOK),
+			),
+			// 3rd entry exceeds 50% cap (2) → must be rejected
+			denylistrunner.AddEntry(
+				engine.BaseURL(),
+				eventSet.SecretFriendID(),
+				denylistctrl.AddDenyListRequest{TargetUserID: p3.ID().String()},
+				netoche.ExpectStatus(http.StatusConflict),
 			),
 		},
 	}
