@@ -6,9 +6,6 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 )
 
-// UserBasic is a type alias for backward compatibility.
-type UserBasic = authvalues.UserBasic
-
 type User struct {
 	authvalues.UserBasic
 
