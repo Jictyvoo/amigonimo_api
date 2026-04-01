@@ -6,7 +6,6 @@ import (
 	"github.com/go-fuego/fuego"
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/wishlist"
-	"github.com/jictyvoo/amigonimo_api/internal/entities"
 	"github.com/jictyvoo/amigonimo_api/pkg/web"
 )
 
@@ -42,7 +41,7 @@ func (h *Controller) GetWishlist(
 		return nil, h.HandleError(err)
 	}
 
-	var loadedList []entities.WishlistItem
+	var loadedList []wishlist.WishlistItem
 	if loadedList, err = uc.GetWishlist(sfID); err != nil {
 		return nil, h.HandleError(err)
 	}

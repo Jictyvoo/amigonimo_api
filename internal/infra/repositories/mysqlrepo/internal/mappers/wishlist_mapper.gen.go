@@ -4,17 +4,18 @@
 package mappers
 
 import (
+	wishlist "github.com/jictyvoo/amigonimo_api/internal/domain/usecases/wishlist"
 	entities "github.com/jictyvoo/amigonimo_api/internal/entities"
 	dbgen "github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/internal/dbgen"
 )
 
-func ToEntityWishlistItem(source dbgen.WishlistItem) entities.WishlistItem {
-	var entitiesWishlistItem entities.WishlistItem
-	entitiesWishlistItem.Timestamp = dbWishlistTimestampToEntity(source)
-	entitiesWishlistItem.ID = HexIDFromBytes(source.ID)
-	entitiesWishlistItem.Label = source.Label
-	entitiesWishlistItem.Comments = StringFromNullString(source.Comments)
-	return entitiesWishlistItem
+func ToEntityWishlistItem(source dbgen.WishlistItem) wishlist.WishlistItem {
+	var wishlistWishlistItem wishlist.WishlistItem
+	wishlistWishlistItem.Timestamp = dbWishlistTimestampToEntity(source)
+	wishlistWishlistItem.ID = HexIDFromBytes(source.ID)
+	wishlistWishlistItem.Label = source.Label
+	wishlistWishlistItem.Comments = StringFromNullString(source.Comments)
+	return wishlistWishlistItem
 }
 func dbWishlistTimestampToEntity(source dbgen.WishlistItem) entities.Timestamp {
 	var entitiesTimestamp entities.Timestamp

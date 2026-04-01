@@ -1,8 +1,8 @@
 package wishlistctrl
 
-import "github.com/jictyvoo/amigonimo_api/internal/entities"
+import "github.com/jictyvoo/amigonimo_api/internal/domain/usecases/wishlist"
 
-func parseWishItem(item entities.WishlistItem) WishlistItemResponse {
+func parseWishItem(item wishlist.WishlistItem) WishlistItemResponse {
 	return WishlistItemResponse{
 		ItemID:   item.ID.String(),
 		Label:    item.Label,

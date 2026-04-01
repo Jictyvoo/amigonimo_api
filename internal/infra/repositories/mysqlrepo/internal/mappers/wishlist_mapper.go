@@ -1,11 +1,12 @@
 package mappers
 
 import (
+	"github.com/jictyvoo/amigonimo_api/internal/domain/usecases/wishlist"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/internal/dbgen"
 )
 
-// WishlistConverter is the converter for the entities.WishlistItem type.
+// WishlistConverter maps DB rows to the wishlist.WishlistItem DTO.
 //
 // goverter:converter
 // goverter:output:file @cwd/wishlist_mapper.gen.go
@@ -18,5 +19,5 @@ type WishlistConverter interface {
 	dbWishlistTimestampToEntity(p dbgen.WishlistItem) entities.Timestamp
 
 	// goverter:map . Timestamp
-	ToEntityWishlistItem(wi dbgen.WishlistItem) entities.WishlistItem
+	ToEntityWishlistItem(wi dbgen.WishlistItem) wishlist.WishlistItem
 }

@@ -5,7 +5,7 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
 )
 
-func (uc *UseCase) GetWishlist(sfID entities.HexID) ([]entities.WishlistItem, error) {
+func (uc *UseCase) GetWishlist(sfID entities.HexID) ([]WishlistItem, error) {
 	items, err := uc.repo.GetWishlistByParticipant(
 		ParticipantRef{
 			UserID:         uc.associatedUser.ID,
@@ -26,10 +26,10 @@ func (uc *UseCase) GetWishlist(sfID entities.HexID) ([]entities.WishlistItem, er
 func (uc *UseCase) AddItem(
 	sfID entities.HexID,
 	label, comments string,
-) (entities.WishlistItem, error) {
+) (WishlistItem, error) {
 	participant, err := uc.validator.CheckParticipantInSecretFriend(sfID, uc.associatedUser.ID)
 	if err != nil {
-		return entities.WishlistItem{}, apperr.Forbidden(
+		return WishlistItem{}, apperr.Forbidden(
 			"wishlist_access_forbidden",
 			"you are not a participant in this secret friend",
 			err,
@@ -45,7 +45,7 @@ func (uc *UseCase) AddItem(
 
 	currentList, err := uc.repo.GetWishlistByParticipant(participantRef)
 	if err != nil {
-		return entities.WishlistItem{}, apperr.From(
+		return WishlistItem{}, apperr.From(
 			"wishlist_lookup_failed",
 			"failed to load wishlist",
 			err,
@@ -54,20 +54,20 @@ func (uc *UseCase) AddItem(
 
 	// Fetch sf to get config (though MaxWishListSize is not configurable by user, we can set a hardcoded limit here, e.g. 10)
 	if len(currentList) >= int(uc.maxWishListSize) {
-		return entities.WishlistItem{}, apperr.Conflict(
+		return WishlistItem{}, apperr.Conflict(
 			"wishlist_capacity_reached",
 			"wishlist capacity reached",
 			nil,
 		)
 	}
 
-	newWishItem := entities.WishlistItem{
+	newWishItem := WishlistItem{
 		Label:    label,
 		Comments: comments,
 	}
 	wishItem, err := uc.repo.AddWishlistItem(participantRef, newWishItem)
 	if err != nil {
-		return entities.WishlistItem{}, apperr.From(
+		return WishlistItem{}, apperr.From(
 			"wishlist_add_failed",
 			"failed to add wishlist item",
 			err,

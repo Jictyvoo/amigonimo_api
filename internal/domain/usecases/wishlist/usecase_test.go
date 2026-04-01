@@ -42,7 +42,7 @@ func TestWishlistUseCase(t *testing.T) {
 			fac := NewMockparticipantFacadePort(ctrl)
 			repo.EXPECT().
 				GetWishlistByParticipant(ParticipantRef{UserID: userID, SecretFriendID: sfID}).
-				Return([]entities.WishlistItem{{ID: itemID}}, nil)
+				Return([]WishlistItem{{ID: itemID}}, nil)
 			uc := New(
 				associatedUser,
 				repo,
@@ -79,7 +79,7 @@ func TestWishlistUseCase(t *testing.T) {
 							Return(entities.Participant{ID: participantID}, nil)
 						repo.EXPECT().
 							GetWishlistByParticipant(ref).
-							Return(make([]entities.WishlistItem, 10), nil)
+							Return(make([]WishlistItem, 10), nil)
 					},
 					wantErr: errors.New("capacity"),
 				},
@@ -92,7 +92,7 @@ func TestWishlistUseCase(t *testing.T) {
 						repo.EXPECT().GetWishlistByParticipant(ref).Return(nil, nil)
 						repo.EXPECT().
 							AddWishlistItem(ref, gomock.Any()).
-							Return(entities.WishlistItem{ID: itemID}, nil)
+							Return(WishlistItem{ID: itemID}, nil)
 					},
 				},
 			}

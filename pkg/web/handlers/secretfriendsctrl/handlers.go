@@ -200,7 +200,6 @@ func (ctrl *Controller) GetDrawResult(
 	wishlist := make([]WishlistItem, len(result.ReceiverWishlist))
 	for i, item := range result.ReceiverWishlist {
 		wishlist[i] = WishlistItem{
-			ItemID:   item.ID.String(),
 			Label:    item.Label,
 			Comments: item.Comments,
 		}

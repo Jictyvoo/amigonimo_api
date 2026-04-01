@@ -80,10 +80,10 @@ func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
 }
 
 // AddWishlistItem mocks base method.
-func (m *MockRepository) AddWishlistItem(participant ParticipantRef, wishItem entities.WishlistItem) (entities.WishlistItem, error) {
+func (m *MockRepository) AddWishlistItem(participant ParticipantRef, wishItem WishlistItem) (WishlistItem, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddWishlistItem", participant, wishItem)
-	ret0, _ := ret[0].(entities.WishlistItem)
+	ret0, _ := ret[0].(WishlistItem)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -95,10 +95,10 @@ func (mr *MockRepositoryMockRecorder) AddWishlistItem(participant, wishItem any)
 }
 
 // GetWishlistByParticipant mocks base method.
-func (m *MockRepository) GetWishlistByParticipant(participant ParticipantRef) ([]entities.WishlistItem, error) {
+func (m *MockRepository) GetWishlistByParticipant(participant ParticipantRef) ([]WishlistItem, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetWishlistByParticipant", participant)
-	ret0, _ := ret[0].([]entities.WishlistItem)
+	ret0, _ := ret[0].([]WishlistItem)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

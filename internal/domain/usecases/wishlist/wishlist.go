@@ -20,10 +20,10 @@ type ParticipantFacade interface {
 type Repository interface {
 	AddWishlistItem(
 		participant ParticipantRef,
-		wishItem entities.WishlistItem,
-	) (entities.WishlistItem, error)
+		wishItem WishlistItem,
+	) (WishlistItem, error)
 	RemoveWishlistItem(itemID entities.HexID, participant ParticipantRef) error
-	GetWishlistByParticipant(participant ParticipantRef) ([]entities.WishlistItem, error)
+	GetWishlistByParticipant(participant ParticipantRef) ([]WishlistItem, error)
 }
 
 type ParticipantRef struct {

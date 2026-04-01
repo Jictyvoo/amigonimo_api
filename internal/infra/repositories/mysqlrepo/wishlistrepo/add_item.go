@@ -11,11 +11,11 @@ import (
 
 func (r *RepoMySQL) AddWishlistItem(
 	participant wishlist.ParticipantRef,
-	wishItem entities.WishlistItem,
-) (entities.WishlistItem, error) {
+	wishItem wishlist.WishlistItem,
+) (wishlist.WishlistItem, error) {
 	id, err := entities.NewHexID()
 	if err != nil {
-		return entities.WishlistItem{}, err
+		return wishlist.WishlistItem{}, err
 	}
 
 	ctx, cancel := r.Ctx()
@@ -36,7 +36,7 @@ func (r *RepoMySQL) AddWishlistItem(
 		},
 	)
 	if err != nil {
-		return entities.WishlistItem{}, mysqlrepo.WrapError(err, "add wishlist item")
+		return wishlist.WishlistItem{}, mysqlrepo.WrapError(err, "add wishlist item")
 	}
 
 	wishItem.ID = id
