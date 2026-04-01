@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-fuego/fuego"
 
-	"github.com/jictyvoo/amigonimo_api/internal/entities"
+	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 )
 
 func (h *AuthenticationController) SignUp(
@@ -19,7 +19,7 @@ func (h *AuthenticationController) SignUp(
 		return &SuccessResponse{Message: "Failed to obtain request body"}, h.HandleError(err)
 	}
 
-	userDTO := entities.UserBasic{
+	userDTO := authvalues.UserBasic{
 		Username: req.Username,
 		Email:    req.Email,
 		Password: req.Password,
@@ -41,7 +41,7 @@ func (h *AuthenticationController) LogIn(
 		return nil, h.HandleError(err)
 	}
 
-	userDTO := entities.UserBasic{
+	userDTO := authvalues.UserBasic{
 		Username: req.Username,
 		Email:    req.Email,
 		Password: req.Password,
@@ -179,7 +179,7 @@ func (h *AuthenticationController) PasswordReset(
 		return nil, h.HandleError(err)
 	}
 
-	userDTO := entities.UserBasic{
+	userDTO := authvalues.UserBasic{
 		Email:    req.Email,
 		Password: req.NewPassword,
 	}

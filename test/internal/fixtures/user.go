@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/jictyvoo/amigonimo_api/internal/entities"
+	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/genmodels"
 )
 
@@ -64,7 +64,7 @@ func (b *UserBuilder) WithUsername(username string) *UserBuilder {
 }
 
 func (b *UserBuilder) WithPassword(rawPassword string) *UserBuilder {
-	userEntity := entities.UserBasic{Password: rawPassword}
+	userEntity := authvalues.UserBasic{Password: rawPassword}
 	encryptedPass, _ := userEntity.EncryptPassword()
 	b.instance.Password = string(encryptedPass)
 	return b

@@ -2,6 +2,7 @@ package mappers
 
 import (
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
+	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/internal/dbgen"
 )
 
@@ -22,7 +23,7 @@ type AuthTokenConverter interface {
 
 	// Helper for the embedded BasicAuthToken
 	// goverter:map Token AuthToken
-	convertBasicAuthToken(source dbgen.AuthToken) entities.BasicAuthToken
+	convertBasicAuthToken(source dbgen.AuthToken) authvalues.BasicAuthToken
 
 	// goverter:map UserID ID
 	// goverter:ignore VerifiedAt

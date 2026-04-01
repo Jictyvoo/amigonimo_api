@@ -9,7 +9,7 @@ import (
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/authserv"
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/userserv"
-	"github.com/jictyvoo/amigonimo_api/internal/entities"
+	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 	"github.com/jictyvoo/amigonimo_api/pkg/web"
 )
 
@@ -76,7 +76,7 @@ func (ctrl UserEditionController) EditUsername(
 		return nil, ctrl.HandleError(err)
 	}
 
-	userDTO := entities.UserBasic{
+	userDTO := authvalues.UserBasic{
 		Username: req.NewUsername,
 		Password: req.CurrentPassword,
 	}
@@ -107,7 +107,7 @@ func (ctrl UserEditionController) EditUserEmail(
 		return nil, ctrl.HandleError(err)
 	}
 
-	userDTO := entities.UserBasic{
+	userDTO := authvalues.UserBasic{
 		Email:    req.NewEmail,
 		Password: req.CurrentPassword,
 	}

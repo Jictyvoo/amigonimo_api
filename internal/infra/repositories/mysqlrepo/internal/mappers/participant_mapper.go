@@ -2,6 +2,7 @@ package mappers
 
 import (
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
+	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo/internal/dbgen"
 )
 
@@ -30,7 +31,7 @@ type ParticipantConverter interface {
 	// goverter:ignore Password
 	dbListParticipantsBySecretFriendRowToBasicUser(
 		p dbgen.ListParticipantsBySecretFriendRow,
-	) entities.UserBasic
+	) authvalues.UserBasic
 
 	// goverter:map UserID ID
 	// goverter:map . UserBasic
