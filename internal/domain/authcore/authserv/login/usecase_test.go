@@ -10,6 +10,7 @@ import (
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/autherrs"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
+	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 	"github.com/jictyvoo/amigonimo_api/pkg/dbrock/dberrs"
 )
 
@@ -27,19 +28,19 @@ func TestUseCaseExecute(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		formUser    entities.UserBasic
+		formUser    authvalues.UserBasic
 		setup       func(*MockUserRepository, *MockTokenRepository)
 		wantErr     error
 		assertToken func(*testing.T, entities.AuthenticationToken)
 	}{
 		{
 			name:     "returns invalid credentials when login fields are empty",
-			formUser: entities.UserBasic{Password: validPassword},
+			formUser: authvalues.UserBasic{Password: validPassword},
 			wantErr:  autherrs.ErrInvalidCredentials,
 		},
 		{
 			name: "returns auth login error on user lookup failure",
-			formUser: entities.UserBasic{
+			formUser: authvalues.UserBasic{
 				Email:    "user@example.com",
 				Password: validPassword,
 			},
@@ -52,7 +53,7 @@ func TestUseCaseExecute(t *testing.T) {
 		},
 		{
 			name: "returns invalid credentials when user is not found",
-			formUser: entities.UserBasic{
+			formUser: authvalues.UserBasic{
 				Email:    "user@example.com",
 				Password: validPassword,
 			},
@@ -68,7 +69,7 @@ func TestUseCaseExecute(t *testing.T) {
 		},
 		{
 			name: "returns invalid credentials when password does not match",
-			formUser: entities.UserBasic{
+			formUser: authvalues.UserBasic{
 				Email:    "user@example.com",
 				Password: "wrong-pass",
 			},
@@ -81,7 +82,7 @@ func TestUseCaseExecute(t *testing.T) {
 		},
 		{
 			name: "returns token lookup error when token fetch fails",
-			formUser: entities.UserBasic{
+			formUser: authvalues.UserBasic{
 				Email:    "user@example.com",
 				Password: validPassword,
 			},
@@ -97,7 +98,7 @@ func TestUseCaseExecute(t *testing.T) {
 		},
 		{
 			name: "returns update auth token error when upsert fails",
-			formUser: entities.UserBasic{
+			formUser: authvalues.UserBasic{
 				Email:    "user@example.com",
 				Password: validPassword,
 			},
@@ -127,13 +128,13 @@ func TestUseCaseExecute(t *testing.T) {
 		},
 		{
 			name: "returns regenerated token with user on success",
-			formUser: entities.UserBasic{
+			formUser: authvalues.UserBasic{
 				Username: "amigo",
 				Password: validPassword,
 			},
 			setup: func(userRepo *MockUserRepository, tokenRepo *MockTokenRepository) {
 				existingToken := entities.AuthenticationToken{
-					BasicAuthToken: entities.BasicAuthToken{
+					BasicAuthToken: authvalues.BasicAuthToken{
 						AuthToken: "old-token",
 						ExpiresAt: time.Now().Add(-time.Hour),
 						RefreshToken: uuid.NullUUID{
@@ -229,13 +230,13 @@ func newTestUser(
 ) entities.User {
 	t.Helper()
 
-	encryptedPassword, err := entities.UserBasic{Password: password}.EncryptPassword()
+	encryptedPassword, err := authvalues.UserBasic{Password: password}.EncryptPassword()
 	if err != nil {
 		t.Fatalf("EncryptPassword() error = %v", err)
 	}
 
 	return entities.User{
-		UserBasic: entities.UserBasic{
+		UserBasic: authvalues.UserBasic{
 			Email:    email,
 			Username: username,
 			Password: string(encryptedPassword),

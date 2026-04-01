@@ -6,6 +6,7 @@ import (
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/autherrs"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
+	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 	"github.com/jictyvoo/amigonimo_api/pkg/dbrock/dberrs"
 )
 
@@ -24,7 +25,7 @@ func New(userRepository UserRepository, tokenRepository TokenRepository) UseCase
 }
 
 func (uc UseCase) Execute(
-	formUser entities.UserBasic,
+	formUser authvalues.UserBasic,
 ) (authToken entities.AuthenticationToken, err error) {
 	var user entities.User
 	switch {

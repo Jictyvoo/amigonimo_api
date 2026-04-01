@@ -3,7 +3,7 @@ package changepassword
 import (
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/autherrs"
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/userserv/session"
-	"github.com/jictyvoo/amigonimo_api/internal/entities"
+	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 )
 
 type UseCase struct {
@@ -28,7 +28,7 @@ func (uc UseCase) Execute(
 		return err
 	}
 
-	encryptedPassword, err := entities.UserBasic{Password: newPassword}.EncryptPassword()
+	encryptedPassword, err := authvalues.UserBasic{Password: newPassword}.EncryptPassword()
 	if err != nil {
 		return autherrs.NewErrPasswordEncryption(err)
 	}

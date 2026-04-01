@@ -5,7 +5,7 @@ import (
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/autherrs"
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/authserv/checkrecovery"
-	"github.com/jictyvoo/amigonimo_api/internal/entities"
+	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 )
 
 type UseCase struct {
@@ -16,7 +16,7 @@ func New(userRepository Repository) UseCase {
 	return UseCase{userRepository: userRepository}
 }
 
-func (uc UseCase) Execute(resetUser entities.UserBasic, recoveryCode string) error {
+func (uc UseCase) Execute(resetUser authvalues.UserBasic, recoveryCode string) error {
 	checkRecovery := checkrecovery.New(uc.userRepository)
 	userID, err := checkRecovery.Execute(resetUser.Email, recoveryCode)
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/autherrs"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
+	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 )
 
 func TestUseCaseExecute(t *testing.T) {
@@ -42,7 +43,7 @@ func TestUseCaseExecute(t *testing.T) {
 			setup: func(userRepo *MockUserRepository, _ *MockMailer) {
 				userRepo.EXPECT().
 					GetUserByEmail("user@example.com").
-					Return(entities.User{ID: userID, UserBasic: entities.UserBasic{Email: "user@example.com"}}, nil)
+					Return(entities.User{ID: userID, UserBasic: authvalues.UserBasic{Email: "user@example.com"}}, nil)
 				userRepo.EXPECT().
 					SetRecoveryCode(userID, gomock.Any(), gomock.Any()).
 					Return(errors.New("persist failed"))
@@ -54,7 +55,7 @@ func TestUseCaseExecute(t *testing.T) {
 			setup: func(userRepo *MockUserRepository, mailer *MockMailer) {
 				userRepo.EXPECT().
 					GetUserByEmail("user@example.com").
-					Return(entities.User{ID: userID, UserBasic: entities.UserBasic{Email: "user@example.com"}}, nil)
+					Return(entities.User{ID: userID, UserBasic: authvalues.UserBasic{Email: "user@example.com"}}, nil)
 				userRepo.EXPECT().
 					SetRecoveryCode(userID, gomock.Any(), gomock.Any()).
 					DoAndReturn(func(_ entities.HexID, code string, _ any) error {

@@ -6,7 +6,7 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore"
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/autherrs"
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/userserv/session"
-	"github.com/jictyvoo/amigonimo_api/internal/entities"
+	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 	"github.com/jictyvoo/amigonimo_api/pkg/dbrock/dberrs"
 )
 
@@ -24,7 +24,7 @@ func New(userRepository UserRepository, userEditRepository Repository, mailer Ma
 	}
 }
 
-func (uc UseCase) Execute(authToken string, emailForm entities.UserBasic) error {
+func (uc UseCase) Execute(authToken string, emailForm authvalues.UserBasic) error {
 	user, err := session.FindAndCheckUser(
 		uc.userEditRepository,
 		authToken,

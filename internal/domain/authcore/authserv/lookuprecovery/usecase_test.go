@@ -8,6 +8,7 @@ import (
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/autherrs"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
+	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 	"github.com/jictyvoo/amigonimo_api/pkg/dbrock/dberrs"
 )
 
@@ -19,7 +20,7 @@ func TestUseCaseExecute(t *testing.T) {
 	lookupErr := errors.New("lookup failed")
 	user := entities.User{
 		ID: userID,
-		UserBasic: entities.UserBasic{
+		UserBasic: authvalues.UserBasic{
 			Email: "user@example.com",
 		},
 	}

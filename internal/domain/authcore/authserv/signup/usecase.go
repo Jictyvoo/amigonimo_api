@@ -6,6 +6,7 @@ import (
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore"
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/autherrs"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
+	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 	"github.com/jictyvoo/amigonimo_api/pkg/dbrock/dberrs"
 )
 
@@ -21,7 +22,7 @@ func New(userRepository Repository, mailer Mailer) UseCase {
 	}
 }
 
-func (uc UseCase) Execute(inputUser entities.UserBasic) (entities.User, error) {
+func (uc UseCase) Execute(inputUser authvalues.UserBasic) (entities.User, error) {
 	user, err := uc.userRepository.GetUserByEmailOrUsername(inputUser.Email, inputUser.Username)
 	if err != nil && !errors.Is(err, &dberrs.ErrDatabaseNotFound{}) {
 		return entities.User{}, autherrs.NewErrSignUpLookup(err)
@@ -36,7 +37,7 @@ func (uc UseCase) Execute(inputUser entities.UserBasic) (entities.User, error) {
 	}
 
 	newUser := entities.User{
-		UserBasic: entities.UserBasic{
+		UserBasic: authvalues.UserBasic{
 			Username: inputUser.Username,
 			Email:    inputUser.Email,
 			Password: string(encryptedPassword),

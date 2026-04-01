@@ -8,6 +8,7 @@ import (
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/autherrs"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
+	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 	"github.com/jictyvoo/amigonimo_api/pkg/dbrock/dberrs"
 )
 
@@ -88,7 +89,7 @@ func TestUseCaseExecute(t *testing.T) {
 				password = "current-pass"
 			}
 
-			gotErr := New(userRepo, repo).Execute("auth-token", entities.UserBasic{
+			gotErr := New(userRepo, repo).Execute("auth-token", authvalues.UserBasic{
 				Username: "new-name",
 				Password: password,
 			})
@@ -113,14 +114,14 @@ func newChangeUsernameUser(
 ) entities.User {
 	t.Helper()
 
-	encryptedPassword, err := entities.UserBasic{Password: password}.EncryptPassword()
+	encryptedPassword, err := authvalues.UserBasic{Password: password}.EncryptPassword()
 	if err != nil {
 		t.Fatalf("EncryptPassword() error = %v", err)
 	}
 
 	return entities.User{
 		ID: id,
-		UserBasic: entities.UserBasic{
+		UserBasic: authvalues.UserBasic{
 			Username: username,
 			Password: string(encryptedPassword),
 		},

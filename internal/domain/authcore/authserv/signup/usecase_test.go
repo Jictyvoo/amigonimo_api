@@ -8,6 +8,7 @@ import (
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/autherrs"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
+	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 	"github.com/jictyvoo/amigonimo_api/pkg/dbrock/dberrs"
 )
 
@@ -17,7 +18,7 @@ func TestUseCaseExecute(t *testing.T) {
 		t.Fatalf("entities.NewHexID() error = %v", err)
 	}
 
-	input := entities.UserBasic{
+	input := authvalues.UserBasic{
 		Username: "amigo",
 		Email:    "user@example.com",
 		Password: "s3cret-pass",

@@ -8,6 +8,7 @@ import (
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/autherrs"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
+	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 )
 
 func TestUseCaseExecute(t *testing.T) {
@@ -89,14 +90,14 @@ func TestUseCaseExecute(t *testing.T) {
 func newChangePasswordUser(t *testing.T, id entities.HexID, password string) entities.User {
 	t.Helper()
 
-	encryptedPassword, err := entities.UserBasic{Password: password}.EncryptPassword()
+	encryptedPassword, err := authvalues.UserBasic{Password: password}.EncryptPassword()
 	if err != nil {
 		t.Fatalf("EncryptPassword() error = %v", err)
 	}
 
 	return entities.User{
 		ID: id,
-		UserBasic: entities.UserBasic{
+		UserBasic: authvalues.UserBasic{
 			Password: string(encryptedPassword),
 		},
 	}

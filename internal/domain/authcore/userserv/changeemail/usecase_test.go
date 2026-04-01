@@ -8,6 +8,7 @@ import (
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/autherrs"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
+	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 	"github.com/jictyvoo/amigonimo_api/pkg/dbrock/dberrs"
 )
 
@@ -22,12 +23,12 @@ func TestUseCaseExecute(t *testing.T) {
 	tests := []struct {
 		name    string
 		setup   func(*MockUserRepository, *MockRepository, *MockMailer)
-		form    entities.UserBasic
+		form    authvalues.UserBasic
 		wantErr error
 	}{
 		{
 			name: "propagates user not found from session check",
-			form: entities.UserBasic{
+			form: authvalues.UserBasic{
 				Email:    "new@example.com",
 				Password: "current-pass",
 			},
@@ -40,7 +41,7 @@ func TestUseCaseExecute(t *testing.T) {
 		},
 		{
 			name: "returns email in use when new email matches current email",
-			form: entities.UserBasic{
+			form: authvalues.UserBasic{
 				Email:    "old@example.com",
 				Password: "current-pass",
 			},
@@ -51,7 +52,7 @@ func TestUseCaseExecute(t *testing.T) {
 		},
 		{
 			name: "returns change email lookup error on infra failure",
-			form: entities.UserBasic{
+			form: authvalues.UserBasic{
 				Email:    "new@example.com",
 				Password: "current-pass",
 			},
@@ -65,7 +66,7 @@ func TestUseCaseExecute(t *testing.T) {
 		},
 		{
 			name: "returns email in use when lookup finds another user",
-			form: entities.UserBasic{
+			form: authvalues.UserBasic{
 				Email:    "new@example.com",
 				Password: "current-pass",
 			},
@@ -79,7 +80,7 @@ func TestUseCaseExecute(t *testing.T) {
 		},
 		{
 			name: "returns update email error when change email fails",
-			form: entities.UserBasic{
+			form: authvalues.UserBasic{
 				Email:    "new@example.com",
 				Password: "current-pass",
 			},
@@ -96,7 +97,7 @@ func TestUseCaseExecute(t *testing.T) {
 		},
 		{
 			name: "returns set verification error when verification update fails",
-			form: entities.UserBasic{
+			form: authvalues.UserBasic{
 				Email:    "new@example.com",
 				Password: "current-pass",
 			},
@@ -114,7 +115,7 @@ func TestUseCaseExecute(t *testing.T) {
 		},
 		{
 			name: "changes email and sends activation email on success",
-			form: entities.UserBasic{
+			form: authvalues.UserBasic{
 				Email:    "new@example.com",
 				Password: "current-pass",
 			},
@@ -174,14 +175,14 @@ func newChangeEmailUser(
 ) entities.User {
 	t.Helper()
 
-	encryptedPassword, err := entities.UserBasic{Password: password}.EncryptPassword()
+	encryptedPassword, err := authvalues.UserBasic{Password: password}.EncryptPassword()
 	if err != nil {
 		t.Fatalf("EncryptPassword() error = %v", err)
 	}
 
 	return entities.User{
 		ID: id,
-		UserBasic: entities.UserBasic{
+		UserBasic: authvalues.UserBasic{
 			Username: username,
 			Email:    email,
 			Password: string(encryptedPassword),

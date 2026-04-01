@@ -10,6 +10,7 @@ import (
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/autherrs"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
+	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 )
 
 func TestUseCaseExecute(t *testing.T) {
@@ -41,7 +42,7 @@ func TestUseCaseExecute(t *testing.T) {
 				repo.EXPECT().
 					CheckAuthenticationByRefreshToken("refresh").
 					Return(entities.AuthenticationToken{
-						BasicAuthToken: entities.BasicAuthToken{
+						BasicAuthToken: authvalues.BasicAuthToken{
 							ExpiresAt: time.Now().Add(-time.Minute),
 						},
 						User: entities.User{ID: userID},
@@ -55,7 +56,7 @@ func TestUseCaseExecute(t *testing.T) {
 				repo.EXPECT().
 					CheckAuthenticationByRefreshToken("refresh").
 					Return(entities.AuthenticationToken{
-						BasicAuthToken: entities.BasicAuthToken{
+						BasicAuthToken: authvalues.BasicAuthToken{
 							AuthToken: "old-token",
 							ExpiresAt: time.Now().Add(time.Minute),
 							RefreshToken: uuid.NullUUID{
@@ -77,7 +78,7 @@ func TestUseCaseExecute(t *testing.T) {
 				repo.EXPECT().
 					CheckAuthenticationByRefreshToken("refresh").
 					Return(entities.AuthenticationToken{
-						BasicAuthToken: entities.BasicAuthToken{
+						BasicAuthToken: authvalues.BasicAuthToken{
 							AuthToken: "old-token",
 							ExpiresAt: time.Now().Add(time.Minute),
 							RefreshToken: uuid.NullUUID{

@@ -9,6 +9,7 @@ import (
 
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/autherrs"
 	"github.com/jictyvoo/amigonimo_api/internal/entities"
+	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 )
 
 func TestUseCaseExecute(t *testing.T) {
@@ -71,7 +72,7 @@ func TestUseCaseExecute(t *testing.T) {
 			tt.setup(repo)
 
 			gotErr := New(repo).Execute(
-				entities.UserBasic{Email: "user@example.com", Password: "new-password"},
+				authvalues.UserBasic{Email: "user@example.com", Password: "new-password"},
 				"123456",
 			)
 			if tt.wantErr != nil {
