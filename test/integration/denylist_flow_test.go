@@ -7,12 +7,41 @@ import (
 	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores"
 	"github.com/wrapped-owls/testereiro/puppetest/pkg/atores/netoche"
 
+	"github.com/jictyvoo/amigonimo_api/internal/entities"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/denylistctrl"
 	authrunner "github.com/jictyvoo/amigonimo_api/test/integration/runners/auth"
 	denylistrunner "github.com/jictyvoo/amigonimo_api/test/integration/runners/denylist"
 	"github.com/jictyvoo/amigonimo_api/test/internal/fixtures"
 	"github.com/jictyvoo/amigonimo_api/test/internal/fixturesets"
 )
+
+// TestDenylistRequiresAuth verifies that denylist endpoints return 401 Unauthorized
+// when no Authorization header is provided.
+func TestDenylistRequiresAuth(t *testing.T) {
+	engine := NewEngine(t)
+	someID, _ := entities.NewHexID()
+
+	mr := atores.MultiRunner{
+		Runners: []atores.Runner{
+			netoche.New(
+				engine.BaseURL(),
+				netoche.WithRequest(http.MethodGet, "/secret-friends/{id}/denylist/", struct{}{}),
+				netoche.WithPathParam("id", someID),
+				netoche.ExpectStatus(http.StatusUnauthorized),
+			),
+			netoche.New(
+				engine.BaseURL(),
+				netoche.WithRequest(http.MethodPost, "/secret-friends/{id}/denylist/", struct{}{}),
+				netoche.WithPathParam("id", someID),
+				netoche.ExpectStatus(http.StatusUnauthorized),
+			),
+		},
+	}
+
+	if err := engine.Execute(t, mr); err != nil {
+		t.Fatalf("MultiRunner failed: %v", err)
+	}
+}
 
 func TestDenylistFlowSeeded(t *testing.T) {
 	engine := NewEngine(t)
@@ -162,6 +191,45 @@ func TestDenylistCapacityExceeded(t *testing.T) {
 				engine.BaseURL(),
 				eventSet.SecretFriendID(),
 				denylistctrl.AddDenyListRequest{TargetUserID: p3.ID().String()},
+				netoche.ExpectStatus(http.StatusConflict),
+			),
+		},
+	}
+
+	if err := engine.Execute(t, mr); err != nil {
+		t.Fatalf("MultiRunner failed: %v", err)
+	}
+}
+
+// TestDenylistDuplicateEntry verifies that adding the same participant to the
+// denylist twice returns 409 Conflict.
+func TestDenylistDuplicateEntry(t *testing.T) {
+	engine := NewEngine(t)
+	const userPassword = "denylist-dup-password"
+
+	owner := fixturesets.NewUser("denylist-dup-owner@example.com", userPassword, "")
+	target := fixturesets.NewUser("denylist-dup-target@example.com", userPassword, "")
+	eventSet := fixturesets.NewOwnerParticipant(owner, target, "Denylist Duplicate Event")
+
+	if err := engine.Seed(eventSet.Seedables()...); err != nil {
+		t.Fatalf("seedErr: %v", err)
+	}
+
+	mr := atores.MultiRunner{
+		Runners: []atores.Runner{
+			authrunner.Login(engine.BaseURL(), owner.User.Email, userPassword),
+			// First add succeeds.
+			denylistrunner.AddEntry(
+				engine.BaseURL(),
+				eventSet.SecretFriendID(),
+				denylistctrl.AddDenyListRequest{TargetUserID: target.ID().String()},
+				netoche.ExpectStatus(http.StatusOK),
+			),
+			// Adding the same user again must be rejected with 409 Conflict.
+			denylistrunner.AddEntry(
+				engine.BaseURL(),
+				eventSet.SecretFriendID(),
+				denylistctrl.AddDenyListRequest{TargetUserID: target.ID().String()},
 				netoche.ExpectStatus(http.StatusConflict),
 			),
 		},

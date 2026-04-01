@@ -17,6 +17,34 @@ import (
 	"github.com/jictyvoo/amigonimo_api/test/internal/fixturesets"
 )
 
+// TestDrawRoutesRequireAuth verifies that the draw and draw-result endpoints
+// return 401 Unauthorized when no Authorization header is provided.
+func TestDrawRoutesRequireAuth(t *testing.T) {
+	engine := NewEngine(t)
+	someID, _ := entities.NewHexID()
+
+	mr := atores.MultiRunner{
+		Runners: []atores.Runner{
+			netoche.New(
+				engine.BaseURL(),
+				netoche.WithRequest(http.MethodPost, "/secret-friends/{id}/draw", struct{}{}),
+				netoche.WithPathParam("id", someID),
+				netoche.ExpectStatus(http.StatusUnauthorized),
+			),
+			netoche.New(
+				engine.BaseURL(),
+				netoche.WithRequest(http.MethodGet, "/secret-friends/{id}/draw-result", struct{}{}),
+				netoche.WithPathParam("id", someID),
+				netoche.ExpectStatus(http.StatusUnauthorized),
+			),
+		},
+	}
+
+	if err := engine.Execute(t, mr); err != nil {
+		t.Fatalf("MultiRunner failed: %v", err)
+	}
+}
+
 func seedDrawEvent(
 	t *testing.T,
 	engine interface {
@@ -124,6 +152,39 @@ func TestDrawAlreadyDrawnConflict(t *testing.T) {
 				engine.BaseURL(),
 				drawEventID,
 				netoche.ExpectStatus(http.StatusConflict),
+			),
+		},
+	}
+
+	if err := engine.Execute(t, mr); err != nil {
+		t.Fatalf("MultiRunner failed: %v", err)
+	}
+}
+
+// TestDrawResultBeforeDraw verifies that requesting a draw result before the draw
+// has been executed returns 404 Not Found.
+func TestDrawResultBeforeDraw(t *testing.T) {
+	engine := NewEngine(t)
+	const userPassword = "draw-before-password"
+
+	owner := fixturesets.NewUser("draw-before-owner@example.com", userPassword, "")
+	eventSet := fixturesets.NewOwnerParticipant(
+		owner,
+		fixturesets.NewUser("draw-before-p1@example.com", userPassword, ""),
+		"Draw Before Event",
+	)
+
+	if err := engine.Seed(eventSet.Seedables()...); err != nil {
+		t.Fatalf("seedErr: %v", err)
+	}
+
+	mr := atores.MultiRunner{
+		Runners: []atores.Runner{
+			authrunner.Login(engine.BaseURL(), owner.User.Email, userPassword),
+			secretfriendsrunner.GetDrawResult(
+				engine.BaseURL(),
+				eventSet.SecretFriendID(),
+				netoche.ExpectStatus(http.StatusNotFound),
 			),
 		},
 	}

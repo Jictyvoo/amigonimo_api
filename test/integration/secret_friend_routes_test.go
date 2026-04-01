@@ -19,6 +19,62 @@ import (
 	"github.com/jictyvoo/amigonimo_api/test/internal/fixturesets"
 )
 
+// TestSecretFriendRoutesRequireAuth verifies that the secret-friend and participant
+// endpoints return 401 Unauthorized when no Authorization header is provided.
+func TestSecretFriendRoutesRequireAuth(t *testing.T) {
+	engine := NewEngine(t)
+	someID, _ := entities.NewHexID()
+
+	mr := atores.MultiRunner{
+		Runners: []atores.Runner{
+			netoche.New(
+				engine.BaseURL(),
+				netoche.WithRequest(http.MethodGet, "/secret-friends/", struct{}{}),
+				netoche.ExpectStatus(http.StatusUnauthorized),
+			),
+			netoche.New(
+				engine.BaseURL(),
+				netoche.WithRequest(
+					http.MethodPost,
+					"/secret-friends/",
+					secretfriendsctrl.CreateSecretFriendRequest{Name: "Test"},
+				),
+				netoche.ExpectStatus(http.StatusUnauthorized),
+			),
+			netoche.New(
+				engine.BaseURL(),
+				netoche.WithRequest(http.MethodGet, "/secret-friends/{id}", struct{}{}),
+				netoche.WithPathParam("id", someID),
+				netoche.ExpectStatus(http.StatusUnauthorized),
+			),
+			netoche.New(
+				engine.BaseURL(),
+				netoche.WithRequest(
+					http.MethodPatch,
+					"/secret-friends/{id}",
+					secretfriendsctrl.UpdateSecretFriendRequest{},
+				),
+				netoche.WithPathParam("id", someID),
+				netoche.ExpectStatus(http.StatusUnauthorized),
+			),
+			netoche.New(
+				engine.BaseURL(),
+				netoche.WithRequest(
+					http.MethodGet,
+					"/secret-friends/{id}/participants/",
+					struct{}{},
+				),
+				netoche.WithPathParam("id", someID),
+				netoche.ExpectStatus(http.StatusUnauthorized),
+			),
+		},
+	}
+
+	if err := engine.Execute(t, mr); err != nil {
+		t.Fatalf("MultiRunner failed: %v", err)
+	}
+}
+
 func TestSecretFriendMountedRoutes(t *testing.T) {
 	engine := NewEngine(t)
 	const ownerPassword = "owner-routes-password"
