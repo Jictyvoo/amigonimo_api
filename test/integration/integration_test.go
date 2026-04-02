@@ -16,6 +16,7 @@ import (
 
 	"github.com/jictyvoo/amigonimo_api/build/migrations"
 	"github.com/jictyvoo/amigonimo_api/internal/bootstrap"
+	"github.com/jictyvoo/amigonimo_api/internal/infra/repositories/mysqlrepo"
 )
 
 var NewEngine func(t testing.TB) *puppetest.Engine
@@ -28,10 +29,10 @@ func mysqlPerformer(ctx context.Context, conf puppetest.DBConnectionConfig) (*sq
 		dbConf.Database = conf.DBName
 	}
 
-	mysqlConf := bootstrap.MySQLConfig(dbConf)
+	mysqlConf := mysqlrepo.MySQLConfig(dbConf)
 	mysqlConf.MultiStatements = conf.AllowMultiStatements
 
-	return bootstrap.PerformDatabaseConnection(ctx, mysqlConf, dbConf.Timeout)
+	return mysqlrepo.PerformDatabaseConnection(ctx, mysqlConf, dbConf.Timeout)
 }
 
 func withTestServer(e *puppetest.Engine) (http.Handler, error) {
