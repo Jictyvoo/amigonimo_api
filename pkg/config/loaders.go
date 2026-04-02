@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
-	"github.com/pkg/errors"
 )
 
 func LoadConfigFromEnv(config *Config) error {
@@ -58,7 +57,7 @@ func LoadTOML(paths ...string) (config Config, err error) {
 		cleanPath := filepath.Clean(path)
 		file, err = os.OpenFile(cleanPath, os.O_RDONLY, 0)
 		if os.IsNotExist(err) || file == nil {
-			err = errors.Wrap(err, fmt.Sprintf("Unable to load config from %s", path))
+			err = fmt.Errorf("unable to load config from %s: %w", path, err)
 			return
 		}
 

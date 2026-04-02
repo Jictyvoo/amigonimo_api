@@ -1,22 +1,27 @@
 package sqltest
 
 import (
+	"errors"
 	"fmt"
+	"os"
 	"unicode"
 
 	"github.com/jictyvoo/amigonimo_api/pkg/config"
 )
 
-// loadConfig finds conf.toml by walking up from the current working directory
-// to the module root (identified by go.mod), then loads the config.
+// loadConfig loads conf.toml from the current working directory if present,
+// then overlays any DATABASE_* / DEBUG / etc. environment variables on top.
+// A missing conf.toml is not an error; env vars alone are sufficient.
 func loadConfig() (config.Config, error) {
 	conf, loadErr := config.LoadTOML(config.DefaultFileName)
-	if loadErr != nil {
+	if loadErr != nil && !os.IsNotExist(errors.Unwrap(loadErr)) {
 		return config.Config{}, fmt.Errorf("load %s: %w", config.DefaultFileName, loadErr)
 	}
 
 	// Allow env vars to override individual fields
-	_ = config.LoadConfigFromEnv(&conf)
+	if err := config.LoadConfigFromEnv(&conf); err != nil {
+		return config.Config{}, fmt.Errorf("load env: %w", err)
+	}
 	return conf, nil
 }
 
