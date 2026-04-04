@@ -23,7 +23,7 @@ type Factory struct {
 // NewFactory loads configuration, then opens a root connection (no database
 // selected) that has enough privileges to CREATE/DROP databases.
 func NewFactory() (*Factory, error) {
-	conf, err := loadConfig()
+	conf, err := config.Load(config.DefaultFileName)
 	if err != nil {
 		return nil, fmt.Errorf("sqltest: load config: %w", err)
 	}

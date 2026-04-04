@@ -17,16 +17,9 @@ func configGenCMD() (err error) {
 		configData config.Config
 	)
 
-	configData, err = config.LoadTOML(config.DefaultFileName)
+	configData, err = config.Load(config.DefaultFileName)
 	if err != nil {
-		err = errors.Unwrap(err)
-		if unwrappedErr := errors.Unwrap(err); unwrappedErr != nil {
-			err = unwrappedErr
-		}
-
-		if !os.IsNotExist(err) {
-			return err
-		}
+		return err
 	}
 
 	const filePerm = 0o600
