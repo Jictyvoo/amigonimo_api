@@ -1,13 +1,16 @@
 package config
 
 import (
+	"maps"
+	"path/filepath"
 	"reflect"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
 
-func testValues() (Config, map[string]string) {
+func testEnvValues() (Config, map[string]string) {
 	expected := Config{
 		IsDebug:     true,
 		ProjectName: "my_project",
@@ -35,7 +38,7 @@ func testValues() (Config, map[string]string) {
 		envAPIPort:          strconv.Itoa(int(expected.Runtime.Port)),
 		envAuthSecretKey:    expected.Runtime.AuthSecretKey,
 		envDatabaseHost:     expected.Database.Host,
-		envDatabasePort:     "5432",
+		envDatabasePort:     strconv.Itoa(int(expected.Database.Port)),
 		envDatabaseUser:     expected.Database.User,
 		envDatabasePassword: expected.Database.Password,
 		envDatabaseName:     expected.Database.Database,
@@ -53,29 +56,122 @@ func setupEnv(t *testing.T, env map[string]string) {
 }
 
 func TestLoadConfigFromEnv(t *testing.T) {
-	expected, env := testValues()
-	setupEnv(t, env)
+	allExpected, allEnv := testEnvValues()
 
-	var cfg Config
-	if err := LoadConfigFromEnv(&cfg); err != nil {
-		t.Fatalf("LoadConfigFromEnv returned error: %v", err)
+	tests := []struct {
+		name string
+		env  map[string]string
+		want Config
+	}{
+		{
+			name: "all env vars populated",
+			env:  allEnv,
+			want: allExpected,
+		},
+		{
+			name: "only database env vars populated",
+			env: func() map[string]string {
+				dbOnly := maps.Clone(allEnv)
+				for key := range dbOnly {
+					if !strings.HasPrefix(key, "DATABASE") {
+						delete(dbOnly, key)
+					}
+				}
+				return dbOnly
+			}(),
+			want: Config{Database: allExpected.Database},
+		},
+		{
+			name: "no env vars leaves config unchanged",
+			env:  map[string]string{},
+			want: Config{},
+		},
 	}
 
-	if cfg.IsDebug != expected.IsDebug {
-		t.Errorf("IsDebug mismatch: got %v want %v", cfg.IsDebug, expected.IsDebug)
-	}
-	if cfg.ProjectName != expected.ProjectName {
-		t.Errorf("ProjectName mismatch: got %q want %q", cfg.ProjectName, expected.ProjectName)
-	}
-
-	if cfg.Runtime.APILocale != expected.Runtime.APILocale {
-		t.Errorf(
-			"APILocale mismatch: got %q want %q",
-			cfg.Runtime.APILocale, expected.Runtime.APILocale,
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				setupEnv(t, tt.env)
+				var cfg Config
+				if err := LoadConfigFromEnv(&cfg); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if !reflect.DeepEqual(cfg, tt.want) {
+					t.Errorf("config mismatch:\n got  %+v\n want %+v", cfg, tt.want)
+				}
+			},
 		)
 	}
+}
 
-	if !reflect.DeepEqual(cfg.Database, expected.Database) {
-		t.Errorf("Database mismatch:\n got  %+v\n want %+v", cfg.Database, expected.Database)
+func TestLoad(t *testing.T) {
+	content, want := testConfigFixture(t)
+
+	tests := []struct {
+		name    string
+		setup   func(t *testing.T) string
+		wantErr bool
+		checkFn func(t *testing.T, cfg Config)
+	}{
+		{
+			name: "loads from explicit filename",
+			setup: func(t *testing.T) string {
+				return writeTempConfig(t, content)
+			},
+			checkFn: func(t *testing.T, cfg Config) {
+				if !reflect.DeepEqual(cfg, want) {
+					t.Errorf("config mismatch:\n got  %+v\n want %+v", cfg, want)
+				}
+			},
+		},
+		{
+			name: "CONF_FILE env overrides filename argument",
+			setup: func(t *testing.T) string {
+				realPath := writeTempConfig(t, content)
+				t.Setenv(envConfFile, realPath)
+				return filepath.Join(t.TempDir(), "should_not_be_used.toml")
+			},
+			checkFn: func(t *testing.T, cfg Config) {
+				if cfg.ProjectName != want.ProjectName {
+					t.Errorf("ProjectName: got %q want %q", cfg.ProjectName, want.ProjectName)
+				}
+			},
+		},
+		{
+			name: "missing file is not an error",
+			setup: func(t *testing.T) string {
+				return filepath.Join(t.TempDir(), "absent.toml")
+			},
+		},
+		{
+			name: "env var overlays file value",
+			setup: func(t *testing.T) string {
+				t.Setenv(envProjectName, "overridden_project")
+				return writeTempConfig(t, content)
+			},
+			checkFn: func(t *testing.T, cfg Config) {
+				if cfg.ProjectName != "overridden_project" {
+					t.Errorf("env overlay: got %q want %q", cfg.ProjectName, "overridden_project")
+				}
+				if cfg.Runtime.Host != want.Runtime.Host {
+					t.Errorf("file value lost: got %q want %q", cfg.Runtime.Host, want.Runtime.Host)
+				}
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				filename := tt.setup(t)
+				cfg, err := Load(filename)
+				if (err != nil) != tt.wantErr {
+					t.Fatalf("error = %v, wantErr %v", err, tt.wantErr)
+				}
+				if tt.checkFn != nil {
+					tt.checkFn(t, cfg)
+				}
+			},
+		)
 	}
 }
