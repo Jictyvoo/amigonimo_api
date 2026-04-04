@@ -16,7 +16,7 @@ func testEnvValues() (Config, map[string]string) {
 		ProjectName: "my_project",
 		Runtime: Runtime{
 			APILocale:     "pt-br",
-			Host:          "localH0$T.0.0.1",
+			Host:          "localh0$t.0.0.1",
 			Port:          5648,
 			AuthSecretKey: "my_secret_key",
 		},
@@ -116,6 +116,7 @@ func TestLoad(t *testing.T) {
 		{
 			name: "loads from explicit filename",
 			setup: func(t *testing.T) string {
+				t.Setenv(envConfFile, "")
 				return writeTempConfig(t, content)
 			},
 			checkFn: func(t *testing.T, cfg Config) {
@@ -140,12 +141,14 @@ func TestLoad(t *testing.T) {
 		{
 			name: "missing file is not an error",
 			setup: func(t *testing.T) string {
+				t.Setenv(envConfFile, "")
 				return filepath.Join(t.TempDir(), "absent.toml")
 			},
 		},
 		{
 			name: "env var overlays file value",
 			setup: func(t *testing.T) string {
+				t.Setenv(envConfFile, "")
 				t.Setenv(envProjectName, "overridden_project")
 				return writeTempConfig(t, content)
 			},
