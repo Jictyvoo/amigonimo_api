@@ -16,20 +16,26 @@ tasks:
   test:execution:
     desc: Execute test based on a given variable checking for coverage or not
     internal: true
+    env:
+      CONF_FILE: "{{.CONF_FILE}}"
     cmds:
       - cmd: "{{.COMMAND}}"
     vars:
       COVERAGE_FILENAME: "{{ .COVERAGE_FILENAME }}"
-      TEST_CMD: "go test ./..."
-      TEST_COVERAGE_CMD: "go test -p 1 -count=1 -coverpkg=./... ./... -coverprofile={{.COVERAGE_FILENAME}}"
+      TAGS: "{{.TAGS}}"
+      TEST_CMD: "go test {{if .TAGS}}-tags {{.TAGS}} {{end}}./..."
+      TEST_COVERAGE_CMD: "go test -p 1 -count=1 {{if .TAGS}}-tags {{.TAGS}} {{end}}-coverpkg=./... ./... -coverprofile={{.COVERAGE_FILENAME}}"
       COMMAND:
         sh: '[[ -z "{{.COVERAGE_FILENAME}}" ]] && echo {{.TEST_CMD}} || echo {{.TEST_COVERAGE_CMD}}'
 
   test:
-    desc: Execute tests
+    desc: Execute tests. Pass TAGS=integration to include integration tests.
     cmds:
       - task: test:execution
-        vars: { COVERAGE_FILENAME: "build/coverages/coverage.out" }
+        vars:
+          CONF_FILE: "{{.ROOT_DIR}}/test/integration/conf.toml"
+          COVERAGE_FILENAME: "build/coverages/coverage.out"
+          TAGS: "{{.TAGS}}"
 
   run:
     cmds:
