@@ -1,5 +1,5 @@
 ### STAGE 1: Build ###
-FROM golang:1.25-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 ENV PATH=$GOPATH/bin:$PATH
 ENV CGO_ENABLED=0
