@@ -1,31 +1,26 @@
 # Roadmap
 
+Items listed here are outstanding. Completed features are documented in [FEATURES.md](FEATURES.md).
+
 ## Testing & Quality Assurance
 
-- [ ] **Unit Tests**: Create more unit tests for each usecase and service to improve coverage.
-- [ ] **Integration Tests**: Integrate a custom mock server to allow testing of mailer requests/email sending in
-  integration tests.
+- **Integration Tests – Mailer**: Add a mock HTTP server to cover the webhook mailer backend and SMTP
+  interactions in integration tests.
 
-## Core Features & Services
+## Flow & Logic
 
-- [ ] **Draw Service**: Finalize the implementation of the `drawserv` service to ensure correct pairing logic.
-- [ ] **Mailer Service**: Implement the mailer service for sending notifications and results.
+- **Invite Flow**: The invite-code lookup endpoint exists. A full review of access controls (public
+  vs. restricted invites) and the invite acceptance flow is still needed.
+- **Unmounted Auth Routes**: `PUT /auth/password/forgot` and `GET /auth/verify/:verify_code` are
+  implemented but not wired into the router; the forgot-password and email-verification flows are
+  therefore incomplete end-to-end.
 
-## Flow & Logic Refactoring
+## Code Structure
 
-- [ ] **Invite Flow**: Complete revisit of the "invite someone to secret-friend" flow:
-    - Review invite code mechanisms.
-    - Define access controls (public vs. specific people).
-- [ ] **Participant Validation (ID Injection)**: Ensure users can only add to their wishlist or denylist if they are
-  confirmed participants of the group. Prevent ID injection where a user could modify another user's lists.
-- [ ] **Denylist Control**: Add a missing feature to control/limit the maximum size of a user's denylist. Prevent users
-  from adding themselves or non-participants to their denylist.
-- [ ] **Wishlist Control**: Add an internal limit for the maximum wishlist size (even if not exposed
-  configuration-wise).
-- [ ] **Wait Phase / Status**: Implement a feature for users to explicitly mark their preferences (wishlist/denylist) as
-  finished, allowing the organizer to see who is ready.
+- **Entity Boundary Cleanup**: Several DTO-like types (`UserBasic`, `BasicAuthToken`, `VerifyToken`,
+  `DeniedUser`, `DrawResult`) still live in `internal/entities`. They should move to action-local
+  packages or a dedicated value-object layer.
+- **Action-Split Usecases**: `secretfriend`, `participant`, `wishlist`, and `denylist` packages are
+  still service-style aggregates. The target shape is one package per application action (matching the
+  pattern already established by `drawfriends/execute` and `drawfriends/getresult`).
 
-## Data Structure Refactoring
-
-- [ ] **User Struct**: Refactor the `User` struct by removing `FullName`.
-- [ ] **UserProfile**: Move `FullName` to a new `UserProfile` struct/table (keeping column data intact/migrated).
