@@ -181,14 +181,19 @@ func buildMail(ctx context.Context, e *emailParts) ([]byte, error) {
 	// Envelope headers (From, To, Subject).
 	e.writeHeader(buf)
 
-	// Top-level MIME content headers.
+	// Top-level MIME content headers: pick the correct multipart subtype.
 	switch {
 	case mw != nil:
-		headerToBytes(
-			buf, textproto.MIMEHeader{
-				mimeContentType: {withBoundary(mimeMultiMixed, mw.Boundary())},
-			},
-		)
+		topType := mimeMultiMixed
+		switch {
+		case !e.isMixed() && e.isAlternative():
+			topType = mimeMultiAlt
+		case !e.isMixed() && !e.isAlternative() && e.isRelated():
+			topType = mimeMultiRelated
+		}
+		headerToBytes(buf, textproto.MIMEHeader{
+			mimeContentType: {withBoundary(topType, mw.Boundary())},
+		})
 	case len(e.bodyHTML) > 0:
 		headerToBytes(
 			buf, textproto.MIMEHeader{
