@@ -2,10 +2,13 @@ package main
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/wrapped-owls/goremy-di/remy"
 
+	"github.com/jictyvoo/amigonimo_api/build/migrations"
 	"github.com/jictyvoo/amigonimo_api/internal/bootstrap"
 )
 
@@ -15,6 +18,13 @@ func main() {
 	defer func() {
 		_ = db.Close()
 	}()
+
+	if os.Getenv("RUN_MIGRATIONS") == "true" {
+		if err := bootstrap.RunMigrations(conf.Database, migrations.VersionedMigrationsFS()); err != nil {
+			slog.Error("migration failed", slog.String("error", err.Error()))
+			os.Exit(1)
+		}
+	}
 
 	inj := remy.NewInjector(remy.Config{DuckTypeElements: true})
 	remy.RegisterInstance(inj, db)
@@ -28,6 +38,7 @@ func main() {
 	conf.Runtime.AuthSecretKey = "" // Empty the secret key after injection
 
 	// Create web server
+	//
 	//goland:noinspection GoResourceLeak
 	server, err := bootstrap.NewWebServer(conf, jwtPublicKey, inj)
 	if err != nil {
