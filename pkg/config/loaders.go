@@ -51,7 +51,10 @@ func LoadConfigFromEnv(config *Config) error {
 		config.IsDebug = useDebugStr != "false"
 	}
 
-	return LoadDatabaseFromEnv(&config.Database)
+	if err = LoadDatabaseFromEnv(&config.Database); err != nil {
+		return err
+	}
+	return LoadMailerFromEnv(&config.Mailer)
 }
 
 func LoadDatabaseFromEnv(conf *Database) error {
@@ -62,5 +65,28 @@ func LoadDatabaseFromEnv(conf *Database) error {
 		BindField(&conf.Password, envDatabasePassword, nil),
 		BindField(&conf.Database, envDatabaseName, nil),
 		BindFieldErr(&conf.Timeout, envDatabaseTimeout, time.ParseDuration),
+	)
+}
+
+func LoadMailerFromEnv(conf *Mailer) error {
+	if err := BindEnv(
+		BindField(&conf.Driver, envMailerDriver, strings.ToLower),
+		BindField(&conf.From, envMailerFrom, strings.TrimSpace),
+		BindField(&conf.FromName, envMailerFromName, strings.TrimSpace),
+	); err != nil {
+		return err
+	}
+	if err := BindEnv(
+		BindField(&conf.Smtp.Host, envSmtpHost, strings.ToLower),
+		BindField(&conf.Smtp.Port, envSmtpPort, nil),
+		BindField(&conf.Smtp.User, envSmtpUser, strings.TrimSpace),
+		BindField(&conf.Smtp.Password, envSmtpPassword, nil),
+		BindField(&conf.Smtp.Encryption, envSmtpEncryption, strings.ToLower),
+	); err != nil {
+		return err
+	}
+	return BindEnv(
+		BindField(&conf.Webhook.URL, envWebhookURL, strings.TrimSpace),
+		BindField(&conf.Webhook.APIKey, envWebhookAPIKey, strings.TrimSpace),
 	)
 }

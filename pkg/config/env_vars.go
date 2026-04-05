@@ -17,11 +17,25 @@ const (
 	envAPIHost       = "API_HOST"
 	envAPIPort       = "API_PORT"
 	envAuthSecretKey = "AUTH_SECRET_KEY" //nolint:gosec
+
+	envMailerDriver   = "MAILER_DRIVER"
+	envMailerFrom     = "MAILER_FROM"
+	envMailerFromName = "MAILER_FROM_NAME"
+
+	envSmtpHost       = "SMTP_HOST"
+	envSmtpPort       = "SMTP_PORT"
+	envSmtpUser       = "SMTP_USER"
+	envSmtpPassword   = "SMTP_PASSWORD" //nolint:gosec
+	envSmtpEncryption = "SMTP_ENCRYPTION"
+
+	envWebhookURL    = "MAILER_WEBHOOK_URL"
+	envWebhookAPIKey = "MAILER_WEBHOOK_API_KEY" //nolint:gosec
 )
 
 const (
 	defaultAPIPort      = 8649
 	defaultDatabasePort = 3306
+	defaultSmtpPort     = 587
 )
 
 func DefaultConfig() Config {
@@ -39,6 +53,13 @@ func DefaultConfig() Config {
 			Password: "testing_u-know",
 			Database: "amigonimo_db",
 			Timeout:  time.Second,
+		},
+		Mailer: Mailer{
+			Driver: "stub",
+			Smtp: MailerSmtp{
+				Port:       defaultSmtpPort,
+				Encryption: "tls",
+			},
 		},
 	}
 }
