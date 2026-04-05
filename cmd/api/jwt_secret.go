@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
@@ -10,8 +11,12 @@ import (
 )
 
 func registerSecret(secretKey []byte, inj remy.Injector) (*rsa.PublicKey, error) {
+	// Docker (and some env var sources) may carry literal `\n` (two chars: backslash+n)
+	// instead of real newline bytes. Normalise both variants so pem.Decode can find the block.
+	normalised := bytes.ReplaceAll(secretKey, []byte(`\n`), []byte("\n"))
+
 	// Parse RSA private key from PEM-encoded bytes
-	block, _ := pem.Decode(secretKey)
+	block, _ := pem.Decode(normalised)
 	if block == nil {
 		return nil, fmt.Errorf("failed to decode PEM block from secret key")
 	}
