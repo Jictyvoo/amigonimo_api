@@ -9,4 +9,5 @@ CREATE TABLE IF NOT EXISTS schema_revisions
     error          LONGTEXT     NULL,
     hash           VARCHAR(255) NOT NULL DEFAULT '',
     PRIMARY KEY (version)
-) CHARSET utf8mb4 COLLATE utf8mb4_bin
+) CHARSET utf8mb4
+  COLLATE utf8mb4_bin
