@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"crypto/rsa"
 	"time"
 
@@ -11,20 +12,29 @@ import (
 	"github.com/jictyvoo/amigonimo_api/pkg/web"
 )
 
+type AuthServiceFactory func(ctx context.Context) (authserv.AuthService, error)
+
 type AuthenticationController struct {
 	web.DefaultController
 
-	secretKey *rsa.PrivateKey
-	authServ  authserv.AuthService
+	secretKey       *rsa.PrivateKey
+	authServFactory AuthServiceFactory
 }
 
 func NewAuthController(
-	secretKey *rsa.PrivateKey, authServ authserv.AuthService,
+	secretKey *rsa.PrivateKey,
+	authServFactory AuthServiceFactory,
 ) AuthenticationController {
 	return AuthenticationController{
-		authServ:  authServ,
-		secretKey: secretKey,
+		authServFactory: authServFactory,
+		secretKey:       secretKey,
 	}
+}
+
+func (h *AuthenticationController) authService(
+	ctx context.Context,
+) (authserv.AuthService, error) {
+	return h.authServFactory(ctx)
 }
 
 // generateJWT creates a JWT token from AuthenticationToken with user info.

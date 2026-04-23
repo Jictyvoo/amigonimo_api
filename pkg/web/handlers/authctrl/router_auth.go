@@ -1,6 +1,8 @@
 package authctrl
 
 import (
+	"context"
+	"crypto/rsa"
 	"fmt"
 
 	"github.com/go-fuego/fuego"
@@ -8,6 +10,7 @@ import (
 	"github.com/go-fuego/fuego/param"
 	"github.com/wrapped-owls/goremy-di/remy"
 
+	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/authserv"
 	"github.com/jictyvoo/amigonimo_api/pkg/web"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/authctrl/controllers"
 )
@@ -18,19 +21,20 @@ type RouterAuth struct {
 }
 
 func NewAuthRouter(config Config) *RouterAuth {
-	remy.RegisterConstructorArgs2(
-		config.Injector,
-		remy.LazySingleton[controllers.AuthenticationController],
-		controllers.NewAuthController,
-	)
 	return &RouterAuth{middlewares: []web.HttpMiddleware{}, config: config}
 }
 
 func (r *RouterAuth) RegisterRoutes(server *fuego.Server) error {
-	authHandlers, err := remy.Get[controllers.AuthenticationController](r.config.Injector)
+	secretKey, err := remy.Get[*rsa.PrivateKey](r.config.Injector)
 	if err != nil {
-		return fmt.Errorf("register auth handler: %w", err)
+		return fmt.Errorf("register auth handler: get secret key: %w", err)
 	}
+
+	var authServFac controllers.AuthServiceFactory = func(ctx context.Context) (authserv.AuthService, error) {
+		return remy.GetWithContext[authserv.AuthService](r.config.Injector, ctx)
+	}
+
+	authHandlers := controllers.NewAuthController(secretKey, authServFac)
 
 	tag := option.Tags("Authentication")
 	r.registerBasicAuthRoutes(server, authHandlers, tag)

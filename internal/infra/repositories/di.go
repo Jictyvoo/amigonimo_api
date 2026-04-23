@@ -15,7 +15,7 @@ import (
 
 func RegisterRepositories(inj remy.Injector) {
 	// Base SQL connection wrapper
-	remy.RegisterConstructorArgs1(inj, remy.Factory[mysqlrepo.RepoMySQL], mysqlrepo.NewRepoMySQL)
+	remy.RegisterConstructorArgs2(inj, remy.Factory[mysqlrepo.RepoMySQL], mysqlrepo.NewRepoMySQL)
 
 	// Start to inject all other constructors
 	remy.RegisterConstructorArgs1(
