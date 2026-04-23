@@ -1,9 +1,13 @@
 package authctrl
 
 import (
+	"context"
+
 	"github.com/go-fuego/fuego"
 	"github.com/go-fuego/fuego/option"
+	"github.com/wrapped-owls/goremy-di/remy"
 
+	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/userserv"
 	"github.com/jictyvoo/amigonimo_api/pkg/web"
 	"github.com/jictyvoo/amigonimo_api/pkg/web/handlers/authctrl/controllers"
 )
@@ -11,10 +15,15 @@ import (
 type RouterUser struct {
 	activeRoutes DefinedRoute
 	middlewares  []web.HttpMiddleware
+	injector     remy.Injector
 }
 
-func NewUserRouter(activeRoutes DefinedRoute) *RouterUser {
-	return &RouterUser{middlewares: []web.HttpMiddleware{}, activeRoutes: activeRoutes}
+func NewUserRouter(activeRoutes DefinedRoute, injector remy.Injector) *RouterUser {
+	return &RouterUser{
+		middlewares:  []web.HttpMiddleware{},
+		activeRoutes: activeRoutes,
+		injector:     injector,
+	}
 }
 
 func (r *RouterUser) GroupName() string {
@@ -26,7 +35,10 @@ func (r *RouterUser) Middlewares() []web.HttpMiddleware {
 }
 
 func (r *RouterUser) RegisterRoutes(server *fuego.Server) error {
-	ctrl := controllers.NewUserEditionController(nil, nil, nil)
+	var servFac controllers.UserEditionServiceFactory = func(ctx context.Context) (userserv.UserEditionService, error) {
+		return remy.GetWithContext[userserv.UserEditionService](r.injector, ctx)
+	}
+	ctrl := controllers.NewUserEditionController(servFac)
 	// Bind handlers
 	groupTag := option.Tags("User Management")
 	if r.activeRoutes.is(RouteEditPassword) {
