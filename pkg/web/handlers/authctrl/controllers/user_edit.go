@@ -1,33 +1,31 @@
 package controllers
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strings"
 
 	"github.com/go-fuego/fuego"
 
-	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/authserv"
 	"github.com/jictyvoo/amigonimo_api/internal/domain/authcore/userserv"
 	"github.com/jictyvoo/amigonimo_api/internal/entities/authvalues"
 	"github.com/jictyvoo/amigonimo_api/pkg/web"
 )
 
+type UserEditionServiceFactory func(ctx context.Context) (userserv.UserEditionService, error)
+
 type UserEditionController struct {
 	web.DefaultController
 
-	serv userserv.UserEditionService
+	servFactory UserEditionServiceFactory
 }
 
 func NewUserEditionController(
-	mailerService authserv.MailerService,
-	userRepository authserv.UserAuthRepository,
-	userEditionRepository userserv.UserEditionRepository,
+	servFactory UserEditionServiceFactory,
 ) UserEditionController {
 	return UserEditionController{
-		serv: userserv.NewUserEditService(
-			userRepository, userEditionRepository, mailerService,
-		),
+		servFactory: servFactory,
 	}
 }
 
@@ -48,7 +46,12 @@ func (ctrl UserEditionController) EditUserPassword(
 		return nil, ctrl.HandleError(err)
 	}
 
-	err = ctrl.serv.ChangePassword.Execute(token, req.CurrentPassword, req.NewPassword)
+	serv, err := ctrl.servFactory(c.Context())
+	if err != nil {
+		return nil, ctrl.HandleError(err)
+	}
+
+	err = serv.ChangePassword.Execute(token, req.CurrentPassword, req.NewPassword)
 	if err != nil {
 		return nil, ctrl.HandleError(err)
 	}
@@ -80,7 +83,12 @@ func (ctrl UserEditionController) EditUsername(
 		Username: req.NewUsername,
 		Password: req.CurrentPassword,
 	}
-	if err = ctrl.serv.ChangeUsername.Execute(token, userDTO); err != nil {
+	serv, err := ctrl.servFactory(c.Context())
+	if err != nil {
+		return nil, ctrl.HandleError(err)
+	}
+
+	if err = serv.ChangeUsername.Execute(token, userDTO); err != nil {
 		return nil, ctrl.HandleError(err)
 	}
 
@@ -111,7 +119,12 @@ func (ctrl UserEditionController) EditUserEmail(
 		Email:    req.NewEmail,
 		Password: req.CurrentPassword,
 	}
-	if err = ctrl.serv.ChangeEmail.Execute(token, userDTO); err != nil {
+	serv, err := ctrl.servFactory(c.Context())
+	if err != nil {
+		return nil, ctrl.HandleError(err)
+	}
+
+	if err = serv.ChangeEmail.Execute(token, userDTO); err != nil {
 		return nil, ctrl.HandleError(err)
 	}
 
