@@ -16,15 +16,20 @@ var _ dbrock.Transactioner = (*RepoMySQL)(nil)
 type RepoMySQL struct {
 	conn    *sql.DB
 	queries *dbgen.Queries
+	ctx     context.Context
 }
 
-func NewRepoMySQL(db *sql.DB) RepoMySQL {
-	return RepoMySQL{conn: db, queries: dbgen.New(db)}
+func NewRepoMySQL(ctx context.Context, db *sql.DB) RepoMySQL {
+	return RepoMySQL{ctx: ctx, conn: db, queries: dbgen.New(db)}
 }
 
 func (r *RepoMySQL) Ctx() (context.Context, context.CancelFunc) {
 	const dbTimeout = 30 * time.Second
-	return context.WithTimeout(context.Background(), dbTimeout)
+	baseCtx := r.ctx
+	if baseCtx == nil {
+		baseCtx = context.Background()
+	}
+	return context.WithTimeout(baseCtx, dbTimeout)
 }
 
 func (r *RepoMySQL) Connection() *sql.DB {
