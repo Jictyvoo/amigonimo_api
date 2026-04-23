@@ -14,6 +14,11 @@ import (
 func (h *AuthenticationController) SignUp(
 	c fuego.Context[FormUser, struct{}],
 ) (*SuccessResponse, error) {
+	authServ, err := h.authService(c.Context())
+	if err != nil {
+		return nil, h.HandleError(err)
+	}
+
 	req, err := c.Body()
 	if err != nil {
 		return &SuccessResponse{Message: "Failed to obtain request body"}, h.HandleError(err)
@@ -25,7 +30,7 @@ func (h *AuthenticationController) SignUp(
 		Password: req.Password,
 	}
 
-	if _, err = h.authServ.SignUp.Execute(userDTO); err != nil {
+	if _, err = authServ.SignUp.Execute(userDTO); err != nil {
 		return nil, h.HandleError(err)
 	}
 
@@ -36,6 +41,11 @@ func (h *AuthenticationController) SignUp(
 func (h *AuthenticationController) LogIn(
 	c fuego.Context[FormUser, struct{}],
 ) (*LoginResponse, error) {
+	authServ, err := h.authService(c.Context())
+	if err != nil {
+		return nil, h.HandleError(err)
+	}
+
 	req, err := c.Body()
 	if err != nil {
 		return nil, h.HandleError(err)
@@ -47,7 +57,7 @@ func (h *AuthenticationController) LogIn(
 		Password: req.Password,
 	}
 
-	authToken, err := h.authServ.LogIn.Execute(userDTO)
+	authToken, err := authServ.LogIn.Execute(userDTO)
 	if err != nil {
 		return nil, h.HandleError(err)
 	}
@@ -67,10 +77,15 @@ func (h *AuthenticationController) LogIn(
 func (h *AuthenticationController) RegenerateAuthToken(
 	c fuego.ContextNoBody,
 ) (*LoginResponse, error) {
+	authServ, err := h.authService(c.Context())
+	if err != nil {
+		return nil, h.HandleError(err)
+	}
+
 	authHeader := c.Request().Header.Get("Authorization")
 	refreshToken := strings.TrimPrefix(authHeader, "Bearer ")
 
-	authToken, err := h.authServ.RegenerateToken.Execute(refreshToken)
+	authToken, err := authServ.RegenerateToken.Execute(refreshToken)
 	if err != nil {
 		return nil, h.HandleError(err)
 	}
@@ -90,6 +105,11 @@ func (h *AuthenticationController) RegenerateAuthToken(
 func (h *AuthenticationController) VerifyUser(
 	c fuego.ContextNoBody,
 ) (*SuccessResponse, error) {
+	authServ, err := h.authService(c.Context())
+	if err != nil {
+		return nil, h.HandleError(err)
+	}
+
 	verifyCode := c.Request().PathValue("verify_code")
 	if verifyCode == "" {
 		return nil, h.HTTPError(
@@ -106,7 +126,7 @@ func (h *AuthenticationController) VerifyUser(
 		)
 	}
 
-	if err = h.authServ.VerifyUser.Execute(string(decoded)); err != nil {
+	if err = authServ.VerifyUser.Execute(string(decoded)); err != nil {
 		return nil, h.HandleError(err)
 	}
 
@@ -119,13 +139,18 @@ func (h *AuthenticationController) VerifyUser(
 func (h *AuthenticationController) ForgotPassword(
 	c fuego.Context[FormUser, struct{}],
 ) (*ForgotPasswordResponse, error) {
+	authServ, err := h.authService(c.Context())
+	if err != nil {
+		return nil, h.HandleError(err)
+	}
+
 	req, err := c.Body()
 	if err != nil {
 		return nil, h.HandleError(err)
 	}
 
 	if len(req.Username) > 0 {
-		obfuscated, lookupErr := h.authServ.LookupRecoveryContact.Execute(req.Username)
+		obfuscated, lookupErr := authServ.LookupRecoveryContact.Execute(req.Username)
 		if lookupErr != nil {
 			return nil, h.HandleError(lookupErr)
 		}
@@ -137,7 +162,7 @@ func (h *AuthenticationController) ForgotPassword(
 	}
 
 	if len(req.Email) > 0 {
-		if err = h.authServ.RequestPasswordRecovery.Execute(req.Email); err != nil {
+		if err = authServ.RequestPasswordRecovery.Execute(req.Email); err != nil {
 			return nil, h.HandleError(err)
 		}
 		// The client will open a window to put this code, and send a request to server again with new password
@@ -156,12 +181,17 @@ func (h *AuthenticationController) ForgotPassword(
 func (h *AuthenticationController) CheckRecoveryCode(
 	c fuego.Context[FormRecoveryCode, struct{}],
 ) (*SuccessResponse, error) {
+	authServ, err := h.authService(c.Context())
+	if err != nil {
+		return nil, h.HandleError(err)
+	}
+
 	req, err := c.Body()
 	if err != nil {
 		return nil, h.HandleError(err)
 	}
 
-	if _, err = h.authServ.CheckRecoveryCode.Execute(req.Email, req.RecoveryCode); err != nil {
+	if _, err = authServ.CheckRecoveryCode.Execute(req.Email, req.RecoveryCode); err != nil {
 		return nil, h.HandleError(err)
 	}
 
@@ -174,6 +204,11 @@ func (h *AuthenticationController) CheckRecoveryCode(
 func (h *AuthenticationController) PasswordReset(
 	c fuego.Context[FormResetPassword, struct{}],
 ) (*SuccessResponse, error) {
+	authServ, err := h.authService(c.Context())
+	if err != nil {
+		return nil, h.HandleError(err)
+	}
+
 	req, err := c.Body()
 	if err != nil {
 		return nil, h.HandleError(err)
@@ -184,7 +219,7 @@ func (h *AuthenticationController) PasswordReset(
 		Password: req.NewPassword,
 	}
 
-	if err = h.authServ.ResetPassword.Execute(userDTO, req.RecoveryCode); err != nil {
+	if err = authServ.ResetPassword.Execute(userDTO, req.RecoveryCode); err != nil {
 		return nil, h.HandleError(err)
 	}
 
